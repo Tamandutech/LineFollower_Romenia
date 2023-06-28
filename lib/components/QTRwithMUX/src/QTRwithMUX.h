@@ -1,5 +1,4 @@
-#ifndef SENSOR_SERVICE_HPP
-#define SENSOR_SERVICE_HPP
+
 
 #include "esp_log.h"
 #include "QTRSensors.h"
@@ -20,5 +19,3 @@ private:
     uint16_t lastPosition;
 
 };
-
-#endif

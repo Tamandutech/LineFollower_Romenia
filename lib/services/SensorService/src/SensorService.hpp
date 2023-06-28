@@ -7,7 +7,9 @@
 #include "QTRSensors.h"
 #include "IOs.hpp"
 #include "bitset"// biblioteca que transforma um número decimal para binário
-#include "QTRwithMUX.h"
+#include "QTRwithMUX.h" // biblioteca própria
+#include "MotorService.hpp"
+#include "RobotData.h"
 
 
 using namespace cpp_freertos;
@@ -22,6 +24,9 @@ public:
 private:
 
     QTRSensors sArray[sQuant];
+    QTRSensors sLat;
+    QTRwithMUX MUX;
+    int tempo_cal = 7000; // tempo de calibracao, passar para RobotData
 
     void auto_calibrate();
 };
