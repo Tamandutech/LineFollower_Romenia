@@ -25,7 +25,7 @@ public:
     DataAbstract<int16_t> *RPMCar_media;
     
     // // Vel. base para calibracao:
-    DataAbstract<float> *vel_calibracao;
+    DataAbstract<float> *vel_calibrate;
 
     //Setpoints para os tipos de trecho
     DataAbstract<float> *Long_Line;

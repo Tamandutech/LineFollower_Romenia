@@ -59,6 +59,23 @@ void MotorService::ControlMotors(float velesq, float veldir){
     }
 }
 
+void MotorService::StopMotors()
+{
+    gpio_set_level((gpio_num_t)stby, 0);
+}
+
+void MotorService::WalkStraight(float vel, bool frente){
+
+    gpio_set_level((gpio_num_t)in_dir1, frente);
+    gpio_set_level((gpio_num_t)in_dir2, (!frente));
+    AnalogWrite(PWM_A_PIN, vel);
+
+    gpio_set_level((gpio_num_t)in_esq1, (!frente));
+    gpio_set_level((gpio_num_t)in_esq2, frente);
+    AnalogWrite(PWM_B_PIN, vel);
+
+}
+
 void MotorService::WalkStraight(float vel, bool frente){
 
     gpio_set_level((gpio_num_t)in_dir1, frente);

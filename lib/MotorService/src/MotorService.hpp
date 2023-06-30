@@ -8,6 +8,7 @@
 #include "IOs.hpp"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "RobotData.h"
 
 using namespace cpp_freertos;
 
@@ -26,6 +27,7 @@ public:
     void Run() override;
     void ControlMotors(float left, float right);
     void WalkStraight(float vel, bool frente);
+    void StopMotors();
 
 private:
 

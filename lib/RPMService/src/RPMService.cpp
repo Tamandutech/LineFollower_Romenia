@@ -31,13 +31,20 @@ void RPMService::ReadBoth()
     lastPulseRight = enc_motDir.getCount();
     lastPulseLeft = enc_motEsq.getCount();
 
-    get_Vel->EncRight->setData(lastPulseRight);
-    get_Vel->EncLeft->setData(lastPulseLeft);
-    get_Vel->EncMedia->setData( (lastPulseRight+lastPulseLeft)/2 );
+    SaveEncData(lastPulseRight, lastPulseLeft);
 }
 
 void RPMService::ResetCount()
 {
     enc_motEsq.clearCount();
     enc_motDir.clearCount();
+    
+    SaveEncData(0, 0);
+}
+
+void RPMService::SaveEncData(int32_t pulseRight, int32_t pulseLeft)
+{
+    get_Vel->EncRight->setData(pulseRight);
+    get_Vel->EncLeft->setData(pulseLeft);
+    get_Vel->EncMedia->setData( (pulseRight+pulseLeft)/2 );
 }

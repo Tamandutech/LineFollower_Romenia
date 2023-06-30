@@ -61,12 +61,12 @@ void SensorService::auto_calibrate()
             if((voltas<2)||((voltas > 3)))
             {
                 // Chama a funcao do servico dos Motores para o robô andar reto
-                motor->WalkStraight(get_Vel->vel_calibracao->getData(), 0);
+                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
             }
             else
             {
                 // Chama a mesma funcao para o robô andar para o lado contraio
-                motor->WalkStraight(get_Vel->vel_calibracao->getData(), 1);
+                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
             }
             
             MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
@@ -84,11 +84,11 @@ void SensorService::auto_calibrate()
         {
             if((voltas<2)||((voltas > 3)))
             {
-                motor->WalkStraight(get_Vel->vel_calibracao->getData(), 0);
+                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
             }
             else
             {
-                motor->WalkStraight(get_Vel->vel_calibracao->getData(), 1);
+                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
             }
             
            sLat.calibrate();

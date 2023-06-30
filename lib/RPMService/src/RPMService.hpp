@@ -35,7 +35,7 @@ private:
     int32_t lastPulseLeft = 0;
 
     // Componente de gerenciamento dos encoders
-    
+    void SaveEncData(int32_t pulseRight, int32_t pulseLeft);
 };
 
 #endif

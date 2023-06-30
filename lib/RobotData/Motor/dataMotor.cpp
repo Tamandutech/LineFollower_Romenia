@@ -18,7 +18,7 @@ dataMotor::dataMotor(std::string name)
     RPMCar_media = new DataAbstract<int16_t>("RPMCar_media", name, 0);
     
     // Vel. base para calibracao
-    vel_calibracao = new DataAbstract<float>("Velocidade Calibracao", name, 50); // inicia com valor 50
+    vel_calibrate = new DataAbstract<float>("Velocidade Calibracao", name, 50); // inicia com valor 50
 
     //Setpoints translacionais para os tipos de trechos
     Long_Line = new DataAbstract<float>("PWM_Long_line", name, 1000);
