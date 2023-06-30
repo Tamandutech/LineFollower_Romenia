@@ -51,51 +51,34 @@ void SensorService::auto_calibrate()
     rpm->ResetCount();
 
     // Calibração dos sensores frontais
-    for(int voltas=1; voltas <= 4; voltas++)
+    for(int mux=0; mux < 2; mux++)
     {
-        while((get_Vel->EncMedia->getData()) < MPR_Mot) // enquanto o robô não andou um giro da roda
+        for(int voltas=1; voltas <= 4; voltas++)
         {
-            // Anda para uma direcao por 1/4 do tempo de calibracao
-            // Anda pra direcao contraria por 2/4 do tempo
-            // Volta a posicao original, andando o último 1/4 do tempo de volta
-            if((voltas<2)||((voltas > 3)))
+            while((get_Vel->EncMedia->getData()) < MPR_Mot) // enquanto o robô não andou um giro da roda
             {
-                // Chama a funcao do servico dos Motores para o robô andar reto
-                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
+                // Anda para uma direcao por 1/4 da calibracao
+                // Anda pra direcao contraria por 2/4
+                // Volta a posicao original, andando o último 1/4 do tempo
+                if((voltas<2)||((voltas > 3)))
+                {
+                    // Chama a funcao do servico dos Motores para o robô andar reto
+                    motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
+                }
+                else
+                {
+                    // Chama a mesma funcao para o robô andar para o lado contraio
+                    motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
+                }
+                if(mux == 0){
+                    MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
+                }else{
+                    sLat.calibrate(); // calibracao normal dos sensores laterais
+                }
+                vTaskDelay(100 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
+                rpm->ReadBoth(); // atualiza a leitura dos encoders
             }
-            else
-            {
-                // Chama a mesma funcao para o robô andar para o lado contraio
-                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
-            }
-            
-            MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
-            
-            vTaskDelay(100 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-            rpm->ReadBoth(); // atualiza a leitura dos encoders
+            rpm->ResetCount(); // Reseta a contagem para comecar outra volta
         }
-        rpm->ResetCount(); // Reseta a contagem para comecar outra volta
-    }
-
-    // Calibração dos sensores laterais
-    for(int voltas=1; voltas <= 4; voltas++)
-    {
-        while((get_Vel->EncMedia->getData()) < MPR_Mot)
-        {
-            if((voltas<2)||((voltas > 3)))
-            {
-                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
-            }
-            else
-            {
-                motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
-            }
-            
-           sLat.calibrate();
-            
-            vTaskDelay(100 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-            rpm->ReadBoth(); // atualiza a leitura dos encoders
-        }
-        rpm->ResetCount(); // Reseta a contagem para comecar outra volta
     }
 }
