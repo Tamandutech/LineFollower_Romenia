@@ -5,7 +5,6 @@
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
 #include "QTRSensors.h"
-#include "IOs.hpp"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "RobotData.h"

@@ -5,7 +5,6 @@
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
 #include "QTRSensors.h"
-#include "IOs.hpp"
 #include "bitset"// biblioteca que transforma um número decimal para binário
 #include "QTRwithMUX.h" // biblioteca própria
 #include "MotorService.hpp"
@@ -21,6 +20,7 @@ public:
     SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority);
 
     void Run() override;
+    void AngleError();
 
 private:
 

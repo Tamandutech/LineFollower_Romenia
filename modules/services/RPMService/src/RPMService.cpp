@@ -17,7 +17,7 @@ void RPMService::Run()
     // Loop do servico, em desenvolvimento
     
     // Variavel necerraria para funcionaliade do vTaskDelayUtil, guarda a contagem de pulsos da CPU
-    TickType_t xLastWakeTime = xTaskGetTickCount();
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)

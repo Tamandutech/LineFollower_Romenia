@@ -9,6 +9,7 @@
 #include <mutex>
 
 #include "dataEnums.h"
+#include "IOs.hpp"
 #include "Motor/dataMotor.h"
 #include "Specifications/dataSpec.h"
 

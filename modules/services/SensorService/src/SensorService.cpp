@@ -70,6 +70,8 @@ void SensorService::auto_calibrate()
                     // Chama a mesma funcao para o robô andar para o lado contraio
                     motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
                 }
+
+                // Escolhe qual sensor esta sendo calibrado:
                 if(mux == 0){
                     MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
                 }else{
@@ -81,4 +83,9 @@ void SensorService::auto_calibrate()
             rpm->ResetCount(); // Reseta a contagem para comecar outra volta
         }
     }
+}
+
+void SensorService::AngleError()
+{
+    
 }
