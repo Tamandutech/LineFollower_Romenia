@@ -10,8 +10,10 @@
 
 #include "dataEnums.h"
 #include "IOs.hpp"
-#include "Motor/dataMotor.h"
-#include "Specifications/dataSpec.h"
+#include "dataMotor.h"
+#include "dataSpec.h"
+#include "dataPID.h"
+#include "Status/dataStatus.h"
 
 #include "esp_log.h"
 
@@ -37,6 +39,8 @@ public:
 
     dataMotor *getMotorData();
     dataSpec *getSpecification();
+    dataPID *getPID();
+    dataStatus *getStatus();
 
     std::string GetName();
 
@@ -48,6 +52,8 @@ private:
 
     dataMotor *MotorVel;
     dataSpec *RobotSpec;
+    dataPID *PID;
+    dataStatus *RobotStatus;
 
     Robot(std::string name);
 };

@@ -3,6 +3,8 @@ idf_component_register(
         "src/RobotData.cpp"
         "src/Motor/dataMotor.cpp" 
         "src/Specifications/dataSpec.cpp" 
+        "src/PID/dataPID.cpp" 
+        "src/Status/dataStatus.cpp" 
 
     REQUIRES
         "DataObjects"
@@ -11,4 +13,6 @@ idf_component_register(
         "src"
         "src/Motor"
         "src/Specifications"
+        "src/PID"
+        "src/Status"
 )

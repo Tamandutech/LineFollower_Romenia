@@ -20,13 +20,14 @@ enum TrackState
     SPECIAL_TRACK,
     DEFAULT_TRACK,
     UNDEFINED,     
-    TUNING,
+    TUNNING,
+    CAR_STOPPED,
 };
 
 enum LineColor
 {
-    BLACK,
     WHITE,
+    BLACK,
 };
 
 #endif

@@ -17,6 +17,8 @@ Robot::Robot(std::string name)
     ESP_LOGD(name.c_str(), "velocidade (%p)", this->MotorVel);
     this->RobotSpec = new dataSpec("Especificacoes Robo");
     ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
+    this->PID = new dataPID("Valores PID");
+    ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
 }
 
 std::string Robot::GetName()
@@ -32,4 +34,14 @@ dataMotor *Robot::getMotorData()
 dataSpec *Robot::getSpecification()
 {
     return this->RobotSpec;
+}
+
+dataPID *Robot::getPID()
+{
+    return this->PID;
+}
+
+dataStatus *Robot::getStatus()
+{
+    return this->RobotStatus;
 }

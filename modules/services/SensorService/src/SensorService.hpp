@@ -1,16 +1,21 @@
 #ifndef SENSOR_SERVICE_HPP
 #define SENSOR_SERVICE_HPP
 
+// Bibliotecas para criacao do servico
 #include "thread.hpp"
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
+// Bibliotecas de componentes/dados
 #include "QTRSensors.h"
-#include "bitset"// biblioteca que transforma um número decimal para binário
 #include "QTRwithMUX.h" // biblioteca própria
+#include "RobotData.h"
+// Bibliotecas do C++
+#include "bitset"// para transformar um número decimal para binário
+#include "cmath" // para criar funcoes trigonometricas
+// Bibliotecas de servicos
 #include "MotorService.hpp"
 #include "RPMService.hpp"
-#include "RobotData.h"
-#include "cmath" // biblioteca do C++ para funcoes trigonometricas
+
 
 
 using namespace cpp_freertos;
@@ -31,7 +36,7 @@ private:
     Robot *robot;
     dataMotor *get_Vel;
     dataSpec *get_Spec;
-    MotorService *motor;
+    MotorService *control_motor;
     RPMService *rpm;
     
     // Objetos usados no serviço:
@@ -50,6 +55,7 @@ private:
     int tempo_cal = 7000; // tempo de calibracao, passar para RobotData
 
     void auto_calibrate();
+    void SaveAngle(float new_angle);
 };
 
 #endif

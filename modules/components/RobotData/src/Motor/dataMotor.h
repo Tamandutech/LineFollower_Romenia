@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataAbstract.hpp"
+#include "dataEnums.h"
 
 #include "esp_log.h"
 
@@ -13,6 +14,8 @@ class dataMotor
 {
 public:
     dataMotor(std::string name = "dataVel");
+
+    DataAbstract<float> *Setpoint(TrackState state);
 
     // Contagem atual dos encoders
     DataAbstract<int32_t> *EncRight;
@@ -27,6 +30,10 @@ public:
     // // Vel. base para calibracao:
     DataAbstract<float> *vel_calibrate;
 
+private:
+    std::string name;
+    const char *tag = "RobotData";
+
     //Setpoints para os tipos de trecho
     DataAbstract<float> *Long_Line;
     DataAbstract<float> *Medium_Line;
@@ -34,14 +41,10 @@ public:
     DataAbstract<float> *Long_Curve;
     DataAbstract<float> *Medium_Curve;
     DataAbstract<float> *Short_Curve;
-    DataAbstract<float> *ZIGZAG;
+    DataAbstract<float> *Zigzag;
     DataAbstract<float> *Special_Track;
     DataAbstract<float> *Default_Track;
     DataAbstract<float> *Tunning;
-
-private:
-    std::string name;
-    const char *tag = "RobotData";
 
 };
 

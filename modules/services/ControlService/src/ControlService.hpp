@@ -1,10 +1,15 @@
 #ifndef CONTROL_SERVICE_HPP
 #define CONTROL_SERVICE_HPP
 
+// Bibliotecas para criacao do servico
 #include "thread.hpp"
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
+// Bibliotecas de componentes/dados
 #include "RobotData.h"
+// Bibliotecas de servicos
+#include "MotorService.hpp"
+#include "SensorService.hpp"
 
 
 using namespace cpp_freertos;
@@ -22,6 +27,15 @@ private:
     Robot *robot;
     dataMotor *get_Vel;
     dataSpec *get_Spec;
+    dataPID *get_PID;
+    dataStatus *get_Status;
+    MotorService *control_motor;
+    SensorService *from_sensor;
+
+    float erro_anterior = 0;
+
+    void ControlePID();
+    float CalcularPID(float K_p, float K_d, float errof);
     
 };
 

@@ -2,11 +2,12 @@
 
 SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
 {
-    // Atalhos:
+    // Atalhos de dados:
     this->robot = Robot::getInstance();
     this->get_Vel = robot->getMotorData();
     this->get_Spec = robot->getSpecification();
-    this->motor = MotorService::getInstance();
+    // Atalhos de servicos:
+    this->control_motor = MotorService::getInstance();
     this->rpm = RPMService::getInstance();
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
@@ -70,12 +71,12 @@ void SensorService::auto_calibrate()
                 if((voltas<2)||((voltas > 3)))
                 {
                     // Chama a funcao do servico dos Motores para o robô andar reto
-                    motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
+                    control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
                 }
                 else
                 {
                     // Chama a mesma funcao para o robô andar para o lado contraio
-                    motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
+                    control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
                 }
 
                 // Escolhe qual sensor esta sendo calibrado:
@@ -92,6 +93,14 @@ void SensorService::auto_calibrate()
     }
 }
 
+void SensorService::SaveAngle(float new_angle)
+{
+    for(int i=(sQuantReading-1); i > 0; i++){
+        AngleArray[i] = AngleArray[i-1];
+    }
+    AngleArray[0] = new_angle;
+}
+
 void SensorService::AngleError()
 {
     // Funcao que retorna o erro em radianos, sendo esse erro o angulo em relacao ao centro de movimento
@@ -106,6 +115,7 @@ void SensorService::AngleError()
 
     int16_t position = MUX.read_all(sArray, sQuant, is_white); // le os sensores e recebe uma posicao
     // position vai de 0 ate (sQuant - 1)*1000, sendo sQuant a quantidade de sensores
+    // Para 16 sensores, vai de 0 a 15000
     position = position - (sQuant - 1)*500; // subtrai a metade do valor máximo, posicao central fica em 0
 
     
@@ -113,4 +123,6 @@ void SensorService::AngleError()
     
     float angle_with_center = atan((sin(angle_radius))/(cos(angle_radius) -1 +(dis_center/radius)));
     
+    // Salvando esse angulo na variavel do servico:
+    SaveAngle(angle_with_center);
 }
