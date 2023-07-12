@@ -10,6 +10,7 @@
 #include "MotorService.hpp"
 #include "RPMService.hpp"
 #include "RobotData.h"
+#include "cmath" // biblioteca do C++ para funcoes trigonometricas
 
 
 using namespace cpp_freertos;
@@ -22,6 +23,8 @@ public:
     void Run() override;
     void AngleError();
 
+    float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
+
 private:
 
     // Atalhos para facilitar a escrita do código
@@ -32,14 +35,15 @@ private:
     RPMService *rpm;
     
     // Objetos usados no serviço:
-    QTRSensors sArray[sQuant];
-    QTRSensors sLat;
-    QTRwithMUX MUX;
+    QTRSensors sArray[sQuant]; // sensores frontais
+    QTRSensors sLat; // sensores laterais
+    QTRSensors sCenter; // sensores no centro do corpo
+    QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
+
 
     // Variaveis do servico
-    uint16_t MPR_Mot = 0;
-    uint16_t rev = 0;
-    uint16_t gear = 0;
+    uint16_t MPR_Mot = 0; // MPR atual do robo
+    
 
 
     // Variaveis

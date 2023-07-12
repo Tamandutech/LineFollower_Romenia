@@ -23,6 +23,9 @@ class dataSpec
 public:
     dataSpec(std::string name = "dataSpeed",bool PID_Select = false);
 
+    // Cor da linha
+    DataAbstract<bool> *WhiteLine;
+
     // Reducao dos motores
     DataAbstract<uint16_t> *GearRatio;
     // Num Revolucoes
@@ -32,7 +35,14 @@ public:
 
     // Diâmetro das rodas
     DataAbstract<uint8_t> *WheelDiameter;
-    DataAbstract<uint16_t> *RobotDiameter;
+    // Distancia entre as rodas
+    DataAbstract<uint8_t> *RobotDiameter; // mm
+    // Distancia do centro do robô até a ponta dos sensores
+    DataAbstract<uint16_t> *SensorToCenter;
+    // Raio da angulacao dos sensores frontais
+    DataAbstract<uint16_t> *RadiusSensor; // mm
+    // Angulo maximo de leitura = (1/2) * (tamanho do arco)/(raio do arco)
+    DataAbstract<uint16_t> *MaxAngle; // graus
 
 private:
     std::string name;

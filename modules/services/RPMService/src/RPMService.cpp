@@ -10,6 +10,11 @@ RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priori
     // GPIOs dos encoders dos encoders dos motores
     enc_motEsq.attachFullQuad(enc_eq_B, enc_eq_A);
     enc_motDir.attachFullQuad(enc_dir_B, enc_dir_A);
+
+    // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
+    uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
+    uint16_t gear = get_Spec->GearRatio->getData(); // idem
+    get_Spec->MPR->setData((rev*gear));
 };
 
 void RPMService::Run()

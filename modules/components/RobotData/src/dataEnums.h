@@ -23,4 +23,10 @@ enum TrackState
     TUNING,
 };
 
+enum LineColor
+{
+    BLACK,
+    WHITE,
+};
+
 #endif
