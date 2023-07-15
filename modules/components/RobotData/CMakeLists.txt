@@ -4,10 +4,11 @@ idf_component_register(
         "src/Motor/dataMotor.cpp" 
         "src/Specifications/dataSpec.cpp" 
         "src/PID/dataPID.cpp" 
-        "src/Status/dataStatus.cpp" 
+        "src/Status/dataStatus.cpp"
+        "src/SLatMarks/dataSLatMarks.cpp" 
 
     REQUIRES
-        "DataObjects"
+        "DataObjects" "MappingService"
 
     INCLUDE_DIRS 
         "src"
@@ -15,4 +16,5 @@ idf_component_register(
         "src/Specifications"
         "src/PID"
         "src/Status"
+        "src/SLatMarks"
 )

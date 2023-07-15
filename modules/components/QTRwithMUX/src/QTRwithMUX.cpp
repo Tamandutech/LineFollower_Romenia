@@ -15,6 +15,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
 {
     // Funcao baseada na funcao .readLineWhite da biblioteca QTRSensors
     // A funcao original nao pode ser usada pelas leituras não serem simultaneas
+    // white_line = TRUE -> leitura de linha branca
 
     bool on_Line = false; // se falso até o final, os sensores estão todos fora da linha
     uint32_t avg = 0;
@@ -26,7 +27,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
         selectMuxPin(std::bitset<4>(i)); // Passa o valor i em formato 4 bits para selecionar o sensor
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         
-        if (white_line) { sensor_value = 1000 - sensor_value; } // inverte as leituras
+        if (white_line == WHITE) { sensor_value = 1000 - sensor_value; } // inverte as leituras
         if (sensor_value > 200) { on_Line = true; } // verifica se tem um sensor na linha
         if (sensor_value > 50) // valores menores que 50 são considerados ruídos
         {

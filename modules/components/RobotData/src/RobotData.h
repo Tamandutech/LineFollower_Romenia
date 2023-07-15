@@ -13,7 +13,8 @@
 #include "dataMotor.h"
 #include "dataSpec.h"
 #include "dataPID.h"
-#include "Status/dataStatus.h"
+#include "dataStatus.h"
+#include "SLatMarks/dataSLatMarks.h"
 
 #include "esp_log.h"
 
@@ -41,6 +42,7 @@ public:
     dataSpec *getSpecification();
     dataPID *getPID();
     dataStatus *getStatus();
+    dataSLatMarks *getSLatMarks();
 
     std::string GetName();
 

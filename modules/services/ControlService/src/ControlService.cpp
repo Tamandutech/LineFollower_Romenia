@@ -27,7 +27,7 @@ void ControlService::Run()
     }
 }
 
-float ControlService::CalcularPID(float K_p, float K_d, float errof){
+float ControlService::CalculatePD(float K_p, float K_d, float errof){
     float PID_now;
     PID_now = (K_p * (errof)) + (K_d * (errof - erro_anterior));
     erro_anterior = errof;
@@ -35,18 +35,19 @@ float ControlService::CalcularPID(float K_p, float K_d, float errof){
 }
 
 void ControlService::ControlePID(){
-    TrackState state = (TrackState) get_Status->robotState->getData();
+    CarState state = (CarState) get_Status->robotState->getData();
+    TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
     float erro = from_sensor->AngleArray[0];
 
     if(state == CAR_STOPPED){
         control_motor->StopMotors();
         
     }else{
-        float Kp = get_PID->Kp(state)->getData();
-        float Kd = get_PID->Kd(state)->getData();
+        float Kp = get_PID->Kp(line_state)->getData();
+        float Kd = get_PID->Kd(line_state)->getData();
 
-        float PID = CalcularPID(Kp, Kd, erro);
-        float vel_base = get_Vel->Setpoint(state)->getData();
+        float PID = CalculatePD(Kp, Kd, erro);
+        float vel_base = get_Vel->Setpoint(line_state)->getData();
         control_motor->ControlMotors((vel_base + PID), (vel_base - PID));
     }
 }

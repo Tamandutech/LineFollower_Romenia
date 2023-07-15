@@ -15,13 +15,16 @@ class dataStatus
 public:
     dataStatus(std::string name = "dataVel");
 
-    DataAbstract<uint8_t> *robotState;
+    DataAbstract<uint8_t> *robotState; // Armazena o estado geral do robô.
+    DataAbstract<uint8_t> *TrackStatus; // status (velocidade) do trecho da pista em que o robô se encontra
 
-    DataAbstract<bool> *robotIsMapping;
+    DataAbstract<bool> *robotIsMapping; // Atributo que indica se o robô está mapeando a pista (TRUE se sim)
 
-    DataAbstract<bool> *encreading;
+    DataAbstract<bool> *encreading; //Atributo que indica se o robô está lendo o mapeamento (TRUE se sim)
 
-    DataAbstract<bool> *LineColorBlack;
+    DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)
+
+    static std::mutex stateMutex;
 
 private:
     std::string name;

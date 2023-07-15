@@ -35,7 +35,7 @@ private:
     float erro_anterior = 0;
 
     void ControlePID();
-    float CalcularPID(float K_p, float K_d, float errof);
+    float CalculatePD(float K_p, float K_d, float errof);
     
 };
 
