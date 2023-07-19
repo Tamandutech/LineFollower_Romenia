@@ -23,6 +23,12 @@ public:
     DataAbstract<bool> *encreading; //Atributo que indica se o robô está lendo o mapeamento (TRUE se sim)
 
     DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)
+    DataAbstract<bool> *TunningMode;
+    DataAbstract<bool> *HardDeleteMap;
+    DataAbstract<uint8_t> *RealTrackStatus; // status real do trecho da pista em que o robô se encontra
+    DataAbstract<bool> *FirstMark; // Verifica se o robô já passou pela primeira marcação lateral
+    DataAbstract<bool> *Transition; // Verifica se o robô está numa transição de curva para reta e vice-versa
+    DataAbstract<bool> *TuningMapped; // Ativar tuningMode com o mapeamento da pista
 
     static std::mutex stateMutex;
 

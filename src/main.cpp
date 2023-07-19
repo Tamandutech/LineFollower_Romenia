@@ -7,6 +7,7 @@
 // Servicos
 #include "SensorService.hpp"
 #include "MotorService.hpp"
+#include "MappingService.hpp"
 
 // Data Objects
 
