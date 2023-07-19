@@ -5,15 +5,25 @@
 #include "esp_log.h"
 
 // Servicos
-#include "SensorService.hpp"
-#include "MotorService.hpp"
+#include "RobotData.h"
+#include "DataAbstract.hpp"
+#include "ControlService.hpp"
 #include "MappingService.hpp"
+#include "MotorService.hpp"
+#include "RPMService.hpp"
+#include "SensorService.hpp"
+#include "StatusService.hpp"
 
 // Data Objects
 
 // Criando os objetos dos serviços:
-SensorService *sensorService;
+Robot *robot;
+ControlService *controlService;
+MappingService *mappingService;
 MotorService *motorService;
+RPMService *rpmService;
+SensorService *sensorService;
+StatusService *statusService;
 
 extern "C"
 {
@@ -27,11 +37,24 @@ void app_main()
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("main", ESP_LOG_INFO);
 
-    // Necessario iniciar os servicos
-    sensorService = new SensorService("SensorService", 4096, 5);
+    ESP_LOGD("Main", "Instanciando Robô...");
+    robot = Robot::getInstance("TT_LF_ROMENIA");
+
+    // Configuracao dos servicos
+    ESP_LOGD("Main", "Configurando Serviços...");
+    mappingService = MappingService::getInstance("MappingService", 8192, 8);
+    statusService = StatusService::getInstance("StatusService", 10000, 8);
+    rpmService = RPMService::getInstance("RPMService", 4096, 9);
+    motorService = MotorService::getInstance("MotorService", 4096, 5);
+    sensorService = SensorService::getInstance("SensorService", 4096, 5);
+    controlService = ControlService::getInstance("ControlService", 4096, 5);
+
+    mappingService->Start();
+    statusService->Start();
+    rpmService->Start();
+    motorService->Start();
     sensorService->Start();
-    motorService = new MotorService("MotorService", 4096, 5);
-    sensorService->Start();
+    controlService->Start();
 
     for(;;)
     {

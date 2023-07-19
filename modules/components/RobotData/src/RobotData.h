@@ -56,6 +56,7 @@ private:
     dataSpec *RobotSpec;
     dataPID *PID;
     dataStatus *RobotStatus;
+    dataSLatMarks *sLatMarks;
 
     Robot(std::string name);
 };

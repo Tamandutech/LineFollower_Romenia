@@ -45,3 +45,8 @@ dataStatus *Robot::getStatus()
 {
     return this->RobotStatus;
 }
+
+dataSLatMarks *Robot::getSLatMarks()
+{
+    return this->sLatMarks;
+}

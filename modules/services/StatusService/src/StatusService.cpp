@@ -1,39 +1,45 @@
 #include "StatusService.hpp"
 
-QueueHandle_t CarStatusService::gpio_evt_queue;
+QueueHandle_t StatusService::gpio_evt_queue; // variavel de fila
 
-void IRAM_ATTR CarStatusService::gpio_isr_handler(void *arg)
+void IRAM_ATTR StatusService::gpio_isr_handler(void *arg)
 {
+    // Salva o estado do robo em uma fila
+    // carstate soh diferencia entre curva e reta
     uint32_t gpio_num = (uint32_t)arg;
-    uint8_t carstate = 0;
+    uint8_t carstate = CAR_IN_CURVE;
     if (gpio_num == GPIO_NUM_0)
     {
         carstate = CAR_IN_LINE;
     }
-    xQueueSendFromISR(gpio_evt_queue, &carstate, NULL);
+    xQueueSendFromISR(gpio_evt_queue, &carstate, NULL); // ( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken )
 }
 
-CarStatusService::CarStatusService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+// Construtor do servico
+StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
 {
+    // Atalhos para o RobotData:
     this->robot = Robot::getInstance();
     this->status = robot->getStatus();
     this->speed = robot->getMotorData();
     this->latMarks = robot->getSLatMarks();
     this->PID = robot->getPID();
-
+    // Atalhos para servicos:
     mappingService = MappingService::getInstance();
 
-    if(!status->TunningMode->getData())
+    if(!status->TunningMode->getData()) // Se o robo nao estiver em modo de teste
     {
-        latMarks->marks->loadData();
+        latMarks->marks->loadData(); // carrega as marcações laterais salvas
 
-        if (latMarks->marks->getSize() <= 0)
+        if (latMarks->marks->getSize() <= 0) // Se o robo não tem mapeamento salvo
         {
+            // Muda o status para iniciar o mapeamento
             status->encreading->setData(false);
             status->robotIsMapping->setData(true);
         }
         else
         {
+            // Muda o status para ler o mapeamento
             status->robotIsMapping->setData(false);
             status->encreading->setData(true);
             numMarks = latMarks->marks->getSize();
@@ -64,7 +70,7 @@ CarStatusService::CarStatusService(std::string name, uint32_t stackDepth, UBaseT
     gpio_isr_handler_add(GPIO_NUM_0, gpio_isr_handler, (void *)GPIO_NUM_0);
 }
 
-void CarStatusService::Run()
+void StatusService::Run()
 {
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     TickType_t xLastWakeTime = xTaskGetTickCount();

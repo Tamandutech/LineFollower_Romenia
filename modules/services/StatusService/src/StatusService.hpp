@@ -12,22 +12,22 @@
 
 using namespace cpp_freertos;
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 
 #define ManualMap
 
-class CarStatusService : public Thread, public Singleton<CarStatusService>
+class StatusService : public Thread, public Singleton<StatusService>
 {
 public:
     
-    CarStatusService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority);
 
     void Run() override;
     static QueueHandle_t gpio_evt_queue;
 
 private:
 
+    // Variáveis para atalho
     Robot *robot;
     dataStatus *status;
     dataMotor *speed;
