@@ -49,16 +49,17 @@ private:
     uint8_t lastState; // armazena último estado do mapeamento
     bool lastMappingState;
 
-    bool started_in_Tuning = false;
+    bool started_in_Tuning = false; // se o robo esta em modo de teste
     int32_t mediaEncActual = 0;
-    int32_t mediaEncFinal = 0;
-    int32_t initialmediaEnc = 0;
+    int32_t mediaEncFinal = 0; // leitura de encoder final do trecho
+    int32_t initialmediaEnc = 0; // leitura feita na linha de partida
     int32_t pulsesBeforeCurve = 200;
     int32_t pulsesAfterCurve = 200;
     bool firstmark = false;
 
 
     static void IRAM_ATTR gpio_isr_handler(void *arg);
+    void mappingStatus(bool is_reading, bool is_mapping);
 };
 
 #endif

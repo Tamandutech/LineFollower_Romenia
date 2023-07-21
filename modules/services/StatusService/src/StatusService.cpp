@@ -34,26 +34,27 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
         if (latMarks->marks->getSize() <= 0) // Se o robo não tem mapeamento salvo
         {
             // Muda o status para iniciar o mapeamento
-            status->encreading->setData(false);
-            status->robotIsMapping->setData(true);
+            mappingStatus(false, true); // (bool is_reading, bool is_mapping)
         }
         else
-        {
+        {// Se tem mapeamento salvo
             // Muda o status para ler o mapeamento
-            status->robotIsMapping->setData(false);
-            status->encreading->setData(true);
+            mappingStatus(true, false); // (bool is_reading, bool is_mapping)
             numMarks = latMarks->marks->getSize();
             mediaEncFinal = latMarks->marks->getData(numMarks - 1).MapEncMedia;
         }
     }
+
+    // Status inicial do robo (parado)
     status->robotState->setData(CAR_STOPPED);
 
     stateChanged = true;
     lastMappingState = false;
+    // Carregando o final da pista
     lastState = status->robotState->getData();
     lastTrack = (TrackState) status->TrackStatus->getData();
 
-    firstmark = false;
+    firstmark = false; // Não passou pela linha de partida
 
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
@@ -70,6 +71,7 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
     gpio_isr_handler_add(GPIO_NUM_0, gpio_isr_handler, (void *)GPIO_NUM_0);
 }
 
+// Main do servico
 void StatusService::Run()
 {
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
@@ -81,7 +83,7 @@ void StatusService::Run()
 
     uint8_t num;
     do
-    {
+    {// Aguarda o precionar do botao
         xQueueReceive(gpio_evt_queue, &num, portMAX_DELAY);
         ESP_LOGD(GetName().c_str(), "Aguardando inicialização");
         if(status->robotState->getData() != CAR_STOPPED) break;
@@ -93,78 +95,77 @@ void StatusService::Run()
     if(!gpio_get_level(GPIO_NUM_0) && latMarks->marks->getSize() > 0 && !status->TunningMode->getData() && status->HardDeleteMap->getData())
     {
         DataStorage::getInstance()->delete_data("sLatMarks.marks");
-        status->encreading->setData(false);
-        status->robotIsMapping->setData(true);
+        mappingStatus(false, true); // (bool is_reading, bool is_mapping)
         ESP_LOGD(GetName().c_str(), "Mapeamento Deletado");
     }
     ESP_LOGD(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(1500 / portTICK_PERIOD_MS);
 
-    if (status->robotIsMapping->getData() && !status->TunningMode->getData())
-    {
-        ESP_LOGD(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        // Começa mapeamento
-        status->RealTrackStatus->setData(UNDEFINED);
-        status->TrackStatus->setData(UNDEFINED);
-        mappingService->startNewMapping();
-    }
-
     if(!status->TunningMode->getData())
-    {
-        status->robotState->setData(CAR_IN_LINE);
-        if(!status->robotIsMapping->getData())
-        {
+    { // Se nao estiver em modo de teste
+        if(status->robotIsMapping->getData())
+        { // Se nao houver mapeamento salvo
+            ESP_LOGD(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            // Começa mapeamento
+            status->RealTrackStatus->setData(UNDEFINED);
+            status->TrackStatus->setData(UNDEFINED);
+            mappingService->startNewMapping();
+        }
+        else
+        {// Se estiver mapeando, muda o status para linha curta (mais lento)
             status->TrackStatus->setData(SHORT_LINE);
             status->RealTrackStatus->setData(SHORT_LINE);
         }
+
+        status->robotState->setData(CAR_IN_LINE); // Carro sai do estado parado
         started_in_Tuning = false;
     }
     else
-    {
+    {// Se estiver em modo de teste
         started_in_Tuning = true;
         status->robotState->setData(CAR_TUNING);
         status->TrackStatus->setData(TUNNING);
         status->RealTrackStatus->setData(TUNNING);
-        status->encreading->setData(false);
-        status->robotIsMapping->setData(false);
+        mappingStatus(false, false); // (bool is_reading, bool is_mapping)
         latMarks->marks->clearAllData();
         numMarks = 0;
         mediaEncFinal = 0; 
     }
-    status->FirstMark->setData(false);
+    status->FirstMark->setData(false); // Indica que nao passou pela primeira marcaçao
     // Loop
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
-        
+        // Carregando status atual
         status->stateMutex.lock();
         TrackLen = (TrackState)status->TrackStatus->getData();
         pulsesBeforeCurve = latMarks->PulsesBeforeCurve->getData();
         pulsesAfterCurve = latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) status->robotState->getData();
+
         if(started_in_Tuning && status->TunningMode->getData() && status->robotState->getData() != CAR_TUNING &&  !status->encreading->getData() && !status->robotIsMapping->getData()) 
-        {
+        {// Se iniciar em modo de teste
             status->robotState->setData(CAR_TUNING);
             status->TrackStatus->setData(TUNNING);
             status->RealTrackStatus->setData(TUNNING);
         }
         if(latMarks->rightMarks->getData() >= 1 && !firstmark)
-        {
+        {// Se passar pela linha de largada e nao tiver essa informacao salva
             firstmark = true;
             status->FirstMark->setData(true);
             initialmediaEnc = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2;
         }
 
         if (lastMappingState != status->robotIsMapping->getData() && status->robotIsMapping->getData())
-        {
+        {// Caso esteja mapeando
             lastMappingState = status->robotIsMapping->getData();
 
             ESP_LOGD(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
         }
 
         else if ((lastState != status->robotState->getData() || lastTrack != (TrackState)status->TrackStatus->getData() || lastTransition != status->Transition->getData()) && !lastMappingState && status->robotState->getData() != CAR_STOPPED && status->robotState->getData() != CAR_TUNING)
-        {
+        {// Caso tenha mudado o trecho em que o robô se encontra
             lastState = status->robotState->getData();
             lastTrack =  (TrackState)status->TrackStatus->getData();
             lastTransition = status->Transition->getData();
@@ -172,28 +173,17 @@ void StatusService::Run()
 
         mediaEncActual = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2; // calcula media dos encoders
 
-//         if (iloop >= 20 && !status->robotIsMapping->getData())
-//         {
-//             ESP_LOGD(GetName().c_str(), "CarStatus: %d", status->robotState->getData());
-//             ESP_LOGD(GetName().c_str(), "initialEncMedia: %d", initialmediaEnc);
-//             ESP_LOGD(GetName().c_str(), "EncMedia: %d", mediaEncActual);
-//             ESP_LOGD(GetName().c_str(), "EncMediaoffset: %d", mediaEncActual-initialmediaEnc);
-//             ESP_LOGD(GetName().c_str(), "mediaEncFinal: %d", mediaEncFinal);
-//             ESP_LOGD(GetName().c_str(), "SetPointTrans: %d", PID->setpoint->getData());
-//             iloop = 0;
-//         }
-//         iloop++;
-
-        if(!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData() && actualCarState != CAR_STOPPED){
+        if(!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData() && actualCarState != CAR_STOPPED)
+        {// Muda o status do carro para parado, caso esteja no momento certo
             robot->getStatus()->robotState->setData(CAR_STOPPED);
             vTaskDelay(0);
             DataManager::getInstance()->saveAllParamDataChanged();
         }
 
         if (!status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && status->encreading->getData() && firstmark && (!status->TunningMode->getData() || !started_in_Tuning))
-        {
+        {// Se estiver lendo o mapeamento, e já tiver passado pela linha de largada
             if ((mediaEncActual - initialmediaEnc) >= mediaEncFinal)
-            {
+            {// 
                 if(status->TuningMapped->getData())
                 {
                     status->FirstMark->setData(false);
@@ -220,7 +210,7 @@ void StatusService::Run()
             }
             if ((mediaEncActual - initialmediaEnc) < mediaEncFinal)
             {
-                // define o status do carrinho se o mapeamento não estiver ocorrendo
+                // define o status do carrinho
                 int mark = 0;
                 for (mark = 0; mark < numMarks - 1; mark++)
                 {
@@ -291,4 +281,10 @@ void StatusService::Run()
 
         status->stateMutex.unlock();
     }
+}
+
+void StatusService::mappingStatus(bool is_reading, bool is_mapping)
+{
+    status->encreading->setData(is_reading);
+    status->robotIsMapping->setData(is_mapping);
 }
