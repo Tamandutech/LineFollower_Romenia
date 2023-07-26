@@ -14,6 +14,7 @@ dataStatus::dataStatus(std::string name)
     encreading = new DataAbstract<bool>("encreading", name, 0);
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
+    RobotCenter = new DataAbstract<uint8_t>("RobotCenter", name, CAR_CENTERED);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
     HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, false);
     RealTrackStatus = new DataAbstract<uint8_t>("RealTrackStatus", name, 0);

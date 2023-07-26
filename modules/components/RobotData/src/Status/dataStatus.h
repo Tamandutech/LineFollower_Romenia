@@ -23,7 +23,8 @@ public:
     DataAbstract<bool> *encreading; //Atributo que indica se o robô está lendo o mapeamento (TRUE se sim)
 
     DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)]
-    DataAbstract<bool> *WithBrushless;
+    DataAbstract<bool> *WithBrushless; // Se o brushless vai ser ligado ou não
+    DataAbstract<uint8_t> *RobotCenter; // Se o robô está centralizado e, se não, para que lado da linha o centro está
 
     DataAbstract<bool> *TunningMode;
     DataAbstract<bool> *HardDeleteMap;

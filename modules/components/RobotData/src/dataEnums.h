@@ -16,6 +16,13 @@ enum CarSensor
     CAR_SENSOR_FRONT,
 };
 
+enum CarMassCenter
+{
+    CAR_CENTERED,
+    CAR_TO_THE_RIGHT,
+    CAR_TO_THE_LEFT,
+};
+
 enum DataFunction
 {
     RETORNO_OK,

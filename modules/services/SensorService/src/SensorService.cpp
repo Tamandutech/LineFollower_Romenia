@@ -104,16 +104,16 @@ void SensorService::SaveAngle(float new_angle)
     AngleArray[0] = new_angle;
 }
 
-void SensorService::ReadArray(QTRSensors Array, dataSensor *get_Array)
+void SensorService::ReadArray(QTRSensors *array, dataSensor *get_array)
 {
     // Arrays para armazenar leitura bruta dos sensores laterais
-    uint16_t SChannels[Array.getSensorCount()];
+    uint16_t SChannels[array->getSensorCount()];
 
-    Array.readCalibrated(SChannels); // leitura dos sensores laterais
-    std::vector<uint16_t> SChannelsVec(SChannels, SChannels + Array.getSensorCount()); // vector(array) com os valores dos sensores laterais
+    array->readCalibrated(SChannels); // leitura dos sensores laterais
+    std::vector<uint16_t> SChannelsVec(SChannels, SChannels + array->getSensorCount()); // vector(array) com os valores dos sensores laterais
 
     // armazenando da leitura bruta do sensor lateral no objeto Braia
-    get_Array->setChannels(SChannelsVec);
+    get_array->setChannels(SChannelsVec);
 }
 
 void SensorService::AngleError()
@@ -142,8 +142,31 @@ void SensorService::AngleError()
     SaveAngle(angle_with_center);
 }
 
+void SensorService::processSCenter()
+{
+    ReadArray(&sCenter, get_centerArray);
+
+    uint16_t slesq = get_centerArray->getChannel(0);
+    uint16_t sldir = get_centerArray->getChannel(1);
+
+    if ((slesq < 300) && (sldir < 300)) 
+    {
+        get_Status->RobotCenter->setData(CAR_CENTERED);
+    }
+    else if ((slesq < 300) && (sldir > 600))
+    {
+        get_Status->RobotCenter->setData(CAR_TO_THE_LEFT);
+    }
+    else if ((slesq > 600) && (sldir < 300))
+    {
+        get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
+    }
+}
+
 void SensorService::processSLat()
 {
+    ReadArray(&sLat, get_latArray); // atualizando as leituras, funcao recebe dois ponteiros
+    
     uint16_t slesq = get_latArray->getChannel(0);
     uint16_t sldir = get_latArray->getChannel(1);
     
@@ -160,15 +183,15 @@ void SensorService::processSLat()
         MarksToMean = 1;
     }
 
-    if (nLatReads >= MarksToMean)  //valor definido na dashboard
+    if (nLatReads >= MarksToMean)  //MarksToMean definido na dashboard
     {
         int meanSensDir = (sumSensDir/nLatReads);
         int meanSensEsq = (sumSensEsq/nLatReads);
 
-        if (meanSensEsq < 300 || meanSensDir < 300) // leitura de faixas brancas sensores laterais
-        {
-            if ((meanSensEsq < 300) && (meanSensDir > 600)) // lendo sLat esq. branco e dir. preto
-            {
+        if (meanSensEsq < 300 || meanSensDir < 300)
+        { // leitura de faixas brancas sensores laterais
+            if ((meanSensEsq < 300) && (meanSensDir > 600)) 
+            {// lendo sLat esq. branco e dir. preto
                 if (!(get_Marks->latEsqPass->getData()))
                 {
                     if(get_Status->robotState->getData() != CAR_STOPPED)
@@ -180,8 +203,8 @@ void SensorService::processSLat()
                     get_Marks->latDirPass->setData(false);
                 }
             }
-            else if ((meanSensDir < 300) && (meanSensEsq > 600)) // lendo sldir. branco e sLat esq. preto
-            {
+            else if ((meanSensDir < 300) && (meanSensEsq > 600))
+            { // lendo sldir. branco e sLat esq. preto
                 if (!(get_Marks->latDirPass->getData()))
                 {
                     if(get_Status->robotState->getData() != CAR_STOPPED)
@@ -194,9 +217,8 @@ void SensorService::processSLat()
                 }
             }
 
-            else if ((meanSensEsq < 300) && (meanSensDir < 300)) // quando ler ambos brancos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
-            {
-                
+            else if ((meanSensEsq < 300) && (meanSensDir < 300)) 
+            {// quando ler ambos brancos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
                 get_Marks->latDirPass->setData(true);
                 get_Marks->latEsqPass->setData(true);
             }

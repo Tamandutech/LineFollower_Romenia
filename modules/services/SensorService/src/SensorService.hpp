@@ -65,8 +65,10 @@ private:
 
     void auto_calibrate();
     void SaveAngle(float new_angle);
-    void ReadArray(QTRSensors Array, dataSensor *get_Array);
+    void ReadArray(QTRSensors *array, dataSensor *get_array);
+    void ReadCenterArray();
     void processSLat();
+    void processSCenter();
 };
 
 #endif
