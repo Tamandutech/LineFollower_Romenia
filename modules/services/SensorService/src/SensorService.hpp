@@ -27,6 +27,7 @@ public:
 
     void Run() override;
     void AngleError();
+    void ReadLat();
 
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
 
@@ -36,6 +37,8 @@ private:
     Robot *robot;
     dataMotor *get_Vel;
     dataSpec *get_Spec;
+    dataSLatMarks *get_Marks;
+    // Atalhos de servico
     MotorService *control_motor;
     RPMService *rpm;
     

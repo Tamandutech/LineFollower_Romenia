@@ -1,5 +1,3 @@
-
-
 #include "esp_log.h"
 #include "QTRSensors.h"
 #include "RobotData.h"

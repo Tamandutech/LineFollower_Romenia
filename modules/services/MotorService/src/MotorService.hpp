@@ -24,8 +24,7 @@ using namespace cpp_freertos;
 #define USB_SERIAL_BAUD         115200
 #define USB_Serial              Serial
 
-DShotRMT esc_dir((gpio_num_t)brushless_dir, RMT_CHANNEL_0); // inicializacao do objeto para o brushless
-DShotRMT esc_esq((gpio_num_t)brushless_esq, RMT_CHANNEL_0);
+
 
 class MotorService : public Thread, public Singleton<MotorService>
 {
@@ -42,6 +41,9 @@ public:
 private:
 
     std::string tag;
+
+    DShotRMT brush_dir = DShotRMT((gpio_num_t)brushless_dir, (rmt_channel_t)RMT_CHANNEL_0); // inicializacao do objeto para o brushless
+    DShotRMT brush_esq = DShotRMT((gpio_num_t)brushless_esq, (rmt_channel_t)RMT_CHANNEL_0);
     
     // Bibliotecas para controlar os motores:
     void AnalogWrite(ledc_channel_t channel, int pwm);

@@ -20,6 +20,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
     bool on_Line = false; // se falso até o final, os sensores estão todos fora da linha
     uint32_t avg = 0;
     uint16_t sum = 0;
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     for(int i=0; i < quant; i++)
     {
@@ -34,6 +35,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
             avg += (uint32_t)sensor_value*(i*1000); // soma ponderada de cada leitura
             sum += sensor_value; // soma total das leituras
         }
+        vTaskDelayUntil(&xLastWakeTime, 1 / portTICK_PERIOD_MS);
     }
     
     if (!on_Line) // Se o robo esta fora da linha, retorna a direcao da ultima leitura

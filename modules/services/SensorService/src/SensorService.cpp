@@ -6,6 +6,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->robot = Robot::getInstance();
     this->get_Vel = robot->getMotorData();
     this->get_Spec = robot->getSpecification();
+    this->get_Marks = robot->getSLatMarks();
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->rpm = RPMService::getInstance();
@@ -27,9 +28,9 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     sLat.setSamplesPerSensor(5);
 
     //Inicializacao dos sensores do corpo
-    sLat.setTypeAnalogESP();
-    sLat.setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s_c_esq, (adc1_channel_t)s_c_dir}, 2);
-    sLat.setSamplesPerSensor(5);
+    sCenter.setTypeAnalogESP();
+    sCenter.setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s_c_esq, (adc1_channel_t)s_c_dir}, 2);
+    sCenter.setSamplesPerSensor(5);
 
     // Setando todas as leituras anteriores como 0 (centralizado na reta)
     for(int i=0; i < sQuantReading; i++)
@@ -49,16 +50,15 @@ void SensorService::Run()
 }
 
 void SensorService::auto_calibrate()
-{
+{// Calibracao automatica
     
     MPR_Mot = get_Spec->MPR->getData();
-    // Calibracao automatica, em desenvolvimento
-    
 
     // Zera contagem dos encoders
     rpm->ResetCount();
 
-    // Calibração dos sensores frontais
+    // Calibração dos sensores frontais -> mux == 0
+    // Calibracao dos sensores laterais -> mux == 1
     for(int mux=0; mux < 2; mux++)
     {
         for(int voltas=1; voltas <= 4; voltas++)
@@ -94,11 +94,21 @@ void SensorService::auto_calibrate()
 }
 
 void SensorService::SaveAngle(float new_angle)
-{
+{// Salva a leitura do sensor em um vetor
     for(int i=(sQuantReading-1); i > 0; i++){
         AngleArray[i] = AngleArray[i-1];
     }
     AngleArray[0] = new_angle;
+}
+
+void SensorService::ReadLat()
+{
+    // Arrays para armazenar leitura bruta dos sensores laterais
+    uint16_t SLatchannels[sLat.getSensorCount()];
+
+    sLat.readCalibrated(SLatchannels); // leitura dos sensores laterais
+    std::vector<uint16_t> SLatchannelsVec(SLatchannels, SLatchannels + sLat.getSensorCount()); // vector(array) com os valores dos sensores laterais
+
 }
 
 void SensorService::AngleError()

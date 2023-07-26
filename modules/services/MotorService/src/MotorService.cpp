@@ -15,8 +15,8 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     InitPWM((gpio_num_t)pwmB, PWM_B_PIN);
 
     // Brushless:
-    esc_dir.begin(DSHOT_MODE);
-    esc_esq.begin(DSHOT_MODE);
+    brush_dir.begin(DSHOT_MODE);
+    brush_esq.begin(DSHOT_MODE);
 }
 
 void MotorService::Run()
@@ -83,14 +83,14 @@ void MotorService::WalkStraight(float vel, bool frente){
 
 void MotorService::StartBrushless()
 {
-    rampThrottle(esc_dir, MIN_THROTTLE, MAX_THROTTLE, 20);
-    rampThrottle(esc_esq, MIN_THROTTLE, MAX_THROTTLE, 20);
+    rampThrottle(brush_dir, MIN_THROTTLE, MAX_THROTTLE, 20);
+    rampThrottle(brush_esq, MIN_THROTTLE, MAX_THROTTLE, 20);
 }
 
 void MotorService::StopBrushless()
 {
-    rampThrottle(esc_dir, MAX_THROTTLE, 0, -20);
-    rampThrottle(esc_esq, MAX_THROTTLE, 0, -20);
+    rampThrottle(brush_dir, MAX_THROTTLE, 0, -20);
+    rampThrottle(brush_esq, MAX_THROTTLE, 0, -20);
 }
 
 void MotorService::rampThrottle(DShotRMT esc, int start, int stop, int step)
