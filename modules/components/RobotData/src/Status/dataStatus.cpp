@@ -13,6 +13,7 @@ dataStatus::dataStatus(std::string name)
     robotIsMapping = new DataAbstract<bool>("robotIsMapping", name, 0);
     encreading = new DataAbstract<bool>("encreading", name, 0);
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
+    WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
     HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, false);
     RealTrackStatus = new DataAbstract<uint8_t>("RealTrackStatus", name, 0);

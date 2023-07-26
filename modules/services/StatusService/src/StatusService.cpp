@@ -220,8 +220,7 @@ void StatusService::Run()
 
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
-                        CarState trackType = (CarState)latMarks->marks->getData(mark+1).MapStatus;
-                        TrackState trackLen = (TrackState)latMarks->marks->getData(mark+1).MapTrackStatus;
+                        loadTrackMapped(mark+1);
                         status->RealTrackStatus->setData(trackLen);
                         bool transition = false;
 
@@ -237,14 +236,12 @@ void StatusService::Run()
                             if((Manualmedia + offset) < ManualmediaNxt && (mediaEncActual - initialmediaEnc) < (Manualmedia + offset)) 
                             {
                                 transition = true;
-                                trackType = (CarState)latMarks->marks->getData(mark).MapStatus;
-                                trackLen = (TrackState)latMarks->marks->getData(mark).MapTrackStatus;
+                                loadTrackMapped(mark);
                             }
                             else if((Manualmedia + offset) >= ManualmediaNxt) 
                             {
                                 transition = true;
-                                trackType = (CarState)latMarks->marks->getData(mark).MapStatus;
-                                trackLen = (TrackState)latMarks->marks->getData(mark).MapTrackStatus;
+                                loadTrackMapped(mark);
                             }
                         }
                         if(mark + 2 < numMarks)
@@ -258,14 +255,12 @@ void StatusService::Run()
                                 if((ManualmediaNxt + offsetnxt) > Manualmedia && (mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt)) 
                                 {
                                     transition = true;
-                                    trackType = (CarState)latMarks->marks->getData(mark+2).MapStatus;
-                                    trackLen = (TrackState)latMarks->marks->getData(mark+2).MapTrackStatus;
+                                    loadTrackMapped(mark+2);
                                 }
                                 else if((ManualmediaNxt + offsetnxt) <= Manualmedia) 
                                 {
                                     transition = true;
-                                    trackType = (CarState)latMarks->marks->getData(mark+2).MapStatus;
-                                    trackLen = (TrackState)latMarks->marks->getData(mark+2).MapTrackStatus;
+                                    loadTrackMapped(mark+2);
                                 }
                             }
                         }
@@ -284,7 +279,13 @@ void StatusService::Run()
 }
 
 void StatusService::mappingStatus(bool is_reading, bool is_mapping)
-{
+{// Muda as variáveis de estado ligadas ao mapeamento.
     status->encreading->setData(is_reading);
     status->robotIsMapping->setData(is_mapping);
+}
+
+void StatusService::loadTrackMapped(int section)
+{// Carrega as variaveis de um trecho da pista, salvas no mapeamento.
+    trackType = (CarState)latMarks->marks->getData(section).MapStatus;
+    trackLen = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
 }

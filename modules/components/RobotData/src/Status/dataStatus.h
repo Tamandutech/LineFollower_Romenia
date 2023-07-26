@@ -22,7 +22,9 @@ public:
 
     DataAbstract<bool> *encreading; //Atributo que indica se o robô está lendo o mapeamento (TRUE se sim)
 
-    DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)
+    DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)]
+    DataAbstract<bool> *WithBrushless;
+
     DataAbstract<bool> *TunningMode;
     DataAbstract<bool> *HardDeleteMap;
     DataAbstract<uint8_t> *RealTrackStatus; // status real do trecho da pista em que o robô se encontra

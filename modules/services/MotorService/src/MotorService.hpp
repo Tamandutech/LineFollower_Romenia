@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
 #include "QTRSensors.h"
+#include "DShotRMT.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "RobotData.h"
@@ -17,6 +18,14 @@ using namespace cpp_freertos;
 #define PWM_B_PIN               LEDC_CHANNEL_1 // Canal do LEDC utilizado
 #define LEDC_DUTY_RES           LEDC_TIMER_8_BIT // Resolução do PWM
 #define LEDC_FREQUENCY          5000 // Frequência em Hertz do sinal PWM
+#define MIN_THROTTLE            48
+#define MAX_THROTTLE            999
+#define DSHOT_MODE              DSHOT600
+#define USB_SERIAL_BAUD         115200
+#define USB_Serial              Serial
+
+DShotRMT esc_dir((gpio_num_t)brushless_dir, RMT_CHANNEL_0); // inicializacao do objeto para o brushless
+DShotRMT esc_esq((gpio_num_t)brushless_esq, RMT_CHANNEL_0);
 
 class MotorService : public Thread, public Singleton<MotorService>
 {
@@ -26,6 +35,8 @@ public:
     void Run() override;
     void ControlMotors(float left, float right);
     void WalkStraight(float vel, bool frente);
+    void StartBrushless();
+    void StopBrushless();
     void StopMotors();
 
 private:
@@ -35,6 +46,7 @@ private:
     // Bibliotecas para controlar os motores:
     void AnalogWrite(ledc_channel_t channel, int pwm);
     void InitPWM(gpio_num_t pin, ledc_channel_t channel);
+    void rampThrottle(DShotRMT esc, int start, int stop, int step);
 };
 
 #endif

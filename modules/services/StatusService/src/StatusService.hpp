@@ -57,9 +57,13 @@ private:
     int32_t pulsesAfterCurve = 200;
     bool firstmark = false;
 
+    CarState trackType;
+    TrackState trackLen;
+
 
     static void IRAM_ATTR gpio_isr_handler(void *arg);
     void mappingStatus(bool is_reading, bool is_mapping);
+    void loadTrackMapped(int section);
 };
 
 #endif

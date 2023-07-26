@@ -3,6 +3,7 @@
 MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
 {
     tag = name;
+    // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
     gpio_set_direction((gpio_num_t)in_dir1, GPIO_MODE_OUTPUT);
     gpio_set_direction((gpio_num_t)in_dir2, GPIO_MODE_OUTPUT);
@@ -12,6 +13,10 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     gpio_set_level((gpio_num_t)stby, 1);
     InitPWM((gpio_num_t)pwmA, PWM_A_PIN);
     InitPWM((gpio_num_t)pwmB, PWM_B_PIN);
+
+    // Brushless:
+    esc_dir.begin(DSHOT_MODE);
+    esc_esq.begin(DSHOT_MODE);
 }
 
 void MotorService::Run()
@@ -74,6 +79,31 @@ void MotorService::WalkStraight(float vel, bool frente){
     gpio_set_level((gpio_num_t)in_esq2, frente);
     AnalogWrite(PWM_B_PIN, vel);
 
+}
+
+void MotorService::StartBrushless()
+{
+    rampThrottle(esc_dir, MIN_THROTTLE, MAX_THROTTLE, 20);
+    rampThrottle(esc_esq, MIN_THROTTLE, MAX_THROTTLE, 20);
+}
+
+void MotorService::StopBrushless()
+{
+    rampThrottle(esc_dir, MAX_THROTTLE, 0, -20);
+    rampThrottle(esc_esq, MAX_THROTTLE, 0, -20);
+}
+
+void MotorService::rampThrottle(DShotRMT esc, int start, int stop, int step)
+{
+    if (step == 0)
+        return;
+
+    for (int i = start; step > 0 ? i < stop : i > stop; i += step)
+    {
+        esc.sendThrottleValue(i);
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
+    esc.sendThrottleValue(stop);
 }
 
 void MotorService::AnalogWrite(ledc_channel_t channel, int pwm){

@@ -30,7 +30,11 @@ const int sPins[4] = {0, 0, 0, 0}; // array dos pinos digitais ligados ao MUX
 #define in_esq2 0
 
 #define stby 0
- 
+
+// Brushless
+
+#define brushless_dir 0
+#define brushless_esq 0
 
 //encoder
 
