@@ -27,7 +27,6 @@ public:
 
     void Run() override;
     void AngleError();
-    void ReadLat();
 
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
 
@@ -37,7 +36,10 @@ private:
     Robot *robot;
     dataMotor *get_Vel;
     dataSpec *get_Spec;
+    dataStatus *get_Status;
     dataSLatMarks *get_Marks;
+    dataSensor *get_latArray;
+    dataSensor *get_centerArray;
     // Atalhos de servico
     MotorService *control_motor;
     RPMService *rpm;
@@ -56,9 +58,15 @@ private:
 
     // Variaveis
     int tempo_cal = 7000; // tempo de calibracao, passar para RobotData
+    int sumSensEsq = 0;
+    int sumSensDir = 0;
+    int MarksToMean = 0;
+    int nLatReads = 0;
 
     void auto_calibrate();
     void SaveAngle(float new_angle);
+    void ReadArray(QTRSensors Array, dataSensor *get_Array);
+    void processSLat();
 };
 
 #endif

@@ -16,6 +16,15 @@ enum CarSensor
     CAR_SENSOR_FRONT,
 };
 
+enum DataFunction
+{
+    RETORNO_OK,
+    RETORNO_ERRO,
+    RETORNO_ERRO_GENERICO,
+    RETORNO_ARGUMENTO_INVALIDO,
+    RETORNO_VARIAVEL_OCUPADA
+};
+
 enum TrackState
 {
     LONG_LINE,

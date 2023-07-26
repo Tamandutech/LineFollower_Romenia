@@ -14,7 +14,8 @@
 #include "dataSpec.h"
 #include "dataPID.h"
 #include "dataStatus.h"
-#include "SLatMarks/dataSLatMarks.h"
+#include "dataSLatMarks.h"
+#include "dataSensor.h"
 
 #include "esp_log.h"
 
@@ -43,6 +44,8 @@ public:
     dataPID *getPID();
     dataStatus *getStatus();
     dataSLatMarks *getSLatMarks();
+    dataSensor *getLatSensors();
+    dataSensor *getCenterSensors();
 
     std::string GetName();
 
@@ -57,6 +60,8 @@ private:
     dataPID *PID;
     dataStatus *RobotStatus;
     dataSLatMarks *sLatMarks;
+    dataSensor *LatSensors;
+    dataSensor *CenterSensors;
 
     Robot(std::string name);
 };

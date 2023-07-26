@@ -50,3 +50,13 @@ dataSLatMarks *Robot::getSLatMarks()
 {
     return this->sLatMarks;
 }
+
+dataSensor *Robot::getLatSensors()
+{
+    return this->LatSensors;
+}
+
+dataSensor *Robot::getCenterSensors()
+{
+    return this->CenterSensors;
+}
