@@ -66,9 +66,9 @@ private:
     void auto_calibrate();
     void SaveAngle(float new_angle);
     void ReadArray(QTRSensors *array, dataSensor *get_array);
-    void ReadCenterArray();
     void processSLat();
     void processSCenter();
+    void latState(bool rightPass, bool leftPass);
 };
 
 #endif

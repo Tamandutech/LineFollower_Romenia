@@ -6,7 +6,6 @@
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
 // Bibliotecas de componentes/dados
-#include "QTRSensors.h"
 #include "DShotRMT.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"

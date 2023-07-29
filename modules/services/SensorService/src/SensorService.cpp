@@ -161,6 +161,10 @@ void SensorService::processSCenter()
     {
         get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
     }
+    else if((slesq > 600) && (sldir > 600) && !(get_Status->RobotCenter->getData() == CAR_CENTERED))
+    {
+
+    }
 }
 
 void SensorService::processSLat()
@@ -185,8 +189,8 @@ void SensorService::processSLat()
 
     if (nLatReads >= MarksToMean)  //MarksToMean definido na dashboard
     {
-        int meanSensDir = (sumSensDir/nLatReads);
-        int meanSensEsq = (sumSensEsq/nLatReads);
+        int meanSensDir = (sumSensDir/nLatReads); // leitura média do sensor direito
+        int meanSensEsq = (sumSensEsq/nLatReads); // leitura média do sensor esquerdo
 
         if (meanSensEsq < 300 || meanSensDir < 300)
         { // leitura de faixas brancas sensores laterais
@@ -198,9 +202,7 @@ void SensorService::processSLat()
                     {
                         get_Marks->leftPassedInc();
                     }
-
-                    get_Marks->latEsqPass->setData(true);
-                    get_Marks->latDirPass->setData(false);
+                    latState(false, true);
                 }
             }
             else if ((meanSensDir < 300) && (meanSensEsq > 600))
@@ -212,24 +214,27 @@ void SensorService::processSLat()
                         get_Marks->rightPassedInc();
 
                     }
-                    get_Marks->latDirPass->setData(true);
-                    get_Marks->latEsqPass->setData(false);
+                    latState(true, false);
                 }
             }
 
             else if ((meanSensEsq < 300) && (meanSensDir < 300)) 
             {// quando ler ambos brancos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
-                get_Marks->latDirPass->setData(true);
-                get_Marks->latEsqPass->setData(true);
+                latState(true, true);
             }
         }
         else
         {
-            get_Marks->latDirPass->setData(false);
-            get_Marks->latEsqPass->setData(false);
+            latState(false, false);
         }
         nLatReads = 0;
         sumSensDir = 0;
         sumSensEsq = 0;
     }
+}
+
+void SensorService::latState(bool rightPass, bool leftPass)
+{
+    get_Marks->latDirPass->setData(rightPass);
+    get_Marks->latEsqPass->setData(leftPass);
 }
