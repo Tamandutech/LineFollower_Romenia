@@ -21,7 +21,7 @@
 class dataSpec
 {
 public:
-    dataSpec(std::string name = "dataSpeed",bool PID_Select = false);
+    dataSpec(std::string name = "dataSpec",bool PID_Select = false);
 
     // Cor da linha
     DataAbstract<bool> *WhiteLine;

@@ -13,7 +13,7 @@
 class dataStatus
 {
 public:
-    dataStatus(std::string name = "dataVel");
+    dataStatus(std::string name = "dataStatus");
 
     DataAbstract<uint8_t> *robotState; // Armazena o estado geral do robô.
     DataAbstract<uint8_t> *TrackStatus; // status (velocidade) do trecho da pista em que o robô se encontra

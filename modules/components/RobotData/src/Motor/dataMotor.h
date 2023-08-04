@@ -13,7 +13,7 @@
 class dataMotor
 {
 public:
-    dataMotor(std::string name = "dataVel");
+    dataMotor(std::string name = "dataMotor");
 
     DataAbstract<float> *Setpoint(TrackState state);
 

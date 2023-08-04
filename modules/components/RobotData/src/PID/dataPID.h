@@ -14,7 +14,7 @@
 class dataPID
 {
 public:
-    dataPID(std::string name = "dataVel");
+    dataPID(std::string name = "dataPID");
 
     // Constantes do PID definidas pelo trecho da pista
     DataAbstract<float> *Kp(TrackState state);

@@ -4,12 +4,6 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
-    this->get_Vel = robot->getMotorData();
-    this->get_Spec = robot->getSpecification();
-    this->get_Status = robot->getStatus();
-    this->get_Marks = robot->getSLatMarks();
-    this->get_latArray = robot->getLatSensors();
-    this->get_centerArray = robot->getCenterSensors();
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
@@ -22,6 +16,10 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 	conf.master.clk_speed = 400000;
 	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
 	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+
+	imu.begin();
+	imu.Enable_X();
+	imu.Enable_G();
 }
 
 void IMUService::Run()
@@ -31,21 +29,10 @@ void IMUService::Run()
     
 }
 
-void IMUService::updateLSM6DS3() {
-    float ax=0.0, ay=0.0, az=0.0;
-	if (imu.accelerationAvailable()) {
-		imu.readAcceleration(ax, ay, az);
-	}
-	float gx=0.0, gy=0.0, gz=0.0;
-	if (imu.gyroscopeAvailable()) {
-		imu.readGyroscope(gx, gy, gz);
-	}
-	ESP_LOGD(GetName().c_str(), "acel=%f %f %f gyro=%f %f %f", ax, ay, az, gx, gy, gz);
+void IMUService::updateLSM6DS3() 
+{// Le os valores atuais da IMU
+	imu.Get_X_Axes(acc);  
+	imu.Get_G_Axes(gyr);
 
-	accX = ax;
-	accY = ay;
-	accZ = az;
-	gyroX = gx;
-	gyroY = gy;
-	gyroZ = gz;
+	ESP_LOGD(GetName().c_str(), "acel=%f %f %f gyro=%f %f %f", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
 }

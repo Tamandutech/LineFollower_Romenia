@@ -23,7 +23,7 @@
 class dataSLatMarks
 {
 public:
-    dataSLatMarks(std::string name = "dataSensor");
+    dataSLatMarks(std::string name = "dataSLatMarks");
 
     // Estado do sensor da lateral esquerda
     DataAbstract<bool> *latEsqPass;

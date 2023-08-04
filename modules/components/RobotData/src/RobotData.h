@@ -44,8 +44,8 @@ public:
     dataPID *getPID();
     dataStatus *getStatus();
     dataSLatMarks *getSLatMarks();
-    dataSensor *getLatSensors();
-    dataSensor *getCenterSensors();
+    dataSensor *getFotoSensors(CarSensor which_sensor);
+    dataSensor *getFromIMU(CarIMU acc_or_gyr);
 
     std::string GetName();
 
@@ -62,6 +62,9 @@ private:
     dataSLatMarks *sLatMarks;
     dataSensor *LatSensors;
     dataSensor *CenterSensors;
+    dataSensor *FrontSensors;
+    dataSensor *IMUacc;
+    dataSensor *IMUgyr;
 
     Robot(std::string name);
 };

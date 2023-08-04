@@ -51,12 +51,30 @@ dataSLatMarks *Robot::getSLatMarks()
     return this->sLatMarks;
 }
 
-dataSensor *Robot::getLatSensors()
+dataSensor *Robot::getFotoSensors(CarSensor which_sensor)
 {
-    return this->LatSensors;
+    if(which_sensor == CAR_SENSOR_CENTER)
+    {
+        return this->CenterSensors;
+    }
+    else if(which_sensor == CAR_SENSOR_SIDE)
+    {
+        return this->LatSensors;
+    }
+    else
+    {
+        return this->FrontSensors;
+    }
 }
 
-dataSensor *Robot::getCenterSensors()
+dataSensor *Robot::getFromIMU(CarIMU acc_or_gyr)
 {
-    return this->CenterSensors;
+    if(acc_or_gyr == ACCELERATION)
+    {
+        return this->IMUacc;
+    }
+    else
+    {
+        return this->IMUgyr;
+    }
 }
