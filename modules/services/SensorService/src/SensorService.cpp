@@ -8,8 +8,8 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->get_Spec = robot->getSpecification();
     this->get_Status = robot->getStatus();
     this->get_Marks = robot->getSLatMarks();
-    this->get_latArray = robot->getLatSensors();
-    this->get_centerArray = robot->getCenterSensors();
+    this->get_latArray = robot->getFotoSensors(SENSOR_SIDE);
+    this->get_centerArray = robot->getFotoSensors(SENSOR_CENTER);
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->rpm = RPMService::getInstance();
@@ -102,15 +102,16 @@ void SensorService::SaveAngle(float new_angle)
         AngleArray[i] = AngleArray[i-1];
     }
     AngleArray[0] = new_angle;
+    std::vector<float> SChannelsVec(AngleArray, AngleArray + sQuantReading);
 }
 
-void SensorService::ReadArray(QTRSensors *array, dataSensor *get_array)
+void SensorService::ReadArray(QTRSensors *array, dataUint16 *get_array)
 {
     // Arrays para armazenar leitura bruta dos sensores laterais
     uint16_t SChannels[array->getSensorCount()];
 
     array->readCalibrated(SChannels); // leitura dos sensores laterais
-    std::vector<uint16_t> SChannelsVec(SChannels, SChannels + array->getSensorCount()); // vector(array) com os valores dos sensores laterais
+    std::vector<uint16_t> SChannelsVec(SChannels, SChannels + array->getSensorCount()); // construtor de vector(array) com os valores dos sensores laterais
 
     // armazenando da leitura bruta do sensor lateral no objeto Braia
     get_array->setChannels(SChannelsVec);

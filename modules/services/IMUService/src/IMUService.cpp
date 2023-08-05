@@ -4,6 +4,8 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
+	this->get_arrayAcc = robot->getFromIMU(ACCELERATION);
+	this->get_arrayGyr = robot->getFromIMU(GYROSCOPE);
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
@@ -31,8 +33,15 @@ void IMUService::Run()
 
 void IMUService::updateLSM6DS3() 
 {// Le os valores atuais da IMU
-	imu.Get_X_Axes(acc);  
+	imu.Get_X_Axes(acc);
 	imu.Get_G_Axes(gyr);
 
-	ESP_LOGD(GetName().c_str(), "acel=%f %f %f gyro=%f %f %f", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
+	//ESP_LOGD(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
+}
+
+void IMUService::saveData()
+{
+	std::vector<int32_t> SChannelsAcc(acc, acc + 3); // construtor do vetor exatamente igual a acc
+	std::vector<int32_t> SChannelsGyr(gyr, gyr + 3);
+
 }

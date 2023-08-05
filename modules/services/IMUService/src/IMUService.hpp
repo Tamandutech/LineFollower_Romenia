@@ -7,7 +7,7 @@
 #include "Injector/singleton.hpp"
 // Bibliotecas de componentes/dados
 #include "I2Cdev.h"
-#include "LSM6DSRSensor.h"
+#include "LSM6DSR.h"
 #include "RobotData.h"
 
 #define I2C_ADDR 0x6A //CONFIG_I2C_ADDRESS, configurar depois
@@ -25,6 +25,8 @@ private:
 
     // Atalhos para facilitar a escrita do código
     Robot *robot;
+    dataUint16 *get_arrayAcc;
+    dataUint16 *get_arrayGyr;
 
     /* IMU Data */
     int32_t acc[3];
@@ -33,6 +35,7 @@ private:
     LSM6DSR imu = LSM6DSR(I2C_ADDR);
 
     void updateLSM6DS3();
+    void saveData();
 };
 
 #endif

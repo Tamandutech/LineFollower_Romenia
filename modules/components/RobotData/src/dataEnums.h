@@ -11,9 +11,9 @@ enum CarState
 
 enum CarSensor
 {
-    CAR_SENSOR_CENTER,
-    CAR_SENSOR_SIDE,
-    CAR_SENSOR_FRONT,
+    SENSOR_CENTER,
+    SENSOR_SIDE,
+    SENSOR_FRONT,
 };
 
 enum CarIMU

@@ -19,6 +19,10 @@ Robot::Robot(std::string name)
     ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
     this->PID = new dataPID("Valores PID");
     ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
+    this->RobotStatus = new dataStatus("Estados RobotStatus");
+    ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
+    this->sLatMarks = new dataSLatMarks("Marcacoes sLatMarks");
+    ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
 }
 
 std::string Robot::GetName()
@@ -51,13 +55,13 @@ dataSLatMarks *Robot::getSLatMarks()
     return this->sLatMarks;
 }
 
-dataSensor *Robot::getFotoSensors(CarSensor which_sensor)
+dataUint16 *Robot::getFotoSensors(CarSensor which_sensor)
 {
-    if(which_sensor == CAR_SENSOR_CENTER)
+    if(which_sensor == SENSOR_CENTER)
     {
         return this->CenterSensors;
     }
-    else if(which_sensor == CAR_SENSOR_SIDE)
+    else if(which_sensor == SENSOR_SIDE)
     {
         return this->LatSensors;
     }
@@ -67,7 +71,7 @@ dataSensor *Robot::getFotoSensors(CarSensor which_sensor)
     }
 }
 
-dataSensor *Robot::getFromIMU(CarIMU acc_or_gyr)
+dataUint16 *Robot::getFromIMU(CarIMU acc_or_gyr)
 {
     if(acc_or_gyr == ACCELERATION)
     {

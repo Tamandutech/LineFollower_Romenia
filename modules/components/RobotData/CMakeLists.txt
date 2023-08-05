@@ -6,7 +6,8 @@ idf_component_register(
         "src/PID/dataPID.cpp" 
         "src/Status/dataStatus.cpp"
         "src/SLatMarks/dataSLatMarks.cpp" 
-        "src/Sensor/dataSensor.cpp" 
+        "src/uint16Vector/dataUint16.cpp" 
+        "src/int32Vector/dataInt32.cpp" 
 
     REQUIRES
         "DataObjects" "MappingService"
@@ -18,5 +19,6 @@ idf_component_register(
         "src/PID"
         "src/Status"
         "src/SLatMarks"
-        "src/Sensor" 
+        "src/uint16Vector" 
+        "src/int32Vector"
 )

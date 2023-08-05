@@ -15,7 +15,8 @@
 #include "dataPID.h"
 #include "dataStatus.h"
 #include "dataSLatMarks.h"
-#include "dataSensor.h"
+#include "uint16Vector/dataUint16.h"
+#include "int32Vector/dataInt32.h"
 
 #include "esp_log.h"
 
@@ -44,8 +45,8 @@ public:
     dataPID *getPID();
     dataStatus *getStatus();
     dataSLatMarks *getSLatMarks();
-    dataSensor *getFotoSensors(CarSensor which_sensor);
-    dataSensor *getFromIMU(CarIMU acc_or_gyr);
+    dataUint16 *getFotoSensors(CarSensor which_sensor);
+    dataUint16 *getFromIMU(CarIMU acc_or_gyr);
 
     std::string GetName();
 
@@ -60,11 +61,13 @@ private:
     dataPID *PID;
     dataStatus *RobotStatus;
     dataSLatMarks *sLatMarks;
-    dataSensor *LatSensors;
-    dataSensor *CenterSensors;
-    dataSensor *FrontSensors;
-    dataSensor *IMUacc;
-    dataSensor *IMUgyr;
+
+    dataUint16 *LatSensors;
+    dataUint16 *CenterSensors;
+    dataUint16 *FrontSensors;
+    
+    dataUint16 *IMUacc;
+    dataUint16 *IMUgyr;
 
     Robot(std::string name);
 };

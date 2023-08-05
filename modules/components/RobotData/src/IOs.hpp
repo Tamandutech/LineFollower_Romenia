@@ -6,7 +6,7 @@
 const int sPins[4] = {0, 0, 0, 0}; // array dos pinos digitais ligados ao MUX
 #define sInput 0 // analog pin ligado ao MUX
 #define sQuant 16 // quantidade de sensores
-#define sQuantReading 16 // QUantidade de ultimas leituras que ficam salvas no robo
+#define sQuantReading 4 // QUantidade de ultimas leituras que ficam salvas no robo
 
 //sensores laterais
 

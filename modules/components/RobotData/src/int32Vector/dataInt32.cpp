@@ -1,6 +1,6 @@
-#include "dataSensor.h"
+#include "dataInt32.h"
 
-dataSensor::dataSensor(uint16_t qtdChannels, std::string name)
+dataInt32::dataInt32(uint16_t qtdChannels, std::string name)
 {
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
@@ -20,7 +20,7 @@ dataSensor::dataSensor(uint16_t qtdChannels, std::string name)
     (xSemaphoreminChannel) = xSemaphoreCreateMutex();
 }
 
-int dataSensor::setLine(uint16_t value)
+int dataInt32::setLine(int32_t value)
 {
     if (xSemaphoreTake(xSemaphoreline, (TickType_t)10) == pdTRUE)
     {
@@ -34,7 +34,7 @@ int dataSensor::setLine(uint16_t value)
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
-uint16_t dataSensor::getLine()
+int32_t dataInt32::getLine()
 {
     int16_t tempLine = 0;
     for (;;)
@@ -52,7 +52,7 @@ uint16_t dataSensor::getLine()
     }
 }
 
-int dataSensor::setChannel(uint16_t channelNumber, uint16_t value, std::vector<uint16_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
+int dataInt32::setChannel(uint16_t channelNumber, int32_t value, std::vector<int32_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
 {
     if (channelNumber > (qtdChannels - 1))
     {
@@ -72,12 +72,12 @@ int dataSensor::setChannel(uint16_t channelNumber, uint16_t value, std::vector<u
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
-int dataSensor::setChannel(uint16_t channelNumber, uint16_t value)
+int dataInt32::setChannel(uint16_t channelNumber, int32_t value)
 {
     return this->setChannel(channelNumber, value, &this->channel, &xSemaphorechannel);
 }
 
-uint16_t dataSensor::getChannel(uint16_t channelNumber, std::vector<uint16_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
+int32_t dataInt32::getChannel(uint16_t channelNumber, std::vector<int32_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
 {
     if (channelNumber > (qtdChannels - 1))
     {
@@ -85,7 +85,7 @@ uint16_t dataSensor::getChannel(uint16_t channelNumber, std::vector<uint16_t> *c
         return RETORNO_ARGUMENTO_INVALIDO;
     }
 
-    uint16_t tempChannel;
+    int32_t tempChannel;
     for (;;)
     {
         if (xSemaphoreTake((*xSemaphoreOfArg), (TickType_t)10) == pdTRUE)
@@ -100,12 +100,12 @@ uint16_t dataSensor::getChannel(uint16_t channelNumber, std::vector<uint16_t> *c
         }
     }
 }
-uint16_t dataSensor::getChannel(uint16_t channelNumber)
+int32_t dataInt32::getChannel(uint16_t channelNumber)
 {
     return this->getChannel(channelNumber, &this->channel, &xSemaphorechannel);
 }
 
-int dataSensor::setChannels(std::vector<uint16_t> values, std::vector<uint16_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
+int dataInt32::setChannels(std::vector<int32_t> values, std::vector<int32_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
 {
     if (xSemaphoreTake((*xSemaphoreOfArg), (TickType_t)10) == pdTRUE)
     {
@@ -119,14 +119,14 @@ int dataSensor::setChannels(std::vector<uint16_t> values, std::vector<uint16_t> 
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
-int dataSensor::setChannels(std::vector<uint16_t> values)
+int dataInt32::setChannels(std::vector<int32_t> values)
 {
     return this->setChannels(values, &this->channel, &xSemaphorechannel);
 }
 
-std::vector<uint16_t> dataSensor::getChannels(std::vector<uint16_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
+std::vector<int32_t> dataInt32::getChannels(std::vector<int32_t> *channel, SemaphoreHandle_t *xSemaphoreOfArg)
 {
-    std::vector<uint16_t> tempChannels;
+    std::vector<int32_t> tempChannels;
     for (;;)
     {
         if (xSemaphoreTake((*xSemaphoreOfArg), (TickType_t)10) == pdTRUE)
@@ -142,43 +142,43 @@ std::vector<uint16_t> dataSensor::getChannels(std::vector<uint16_t> *channel, Se
         return tempChannels;
     }
 }
-std::vector<uint16_t> dataSensor::getChannels()
+std::vector<int32_t> dataInt32::getChannels()
 {
     return this->getChannels(&this->channel, &xSemaphorechannel);
 }
 
-int dataSensor::setChannelMin(uint16_t channelNumber, uint16_t value)
+int dataInt32::setChannelMin(uint16_t channelNumber, int32_t value)
 {
     return this->setChannel(channelNumber, value, &this->minChannel, &xSemaphoreminChannel);
 }
-uint16_t dataSensor::getChannelMin(uint16_t channelNumber)
+int32_t dataInt32::getChannelMin(uint16_t channelNumber)
 {
     return this->getChannel(channelNumber, &this->minChannel, &xSemaphoreminChannel);
 }
 
-int dataSensor::setChannelMax(uint16_t channelNumber, uint16_t value)
+int dataInt32::setChannelMax(uint16_t channelNumber, int32_t value)
 {
     return this->setChannel(channelNumber, value, &this->maxChannel, &xSemaphoremaxChannel);
 }
-uint16_t dataSensor::getChannelMax(uint16_t channelNumber)
+int32_t dataInt32::getChannelMax(uint16_t channelNumber)
 {
     return this->getChannel(channelNumber, &this->maxChannel, &xSemaphoremaxChannel);
 }
 
-int dataSensor::setChannelsMins(std::vector<uint16_t> values)
+int dataInt32::setChannelsMins(std::vector<int32_t> values)
 {
     return this->setChannels(values, &this->minChannel, &xSemaphoreminChannel);
 }
-std::vector<uint16_t> dataSensor::getChannelsMins()
+std::vector<int32_t> dataInt32::getChannelsMins()
 {
     return this->getChannels(&this->minChannel, &xSemaphoreminChannel);
 }
 
-int dataSensor::setChannelsMaxes(std::vector<uint16_t> values)
+int dataInt32::setChannelsMaxes(std::vector<int32_t> values)
 {
     return this->setChannels(values, &this->maxChannel, &xSemaphoremaxChannel);
 }
-std::vector<uint16_t> dataSensor::getChannelsMaxes()
+std::vector<int32_t> dataInt32::getChannelsMaxes()
 {
     return this->getChannels(&this->maxChannel, &xSemaphoremaxChannel);
 }

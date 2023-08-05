@@ -16,10 +16,10 @@
 
 #include "esp_log.h"
 
-class dataSensor
+class dataUint16
 {
 public:
-    dataSensor(uint16_t qtdChannels, std::string name = "dataSensor");
+    dataUint16(uint16_t qtdChannels, std::string name = "dataUint16");
 
     int setLine(uint16_t value);
     uint16_t getLine();

@@ -38,8 +38,8 @@ private:
     dataSpec *get_Spec;
     dataStatus *get_Status;
     dataSLatMarks *get_Marks;
-    dataSensor *get_latArray;
-    dataSensor *get_centerArray;
+    dataUint16 *get_latArray;
+    dataUint16 *get_centerArray;
     // Atalhos de servico
     MotorService *control_motor;
     RPMService *rpm;
@@ -65,7 +65,7 @@ private:
 
     void auto_calibrate();
     void SaveAngle(float new_angle);
-    void ReadArray(QTRSensors *array, dataSensor *get_array);
+    void ReadArray(QTRSensors *array, dataUint16 *get_array);
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);
