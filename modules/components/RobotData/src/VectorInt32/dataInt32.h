@@ -1,5 +1,5 @@
-#ifndef DATA_SENSOR_H 
-#define DATA_SENSOR_H
+#ifndef DATA_INT_SENSOR_H 
+#define DATA_INT_SENSOR_H
 
 #include <stdint.h>
 #include <stddef.h>

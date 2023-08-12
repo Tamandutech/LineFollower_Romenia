@@ -29,6 +29,7 @@ private:
     dataSpec *get_Spec;
     dataPID *get_PID;
     dataStatus *get_Status;
+    dataFloat *get_Angle;
     MotorService *control_motor;
     SensorService *from_sensor;
 

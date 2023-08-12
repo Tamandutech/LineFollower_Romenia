@@ -8,6 +8,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->get_Spec = robot->getSpecification();
     this->get_PID = robot->getPID();
     this->get_Status = robot->getStatus();
+    this->get_Angle = robot->getFrontSensors();
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->from_sensor = SensorService::getInstance();
@@ -37,7 +38,7 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
 void ControlService::ControlePID(){
     CarState state = (CarState) get_Status->robotState->getData();
     TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
-    float erro = from_sensor->AngleArray[0];
+    float erro = get_Angle->getChannel(0);
 
     if(state == CAR_STOPPED){
         control_motor->StopMotors();

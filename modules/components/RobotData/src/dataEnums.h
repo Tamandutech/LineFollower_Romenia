@@ -13,7 +13,6 @@ enum CarSensor
 {
     SENSOR_CENTER,
     SENSOR_SIDE,
-    SENSOR_FRONT,
 };
 
 enum CarIMU

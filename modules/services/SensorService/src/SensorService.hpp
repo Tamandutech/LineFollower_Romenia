@@ -40,6 +40,7 @@ private:
     dataSLatMarks *get_Marks;
     dataUint16 *get_latArray;
     dataUint16 *get_centerArray;
+    dataFloat *get_frontArray;
     // Atalhos de servico
     MotorService *control_motor;
     RPMService *rpm;

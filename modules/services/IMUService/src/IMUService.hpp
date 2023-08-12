@@ -25,8 +25,8 @@ private:
 
     // Atalhos para facilitar a escrita do código
     Robot *robot;
-    dataUint16 *get_arrayAcc;
-    dataUint16 *get_arrayGyr;
+    dataInt32 *get_arrayAcc;
+    dataInt32 *get_arrayGyr;
 
     /* IMU Data */
     int32_t acc[3];
@@ -34,7 +34,7 @@ private:
 
     LSM6DSR imu = LSM6DSR(I2C_ADDR);
 
-    void updateLSM6DS3();
+    void updateIMU();
     void saveData();
 };
 

@@ -10,6 +10,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->get_Marks = robot->getSLatMarks();
     this->get_latArray = robot->getFotoSensors(SENSOR_SIDE);
     this->get_centerArray = robot->getFotoSensors(SENSOR_CENTER);
+    this->get_frontArray = robot->getFrontSensors();
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->rpm = RPMService::getInstance();
@@ -49,7 +50,16 @@ void SensorService::Run()
 {
     ESP_LOGE("Sensor", "Inicio.");
     // Loop do servico
-    
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+
+    // Loop
+    for (;;)
+    {
+        vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
+
+        processSLat();
+        processSCenter();
+    }
 }
 
 void SensorService::auto_calibrate()
@@ -102,7 +112,8 @@ void SensorService::SaveAngle(float new_angle)
         AngleArray[i] = AngleArray[i-1];
     }
     AngleArray[0] = new_angle;
-    std::vector<float> SChannelsVec(AngleArray, AngleArray + sQuantReading);
+    std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
+    get_frontArray->setChannels(SChannelsAngle);
 }
 
 void SensorService::ReadArray(QTRSensors *array, dataUint16 *get_array)
@@ -161,10 +172,6 @@ void SensorService::processSCenter()
     else if ((slesq > 600) && (sldir < 300))
     {
         get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
-    }
-    else if((slesq > 600) && (sldir > 600) && !(get_Status->RobotCenter->getData() == CAR_CENTERED))
-    {
-
     }
 }
 
