@@ -15,6 +15,7 @@
 // Bibliotecas de servicos
 #include "MotorService.hpp"
 #include "RPMService.hpp"
+#include "LEDsService.hpp"
 
 
 
@@ -32,7 +33,7 @@ public:
 
 private:
 
-    // Atalhos para facilitar a escrita do código
+    // Atalhos para o RobotData
     Robot *robot;
     dataMotor *get_Vel;
     dataSpec *get_Spec;
@@ -44,6 +45,7 @@ private:
     // Atalhos de servico
     MotorService *control_motor;
     RPMService *rpm;
+    LEDsService *LED;
     
     // Objetos usados no serviço:
     QTRSensors sArray[sQuant]; // sensores frontais
@@ -70,6 +72,8 @@ private:
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);
+
+    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 };
 
 #endif

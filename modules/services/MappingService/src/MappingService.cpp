@@ -18,7 +18,7 @@ MappingService::MappingService(std::string name, uint32_t stackDepth, UBaseType_
 
 esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t mediaPulsesToStop, uint32_t timeToStop)
 {
-    ESP_LOGD(GetName().c_str(), "Iniciando novo mapeamento.");
+    //ESP_LOGD(GetName().c_str(), "Iniciando novo mapeamento.");
 
     status->robotIsMapping->setData(true);
 
@@ -50,7 +50,7 @@ esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t medi
 
 esp_err_t MappingService::stopNewMapping()
 {
-    ESP_LOGD(GetName().c_str(), "Parando novo mapeamento.");
+    //ESP_LOGD(GetName().c_str(), "Parando novo mapeamento.");
 
     status->stateMutex.lock();
     status->robotState->setData(CAR_STOPPED);
@@ -61,13 +61,18 @@ esp_err_t MappingService::stopNewMapping()
     this->Cleanup();
 
     this->saveMapping();
-    ESP_LOGD(GetName().c_str(), "Parada do novo mapeamento finalizada");
+    //ESP_LOGD(GetName().c_str(), "Parada do novo mapeamento finalizada");
+    
+    // Desligando aa LED:
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
+    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
     return ESP_OK;
 }
 
 esp_err_t MappingService::loadMapping()
 {
-    ESP_LOGD(GetName().c_str(), "Carregando mapeamento da memória.");
+    //ESP_LOGD(GetName().c_str(), "Carregando mapeamento da memória.");
 
     latMarks->marks->loadData();
 
@@ -76,7 +81,7 @@ esp_err_t MappingService::loadMapping()
 
 esp_err_t MappingService::saveMapping()
 {
-    ESP_LOGD(GetName().c_str(), "Salvando mapeamento na memória.");
+    //ESP_LOGD(GetName().c_str(), "Salvando mapeamento na memória.");
 
     latMarks->marks->saveData();
 
@@ -87,7 +92,7 @@ esp_err_t MappingService::createNewMark()
 {
     if (status->robotIsMapping->getData() && status->robotState->getData() != CAR_STOPPED)
     {
-        ESP_LOGD(GetName().c_str(), "Criando nova marcação.");
+        //ESP_LOGD(GetName().c_str(), "Criando nova marcação.");
 
         this->Resume();
         return ESP_OK;
@@ -107,7 +112,7 @@ void MappingService::Run()
 
     latMarks->marks->newData(tempActualMark);
 
-    ESP_LOGD(GetName().c_str(), "Offset iniciais: initialLeftPulses: %d, initialRightPulses: %d, initialMediaPulses: %d, initialTicks: %d", initialLeftPulses, initialRightPulses, initialMediaPulses, initialTicks);
+    //ESP_LOGD(GetName().c_str(), "Offset iniciais: initialLeftPulses: %d, initialRightPulses: %d, initialMediaPulses: %d, initialTicks: %d", initialLeftPulses, initialRightPulses, initialMediaPulses, initialTicks);
 
     for (;;)
     {
@@ -142,13 +147,27 @@ void MappingService::Run()
             else tempActualMark.MapTrackStatus = LONG_CURVE;
         }
         latMarks->marks->newData(tempActualMark);
-        
 
-        ESP_LOGD(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
+        // Mudando a cor das LEDs:
+        LEDposition[0] = LED_POSITION_NONE;
+        LEDposition[1] = LED_POSITION_NONE;
+        if(tempActualMark.MapStatus == CAR_IN_CURVE) 
+        {
+            if(latMarks->latEsqPass->getData()) LEDposition[0] = LED_POSITION_LEFT;
+            else if(latMarks->latDirPass->getData()) LEDposition[0] = LED_POSITION_RIGHT;
+            LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+        }
+        else if(tempActualMark.MapStatus == CAR_IN_LINE)
+        {
+            if(latMarks->latEsqPass->getData()) LEDposition[0] = LED_POSITION_LEFT;
+            else if(latMarks->latDirPass->getData()) LEDposition[0] = LED_POSITION_RIGHT;
+            LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
+        }
+        //ESP_LOGD(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
 
         if ((leftMarksToStop <= latMarks->leftMarks->getData()) || (latMarks->MarkstoStop->getData() <= latMarks->rightMarks->getData()) || (mediaPulsesToStop <= tempActualMark.MapEncMedia) || (ticksToStop <= (tempActualMark.MapTime * portTICK_PERIOD_MS)))
-        {
-            ESP_LOGD(GetName().c_str(), "Mapeamento finalizado.");
+        {// Finalizando o mapeamento
+            //ESP_LOGD(GetName().c_str(), "Mapeamento finalizado.");
 
             this->stopNewMapping();
             break;

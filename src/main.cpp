@@ -1,3 +1,9 @@
+/*
+---------------- BLOCO DE NOTAS ------------------
+ - Ajeitar a inicialização dos serviços na mais
+ - Tirar os // dos ESP_LOGs quando arrumar o VSCode
+*/
+
 // Espressif (ESP-IDF)
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -37,11 +43,11 @@ void app_main()
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("main", ESP_LOG_INFO);
 
-    ESP_LOGD("Main", "Instanciando Robô...");
+    //ESP_LOGD("Main", "Instanciando Robô...");
     robot = Robot::getInstance("TT_LF_ROMENIA");
 
     // Configuracao dos servicos
-    ESP_LOGD("Main", "Configurando Serviços...");
+    //ESP_LOGD("Main", "Configurando Serviços...");
     mappingService = MappingService::getInstance("MappingService", 8192, 8);
     statusService = StatusService::getInstance("StatusService", 10000, 8);
     rpmService = RPMService::getInstance("RPMService", 4096, 9);

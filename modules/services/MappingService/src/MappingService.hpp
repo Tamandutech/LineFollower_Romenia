@@ -9,6 +9,7 @@
 #include "thread.hpp"
 #include "singleton.hpp"
 #include "RobotData.h"
+#include "LEDsService.hpp"
 
 #include "driver/gpio.h"
 
@@ -37,11 +38,16 @@ public:
 private:
     std::string name;
 
+    // Atalhos para o RobotData
     Robot *robot;
     dataMotor *speedMapping;
     dataSLatMarks *latMarks;
     dataStatus *status;
     dataSpec *get_Spec;
+    // Atalhos para serviços
+    LEDsService *LED;
+
+    // Variáveis
 
     struct MapData tempActualMark;
     struct MapData tempPreviousMark;
@@ -63,7 +69,7 @@ private:
     uint32_t tempMilimiterInPulses = 0;
     uint32_t tempDeltaDist = 0;
 
-
+    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 };
 
 #endif

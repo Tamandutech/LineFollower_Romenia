@@ -45,7 +45,7 @@ const int sPins[4] = {0, 0, 0, 0}; // array dos pinos digitais ligados ao MUX
 
 //LED
 
-#define led 0
+#define led_pin 0
 
 // IMU
 

@@ -14,6 +14,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->rpm = RPMService::getInstance();
+    this->LED = LEDsService::getInstance();
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
@@ -48,7 +49,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
 
 void SensorService::Run()
 {
-    ESP_LOGE("Sensor", "Inicio.");
+    //ESP_LOGE("Sensor", "Inicio.");
     // Loop do servico
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -211,6 +212,13 @@ void SensorService::processSLat()
                         get_Marks->leftPassedInc();
                     }
                     latState(false, true);
+                    
+                    // LED esquerda vermelha e direita apagada
+                    LEDposition[0] = LED_POSITION_LEFT;
+                    LEDposition[1] = LED_POSITION_NONE;
+                    LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+                    LEDposition[0] = LED_POSITION_RIGHT;
+                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
             }
             else if ((meanSensDir < 300) && (meanSensEsq > 600))
@@ -223,16 +231,40 @@ void SensorService::processSLat()
 
                     }
                     latState(true, false);
+
+                    // LED esquerda apagada e direita vermelha
+                    LEDposition[0] = LED_POSITION_RIGHT;
+                    LEDposition[1] = LED_POSITION_NONE;
+                    LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+                    LEDposition[0] = LED_POSITION_LEFT;
+                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
             }
 
             else if ((meanSensEsq < 300) && (meanSensDir < 300)) 
             {// quando ler ambos brancos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
+                if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 
+                    || (get_Marks->latEsqPass->getData() && !get_Marks->latDirPass->getData()))
+                {
+                    // Desligando as LEDs esquerda e direita
+                    LEDposition[1] = LED_POSITION_RIGHT;
+                    LEDposition[0] = LED_POSITION_LEFT;
+                    LEDposition[2] = LED_POSITION_NONE;
+                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+                }
                 latState(true, true);
             }
         }
         else
         {
+            if (get_Marks->latDirPass->getData() || get_Marks->latEsqPass->getData())
+            {
+                 // Desligando as LEDs esquerda e direita
+                LEDposition[1] = LED_POSITION_RIGHT;
+                LEDposition[0] = LED_POSITION_LEFT;
+                LEDposition[2] = LED_POSITION_NONE;
+                LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+            }
             latState(false, false);
         }
         nLatReads = 0;

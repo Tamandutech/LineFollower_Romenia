@@ -26,6 +26,7 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->PID = robot->getPID();
     // Atalhos para servicos:
     mappingService = MappingService::getInstance();
+    this->LED = LEDsService::getInstance();
 
     if(!status->TunningMode->getData()) // Se o robo nao estiver em modo de teste
     {
@@ -79,15 +80,20 @@ void StatusService::Run()
 
     // int iloop = 0;
 
-    ESP_LOGD(GetName().c_str(), "Aguardando pressionamento do botão.");
+    //ESP_LOGD(GetName().c_str(), "Aguardando pressionamento do botão.");
 
     uint8_t num;
     do
     {// Aguarda o precionar do botao
         xQueueReceive(gpio_evt_queue, &num, portMAX_DELAY);
-        ESP_LOGD(GetName().c_str(), "Aguardando inicialização");
+        //ESP_LOGD(GetName().c_str(), "Aguardando inicialização");
         if(status->robotState->getData() != CAR_STOPPED) break;
     } while (num != CAR_IN_LINE);
+
+    // Acendendo a luz vermelha na LED da frente:
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
+    LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
 
 
     vTaskDelay(1500 / portTICK_PERIOD_MS);
@@ -96,16 +102,23 @@ void StatusService::Run()
     {
         DataStorage::getInstance()->delete_data("sLatMarks.marks");
         mappingStatus(false, true); // (bool is_reading, bool is_mapping)
-        ESP_LOGD(GetName().c_str(), "Mapeamento Deletado");
+        //ESP_LOGD(GetName().c_str(), "Mapeamento Deletado");
+
+        // Mudando a led frontal para amarelo:
+        LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
     }
-    ESP_LOGD(GetName().c_str(), "Iniciando delay de 1500ms");
+    //ESP_LOGD(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(1500 / portTICK_PERIOD_MS);
 
     if(!status->TunningMode->getData())
     { // Se nao estiver em modo de teste
         if(status->robotIsMapping->getData())
         { // Se nao houver mapeamento salvo
-            ESP_LOGD(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+            //ESP_LOGD(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+            
+            // Mudando a led frontal para amarelo:
+            LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
+
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             // Começa mapeamento
             status->RealTrackStatus->setData(UNDEFINED);
@@ -130,7 +143,10 @@ void StatusService::Run()
         mappingStatus(false, false); // (bool is_reading, bool is_mapping)
         latMarks->marks->clearAllData();
         numMarks = 0;
-        mediaEncFinal = 0; 
+        mediaEncFinal = 0;
+        
+        // Muda a LED frontal para branco com brilho 50%
+        LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 0.5);
     }
     status->FirstMark->setData(false); // Indica que nao passou pela primeira marcaçao
     // Loop
@@ -149,6 +165,9 @@ void StatusService::Run()
             status->robotState->setData(CAR_TUNING);
             status->TrackStatus->setData(TUNNING);
             status->RealTrackStatus->setData(TUNNING);
+            
+            // LED frontal branca com brilho 50%
+            LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 0.5);
         }
         if(latMarks->rightMarks->getData() >= 1 && !firstmark)
         {// Se passar pela linha de largada e nao tiver essa informacao salva
@@ -156,19 +175,70 @@ void StatusService::Run()
             status->FirstMark->setData(true);
             initialmediaEnc = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2;
         }
-
         if (lastMappingState != status->robotIsMapping->getData() && status->robotIsMapping->getData())
         {// Caso esteja mapeando
             lastMappingState = status->robotIsMapping->getData();
 
-            ESP_LOGD(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
+            //ESP_LOGD(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
+            // LED frontal branca com brilho 50%
+            LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
         }
-
         else if ((lastState != status->robotState->getData() || lastTrack != (TrackState)status->TrackStatus->getData() || lastTransition != status->Transition->getData()) && !lastMappingState && status->robotState->getData() != CAR_STOPPED && status->robotState->getData() != CAR_TUNING)
         {// Caso tenha mudado o trecho em que o robô se encontra
             lastState = status->robotState->getData();
             lastTrack =  (TrackState)status->TrackStatus->getData();
             lastTransition = status->Transition->getData();
+            if (lastState == CAR_IN_LINE && !lastTransition)
+            {
+                //ESP_LOGD(GetName().c_str(), "Alterando os leds para modo inLine.");
+                switch (TrackLen)
+                {
+                    case SHORT_LINE:
+                        LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 0.05);
+                        break;
+                    case MEDIUM_LINE:
+                        LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 0.3);
+                        break;
+                    case LONG_LINE:
+                        LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
+                        break;
+                    case SPECIAL_TRACK:
+                        LED->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 0.05);
+                        break;
+                    default:
+                        LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 1);
+                        break;
+                }
+            }
+            else if(lastState == CAR_IN_CURVE && !lastTransition)
+            {
+                //ESP_LOGD(GetName().c_str(), "Alterando os leds para modo inCurve.");
+                switch (TrackLen)
+                {
+                    case SHORT_CURVE:
+                        LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 0.05);
+                        break;
+                    case MEDIUM_CURVE:
+                        LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 0.3);
+                        break;
+                    case LONG_CURVE:
+                        LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+                        break;
+                    case ZIGZAG:
+                        LED->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 1);
+                        break;
+                    case SPECIAL_TRACK:
+                        LED->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 0.05);
+                        break;
+                    default:
+                        LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 1);
+                        break;
+                }
+            }
+            else if(lastTransition)
+            {
+                LED->config_LED(LEDposition, COLOR_BLUE, LED_EFFECT_SET, 0.5);
+            }
         }
 
         mediaEncActual = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2; // calcula media dos encoders
@@ -178,8 +248,8 @@ void StatusService::Run()
             robot->getStatus()->robotState->setData(CAR_STOPPED);
             vTaskDelay(0);
             DataManager::getInstance()->saveAllParamDataChanged();
+            LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
         }
-
         if (!status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && status->encreading->getData() && firstmark && (!status->TunningMode->getData() || !started_in_Tuning))
         {// Se estiver lendo o mapeamento, e já tiver passado pela linha de largada
             if ((mediaEncActual - initialmediaEnc) >= mediaEncFinal)
@@ -196,7 +266,7 @@ void StatusService::Run()
                 }
                 else
                 {
-                    ESP_LOGD(GetName().c_str(), "Parando o robô");
+                    //ESP_LOGD(GetName().c_str(), "Parando o robô");
                     status->encreading->setData(false);
                     //vTaskDelay(100 / portTICK_PERIOD_MS);
 
@@ -206,6 +276,7 @@ void StatusService::Run()
 
                     robot->getStatus()->robotState->setData(CAR_STOPPED);
                     DataManager::getInstance()->saveAllParamDataChanged();
+                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
             }
             if ((mediaEncActual - initialmediaEnc) < mediaEncFinal)

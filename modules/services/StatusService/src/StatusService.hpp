@@ -8,6 +8,7 @@
 #include "driver/gpio.h"
 
 #include "MappingService.hpp"
+#include "LEDsService.hpp"
 
 
 using namespace cpp_freertos;
@@ -27,18 +28,20 @@ public:
 
 private:
 
-    // Variáveis para atalho
+    // Atalhos do RobotData:
     Robot *robot;
     dataStatus *status;
     dataMotor *speed;
     dataSLatMarks *latMarks;
     dataPID *PID;
-
-    CarState actualCarState;
-
-    TrackState TrackLen = SHORT_CURVE;
-
+    // Atalhos de outros serviços:
+    LEDsService *LED;
     MappingService *mappingService;
+
+    // Variáveis
+    
+    CarState actualCarState;
+    TrackState TrackLen = SHORT_CURVE;    
 
     int numMarks = 0; // Número total de marcações laterais na pista
 
@@ -60,6 +63,7 @@ private:
     CarState trackType;
     TrackState trackLen;
 
+    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 
     static void IRAM_ATTR gpio_isr_handler(void *arg);
     void mappingStatus(bool is_reading, bool is_mapping);
