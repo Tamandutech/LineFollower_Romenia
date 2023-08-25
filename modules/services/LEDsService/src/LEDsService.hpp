@@ -13,7 +13,7 @@
 
 using namespace cpp_freertos;
 
-#define NUM_LEDS 3
+#define NUM_LEDS 3 // Numero de leds
 
 #define WS2812_T0H_NS (350)
 #define WS2812_T0L_NS (1000)

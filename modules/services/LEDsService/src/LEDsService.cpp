@@ -9,10 +9,10 @@ uint32_t LEDsService::ws2812_t0l_ticks;
 uint32_t LEDsService::ws2812_t1l_ticks;
 
 LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
-{
+{// Construtor do serviço
     //ESP_LOGD("LEDsService", "Constructor Start");
 
-    queueLedCommands = xQueueCreate(10, sizeof(ledCommand));
+    queueLedCommands = xQueueCreate(10, sizeof(ledCommand)); // cria uma fila de espera com o tipo de pacote 'led_command_t'
 
     //ESP_LOGD("LEDsService", "Constructor END");
 }
@@ -27,39 +27,40 @@ void LEDsService::Run()
 
 #ifndef ESP32_QEMU
     ESP_ERROR_CHECK(rmt_config(&this->config));
-    ESP_ERROR_CHECK(rmt_driver_install(this->config.channel, 0, 0));
+    ESP_ERROR_CHECK(rmt_driver_install(this->config.channel, 0, 0)); // Instala e verifica o driver RMT
 
 #endif
 
-    this->strip_config.max_leds = NUM_LEDS;
-    this->strip_config.dev = (led_strip_dev_t)config.channel;
+    this->strip_config.max_leds = NUM_LEDS; // Definindo a quantidade máx de LEDs
+    this->strip_config.dev = (led_strip_dev_t)config.channel; // Definindo o RMT channel como LED strip device
 
-    this->strip = led_strip_new_rmt_ws2812(&strip_config);
+    this->strip = led_strip_new_rmt_ws2812(&strip_config); // Criando o LED strip driver
 
-    if (!strip)
+    if (!strip) // Se falhar em criar o driver
         //ESP_LOGE(GetName().c_str(), "Falha ao iniciar driver do LED.");
 
     ESP_ERROR_CHECK(this->strip->clear(this->strip, 100));
 
     for (;;)
-    {
+    {// Loop do serviço
         vTaskDelay(0);
-        xQueueReceive(queueLedCommands, &ledCommand, portMAX_DELAY);
-
+        xQueueReceive(queueLedCommands, &ledCommand, portMAX_DELAY); // Recebe um pacote de dados da fila pela porta definida
+        // O resto do código só roda quando xQueueReceive recebe um pacote
+        
         // ESP_LOGD(GetName().c_str(), "Run: ledCommand.effect = %d", ledCommand.effect);
 
         switch (ledCommand.effect)
-        {
-        case LED_EFFECT_SET:
+        {// Verifica qual efeito desejado na LED
+        case LED_EFFECT_SET: // Ligar ou desligar a LED
             led_effect_set();
             break;
 
-        case LED_EFFECT_BLINK:
-            // led_effect_blink();
+        case LED_EFFECT_BLINK: // Ligar e desligar logo em seguida
+            // led_effect_blink(); // Não implementada
             break;
 
-        case LED_EFFECT_FADE:
-            // led_effect_fade();
+        case LED_EFFECT_FADE: // Ligar e ir diminuindo o brilho gradativamente
+            // led_effect_fade(); // Não implementada
             break;
 
         default:
@@ -69,7 +70,7 @@ void LEDsService::Run()
 }
 
 void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t color, led_effect_t effect, float brigh)
-{
+{// Salva os dados recebidos numa variável tipo led_command_t e a adiciona na fila
     led_command_t command;
     for(int i=0; i < NUM_LEDS; i++){
         command.led[i] = position[i];
@@ -77,17 +78,17 @@ void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t colo
     command.color = color;
     command.effect = effect;
     command.brightness = brigh;
-    queueCommand(command);
+    queueCommand(command); // adiciona na fila
 }
 
 esp_err_t LEDsService::queueCommand(led_command_t command)
-{
+{// Manda o pacote de dados 'led_command_t' para a fila pela porta portMAX_DELAY
     //ESP_LOGD(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
     return xQueueSend(queueLedCommands, &command, portMAX_DELAY);
 }
 
 void LEDsService::led_effect_set()
-{
+{// Liga ou desliga a LED conforme indicado em ledCommand
     //ESP_LOGD("LEDsService", "led_effect_set");
     vTaskDelay(1);
     for (size_t i = 0; i < NUM_LEDS; i++)
@@ -100,7 +101,7 @@ void LEDsService::led_effect_set()
 #endif
         }
         else
-        {
+        {// Se ledCommand.led[i] for igual a LED_EFFECT_NONE:
             break;
         }
     }
