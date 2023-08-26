@@ -14,9 +14,9 @@
 class dataPID
 {
 public:
-    dataPID(std::string name = "dataPID");
+    dataPID(std::string name = "dataPID");// Contrutor do objeto
 
-    // Constantes do PID definidas pelo trecho da pista
+    // Funções que retornam as constantes do PID definidas para um trecho da pista
     DataAbstract<float> *Kp(TrackState state);
     DataAbstract<float> *Kd(TrackState state);
 
@@ -25,6 +25,8 @@ private:
     const char *tag = "RobotData";
 
     // Parâmetros do PID  
+
+    // Linha
     DataAbstract<float> *Kp_Long_Line;
     DataAbstract<float> *Kd_Long_Line; 
 
@@ -34,7 +36,7 @@ private:
     DataAbstract<float> *Kp_Short_Line; 
     DataAbstract<float> *Kd_Short_Line;
 
-
+    // Curva
     DataAbstract<float> *Kp_Long_Curve; 
     DataAbstract<float> *Kd_Long_Curve; 
 
@@ -44,6 +46,7 @@ private:
     DataAbstract<float> *Kp_Short_Curve; 
     DataAbstract<float> *Kd_Short_Curve; 
 
+    // Outros tipos de trecho
     DataAbstract<float> *Kp_Zigzag; 
     DataAbstract<float> *Kd_Zigzag; 
 
@@ -53,7 +56,7 @@ private:
     DataAbstract<float> *Kp_Tunning; 
     DataAbstract<float> *Kd_Tunning; 
 
-
+    DataManager *dataManager;
 };
 
 #endif

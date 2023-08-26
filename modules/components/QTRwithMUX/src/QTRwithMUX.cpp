@@ -4,11 +4,14 @@
 void QTRwithMUX::calibrate_all(QTRSensors *sArray, int quant)
 {
     // Função que calibra os sensores, um por vez
+    vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
     for(int i=0; i < quant; i++)
     {
         selectMuxPin(std::bitset<4>(i)); // std::bitset<4> transforma i de decimal para binário
         sArray[i].calibrate();
+         ets_delay_us(1); // função que pausa o código por N microsegundos
     }
+    xTaskResumeAll(); // Retoma o funcionamento normal das tasks
 }
 
 int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
@@ -18,10 +21,10 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
     // white_line = TRUE -> leitura de linha branca
 
     bool on_Line = false; // se falso até o final, os sensores estão todos fora da linha
-    uint32_t avg = 0;
-    uint16_t sum = 0;
+    uint32_t avg = 0; // soma ponderada das leituras
+    uint16_t sum = 0; // soma das leituras
     
-    vTaskSuspendAll();
+    vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
     for(int i=0; i < quant; i++)
     {
         uint16_t sensor_value;
@@ -35,9 +38,9 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
             avg += (uint32_t)sensor_value*(i*1000); // soma ponderada de cada leitura
             sum += sensor_value; // soma total das leituras
         }
-        ets_delay_us(1);
+        ets_delay_us(1); // função que pausa o código por N microsegundos
     }
-    xTaskResumeAll();
+    xTaskResumeAll(); // Retoma o funcionamento normal das tasks
     
     if (!on_Line) // Se o robo esta fora da linha, retorna a direcao da ultima leitura
     {

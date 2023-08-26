@@ -13,7 +13,7 @@
 class dataStatus
 {
 public:
-    dataStatus(std::string name = "dataStatus");
+    dataStatus(CarState initialState, std::string name = "dataStatus");
 
     DataAbstract<uint8_t> *robotState; // Armazena o estado geral do robô.
     DataAbstract<uint8_t> *TrackStatus; // status (velocidade) do trecho da pista em que o robô se encontra
@@ -26,8 +26,8 @@ public:
     DataAbstract<bool> *WithBrushless; // Se o brushless vai ser ligado ou não
     DataAbstract<uint8_t> *RobotCenter; // Se o robô está centralizado e, se não, para que lado da linha o centro está
 
-    DataAbstract<bool> *TunningMode;
-    DataAbstract<bool> *HardDeleteMap;
+    DataAbstract<bool> *TunningMode; // Modo de teste
+    DataAbstract<bool> *HardDeleteMap; // Se o mapa deve ser deletado
     DataAbstract<uint8_t> *RealTrackStatus; // status real do trecho da pista em que o robô se encontra
     DataAbstract<bool> *FirstMark; // Verifica se o robô já passou pela primeira marcação lateral
     DataAbstract<bool> *Transition; // Verifica se o robô está numa transição de curva para reta e vice-versa

@@ -91,6 +91,14 @@ void app_main()
     //ESP_LOGD("Main", "Apagando LEDs");
     ledsService->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
 
+    //ESP_LOGD(MappingService::getInstance()->GetName().c_str(), "Mapeamento");
+    //ESP_LOGD(IMUService::getInstance()->GetName().c_str(), "IMUService");
+    //ESP_LOGD(StatusService::getInstance()->GetName().c_str(), "StatusService");
+    //ESP_LOGD(RPMService::getInstance()->GetName().c_str(), "RPMService");
+    //ESP_LOGD(MotorService::getInstance()->GetName().c_str(), "MotorService");
+    //ESP_LOGD(SensorService::getInstance()->GetName().c_str(), "SensorService");
+    //ESP_LOGD(ControlService::getInstance()->GetName().c_str(), "ControlService");
+
     for(;;)
     {
         // Comentarios e delay

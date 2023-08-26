@@ -4,7 +4,7 @@ dataMotor::dataMotor(std::string name)
 {
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
-    ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
+    //ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
 
     // Contagem atual dos encoders
     EncRight = new DataAbstract<int32_t>("EncRight", name, 0);
@@ -20,7 +20,7 @@ dataMotor::dataMotor(std::string name)
     // Vel. base para calibracao
     vel_calibrate = new DataAbstract<float>("Velocidade Calibracao", name, 50); // inicia com valor 50
 
-    //Setpoints translacionais para os tipos de trechos
+    //Setpoints para os tipos de trechos
     Long_Line = new DataAbstract<float>("PWM_Long_line", name, 100);
     Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 100);
     Short_Line = new DataAbstract<float>("PWM_Short_line", name, 100);
@@ -35,34 +35,38 @@ dataMotor::dataMotor(std::string name)
 }
 
 DataAbstract<float> *dataMotor::Setpoint(TrackState state)
-{
-    if(state == LONG_LINE){
-        return Long_Line;
+{// Retorna o valor do setpoint para cada tipo de trecho de pista
+    switch(state)
+    {
+        case LONG_LINE:
+            return Long_Line;
+            break;
+        case MEDIUM_LINE:
+            return Medium_Line;
+            break;
+        case SHORT_LINE:
+            return Short_Line;
+            break;
+        case LONG_CURVE:
+            return Long_Curve;
+            break;
+        case MEDIUM_CURVE:
+            return Medium_Curve;
+            break;
+        case SHORT_CURVE:
+            return Short_Curve;
+            break;
+        case ZIGZAG:
+            return Zigzag;
+            break;
+        case TUNNING:
+            return Tunning;
+            break;
+        default:
+            return Default_Track;
+            break;
     }
-    else if(state == MEDIUM_LINE){
-        return Medium_Line;
-    }
-    else if(state == SHORT_LINE){
-        return Short_Line;
-    }
-    else if(state == LONG_CURVE){
-        return Long_Curve;
-    }
-    else if(state == MEDIUM_CURVE){
-        return Medium_Curve;
-    }
-    else if(state == SHORT_CURVE){
-        return Short_Curve;
-    }
-    else if(state == ZIGZAG){
-        return Zigzag;
-    }
-    else if(state == TUNNING){
-        return Tunning;
-    }
-    else{
-        return Default_Track;
-    }
-    ESP_LOGE(tag, "Estado do Robô ou Objeto PID inválido para esse método: %s:%d para obter o Kp do PID, retornando valor null.", name.c_str(),state);
+
+    //ESP_LOGE(tag, "Estado do Robô ou Objeto PID inválido para esse método: %s:%d para obter o Kp do PID, retornando valor null.", name.c_str(),state);
     return nullptr;
 }

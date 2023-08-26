@@ -2,7 +2,7 @@
 #include "QTRSensors.h"
 #include "RobotData.h"
 #include "bitset"// biblioteca que transforma um número decimal para binário
-#include <rom/ets_sys.h>
+#include <rom/ets_sys.h> // para a função ets_delay_us
 
 
 class QTRwithMUX

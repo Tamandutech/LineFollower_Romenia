@@ -34,7 +34,7 @@ public:
     DataAbstract<uint16_t> *MPR;
 
     // Diâmetro das rodas
-    DataAbstract<uint8_t> *WheelDiameter;
+    DataAbstract<uint8_t> *WheelDiameter; // mm
     // Distancia entre as rodas
     DataAbstract<uint8_t> *RobotDiameter; // mm
     // Distancia do centro do robô até a ponta dos sensores

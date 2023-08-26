@@ -41,6 +41,7 @@ public:
         return sin;
     };
 
+    // Funções para pegar cada tipo de objeto:
     dataMotor *getMotorData();
     dataSpec *getSpecification();
     dataPID *getPID();
@@ -58,6 +59,7 @@ private:
     static std::atomic<Robot *> instance;
     static std::mutex instanceMutex;
 
+    // Objetos de cada tipo:
     dataMotor *MotorVel;
     dataSpec *RobotSpec;
     dataPID *PID;

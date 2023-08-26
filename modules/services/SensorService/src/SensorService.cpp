@@ -24,7 +24,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     for(int i=0; i < sQuant; i++)
     {
         sArray[i].setTypeAnalogESP();
-        sArray[i].setSensorPins((const adc1_channel_t[]){(adc1_channel_t)sInput}, 1);
+        sArray[i].setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s0Input}, 1);
         sArray[i].setSamplesPerSensor(5);
     }
     // Inicializacao dos sensores laterais

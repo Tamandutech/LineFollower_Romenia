@@ -7,22 +7,22 @@ Robot::Robot(std::string name)
 {
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
-    ESP_LOGD(name.c_str(), "Criando objeto: %s (%p)", name.c_str(), this);
+    //ESP_LOGD(name.c_str(), "Criando objeto: %s (%p)", name.c_str(), this);
 
 
     // Instânciando objetos componentes do Robô.
-    ESP_LOGD(name.c_str(), "Criando sub-objetos para o %s", "Robô");
+    //ESP_LOGD(name.c_str(), "Criando sub-objetos para o %s", "Robô");
 
     this->MotorVel = new dataMotor("Velocidade Motor");
-    ESP_LOGD(name.c_str(), "velocidade (%p)", this->MotorVel);
+    //ESP_LOGD(name.c_str(), "velocidade (%p)", this->MotorVel);
     this->RobotSpec = new dataSpec("Especificacoes Robo");
-    ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
+    //ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
     this->PID = new dataPID("Valores PID");
-    ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
-    this->RobotStatus = new dataStatus("Estados RobotStatus");
-    ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
+    //ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
+    this->RobotStatus = new dataStatus(CAR_IN_LINE, "Estados RobotStatus"); // inicialmente se encontra numa linha
+    //ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
     this->sLatMarks = new dataSLatMarks("Marcacoes sLatMarks");
-    ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
+    //ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
 }
 
 std::string Robot::GetName()

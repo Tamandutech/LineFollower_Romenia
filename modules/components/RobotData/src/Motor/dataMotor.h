@@ -1,5 +1,5 @@
-#ifndef DATA_SENSOR_HPP
-#define DATA_SENSOR_HPP
+#ifndef DATA_MOTOR_HPP
+#define DATA_MOTOR_HPP
 
 #include <stdint.h>
 #include <stddef.h>
@@ -34,7 +34,8 @@ private:
     std::string name;
     const char *tag = "RobotData";
 
-    //Setpoints para os tipos de trecho
+    //Setpoints para os tipos de trecho 
+    //privados pois a função Setpoint(TrackState state) que permite acesso a essas variáveis
     DataAbstract<float> *Long_Line;
     DataAbstract<float> *Medium_Line;
     DataAbstract<float> *Short_Line;

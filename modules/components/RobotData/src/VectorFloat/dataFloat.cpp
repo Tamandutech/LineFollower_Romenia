@@ -4,16 +4,16 @@ dataFloat::dataFloat(uint16_t qtdChannels, std::string name)
 {
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
-    ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
+    //ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
 
     this->qtdChannels = qtdChannels;
     // Alocando espaço para as variáveis
-    ESP_LOGD(tag, "Alocando espaço na memória paras as variáveis, quantidade de canais: %d", qtdChannels);
+    //ESP_LOGD(tag, "Alocando espaço na memória paras as variáveis, quantidade de canais: %d", qtdChannels);
     channel.reserve(qtdChannels);
     maxChannel.reserve(qtdChannels);
     minChannel.reserve(qtdChannels);
 
-    ESP_LOGD(tag, "Criando Semáforos");
+    //ESP_LOGD(tag, "Criando Semáforos");
     (xSemaphorechannel) = xSemaphoreCreateMutex();
     (xSemaphoreline) = xSemaphoreCreateMutex();
     (xSemaphoremaxChannel) = xSemaphoreCreateMutex();
@@ -30,7 +30,7 @@ int dataFloat::setLine(float value)
     }
     else
     {
-        ESP_LOGE(tag, "Variável Line ocupada, não foi possível definir valor.");
+        ////ESP_LOGE(tag, "Variável Line ocupada, não foi possível definir valor.");
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
@@ -47,7 +47,7 @@ float dataFloat::getLine()
         }
         else
         {
-            ESP_LOGE(tag, "Variável Output ocupada, não foi possível ler valor. Tentando novamente...");
+            //ESP_LOGE(tag, "Variável Output ocupada, não foi possível ler valor. Tentando novamente...");
         }
     }
 }
@@ -56,7 +56,7 @@ int dataFloat::setChannel(uint16_t channelNumber, float value, std::vector<float
 {
     if (channelNumber > (qtdChannels - 1))
     {
-        ESP_LOGE(tag, "O canal informado \"%ud\" não existe, máximo: %ud", channelNumber, (qtdChannels - 1));
+        //ESP_LOGE(tag, "O canal informado \"%ud\" não existe, máximo: %ud", channelNumber, (qtdChannels - 1));
         return RETORNO_ARGUMENTO_INVALIDO;
     }
 
@@ -68,7 +68,7 @@ int dataFloat::setChannel(uint16_t channelNumber, float value, std::vector<float
     }
     else
     {
-        ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível definir valor.");
+        //ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível definir valor.");
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
@@ -81,7 +81,7 @@ float dataFloat::getChannel(uint16_t channelNumber, std::vector<float> *channel,
 {
     if (channelNumber > (qtdChannels - 1))
     {
-        ESP_LOGE(tag, "O canal informado \"%ud\" não existe, máximo: %ud", channelNumber, (qtdChannels - 1));
+        //ESP_LOGE(tag, "O canal informado \"%ud\" não existe, máximo: %ud", channelNumber, (qtdChannels - 1));
         return RETORNO_ARGUMENTO_INVALIDO;
     }
 
@@ -96,7 +96,7 @@ float dataFloat::getChannel(uint16_t channelNumber, std::vector<float> *channel,
         }
         else
         {
-            ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível ler valor. Tentando novamente...");
+            //ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível ler valor. Tentando novamente...");
         }
     }
 }
@@ -115,7 +115,7 @@ int dataFloat::setChannels(std::vector<float> values, std::vector<float> *channe
     }
     else
     {
-        ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível definir valores.");
+        //ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível definir valores.");
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }
@@ -136,7 +136,7 @@ std::vector<float> dataFloat::getChannels(std::vector<float> *channel, Semaphore
         }
         else
         {
-            ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível ler valores. Tentando novamente...");
+            //ESP_LOGE(tag, "Vetor de canais ocupado, não foi possível ler valores. Tentando novamente...");
         }
 
         return tempChannels;

@@ -23,7 +23,7 @@
 class dataSLatMarks
 {
 public:
-    dataSLatMarks(std::string name = "dataSLatMarks");
+    dataSLatMarks(std::string name = "dataSLatMarks"); // Contrutor do objeto
 
     // Estado do sensor da lateral esquerda
     DataAbstract<bool> *latEsqPass;
