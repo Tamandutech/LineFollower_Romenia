@@ -3,9 +3,12 @@
 
 //Sensores frontais
 
+// MUX 1 e 2
 const int sPins[4] = {18, 19, 22, 23}; // array dos pinos digitais ligados ao MUX
 #define s0Input 35 // analog pin ligado ao MUX 1
 #define s1Input 33 // analog pin ligado ao MUX 2
+
+// Quantidade ligadas aos sensores frontais
 #define sQuant 16 // quantidade de sensores
 #define sQuantReading 4 // QUantidade de ultimas leituras que ficam salvas no robo
 
