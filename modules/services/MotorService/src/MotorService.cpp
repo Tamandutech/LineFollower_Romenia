@@ -3,6 +3,9 @@
 MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
 {
     tag = name;
+    // Atalhos para o RobotData:
+    this->robot = Robot::getInstance();
+    this->status = robot->getStatus();
     // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
     gpio_set_direction((gpio_num_t)in_dir1, GPIO_MODE_OUTPUT);
@@ -21,7 +24,15 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
 void MotorService::Run()
 {
-    
+    // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+
+    // Loop
+    for (;;)
+    {
+        vTaskDelay(0);
+        this->Suspend();
+    }
 }
 
 void MotorService::ControlMotors(float velesq, float veldir){
@@ -83,14 +94,14 @@ void MotorService::WalkStraight(float vel, bool frente){
 
 void MotorService::StartBrushless()
 {
-    rampThrottle(brush_dir, MIN_THROTTLE, MAX_THROTTLE, 20);
-    rampThrottle(brush_esq, MIN_THROTTLE, MAX_THROTTLE, 20);
+    rampThrottle(brush_dir, MIN_THROTTLE, MAX_THROTTLE, THROTTLE_SPEED);
+    rampThrottle(brush_esq, MIN_THROTTLE, MAX_THROTTLE, THROTTLE_SPEED);
 }
 
 void MotorService::StopBrushless()
 {
-    rampThrottle(brush_dir, MAX_THROTTLE, 0, -20);
-    rampThrottle(brush_esq, MAX_THROTTLE, 0, -20);
+    rampThrottle(brush_dir, MAX_THROTTLE, 0, -THROTTLE_SPEED);
+    rampThrottle(brush_esq, MAX_THROTTLE, 0, -THROTTLE_SPEED);
 }
 
 void MotorService::rampThrottle(DShotRMT esc, int start, int stop, int step)

@@ -19,8 +19,9 @@ using namespace cpp_freertos;
 #define PWM_B_PIN               LEDC_CHANNEL_1 // Canal do LEDC utilizado
 #define LEDC_DUTY_RES           LEDC_TIMER_8_BIT // Resolução do PWM
 #define LEDC_FREQUENCY          5000 // Frequência em Hertz do sinal PWM
-#define MIN_THROTTLE            48
+#define MIN_THROTTLE            0
 #define MAX_THROTTLE            999
+#define THROTTLE_SPEED          40
 #define DSHOT_MODE              DSHOT600
 #define USB_SERIAL_BAUD         115200
 #define USB_Serial              Serial
@@ -39,9 +40,14 @@ public:
     void StopBrushless();
     void StopMotors();
 
+
 private:
 
     std::string tag;
+
+    // Atalhos do RobotData:
+    Robot *robot;
+    dataStatus *status;
 
     DShotRMT brush_dir = DShotRMT((gpio_num_t)brushless_dir, (rmt_channel_t)RMT_CHANNEL_0); // inicializacao do objeto para o brushless
     DShotRMT brush_esq = DShotRMT((gpio_num_t)brushless_esq, (rmt_channel_t)RMT_CHANNEL_0);

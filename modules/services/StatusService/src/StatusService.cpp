@@ -81,7 +81,6 @@ void StatusService::Run()
     // int iloop = 0;
 
     //ESP_LOGD(GetName().c_str(), "Aguardando pressionamento do botão.");
-
     uint8_t num;
     do
     {// Aguarda o precionar do botao
@@ -109,6 +108,7 @@ void StatusService::Run()
     }
     //ESP_LOGD(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(1500 / portTICK_PERIOD_MS);
+    
 
     if(!status->TunningMode->getData())
     { // Se nao estiver em modo de teste
@@ -245,7 +245,7 @@ void StatusService::Run()
 
         if(!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData() && actualCarState != CAR_STOPPED)
         {// Muda o status do carro para parado, caso esteja no momento certo
-            robot->getStatus()->robotState->setData(CAR_STOPPED);
+            status->robotState->setData(CAR_STOPPED);
             vTaskDelay(0);
             DataManager::getInstance()->saveAllParamDataChanged();
             LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
@@ -274,7 +274,7 @@ void StatusService::Run()
                     // vTaskSuspend(xTaskPID);
                     // vTaskSuspend(xTaskSensors);
 
-                    robot->getStatus()->robotState->setData(CAR_STOPPED);
+                    status->robotState->setData(CAR_STOPPED);
                     DataManager::getInstance()->saveAllParamDataChanged();
                     LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }

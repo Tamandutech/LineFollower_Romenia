@@ -188,7 +188,7 @@ namespace cpp_freertos
                  *  Suspend this thread.
                  *
                  *  @note While a Thread can Suspend() itself, it cannot Resume()
-                 *  itself, becauseit's suspended.
+                 *  itself, because it's suspended.
                  */
                 inline void Suspend()
                 {

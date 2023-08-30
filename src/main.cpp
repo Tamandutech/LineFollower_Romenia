@@ -1,9 +1,7 @@
 /*
 ---------------- BLOCO DE NOTAS ------------------
- - Ajeitar a inicialização dos serviços na main
- - Parametros na inicalização do IMUService na main
  - Tirar os // dos ESP_LOGs quando arrumar o VSCode
- - Verificar se é necessário um delay na biblioteca MUTEX
+ - Inicializar os brushless no serviço MotorService
 */
 
 // Espressif (ESP-IDF)

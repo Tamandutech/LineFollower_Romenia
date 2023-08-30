@@ -15,16 +15,17 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
 };
 
 void ControlService::Run()
-{
-    // Loop do servico, em desenvolvimento
-    
-    // Variavel necerraria para funcionaliade do vTaskDelayUtil, guarda a contagem de pulsos da CPU
-    //TickType_t xLastWakeTime = xTaskGetTickCount();
+{// Loop do servico   
+    // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        
+        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
+        if(get_Status->robotState->getData() != CAR_STOPPED){
+            ControlePID();
+        }
     }
 }
 
