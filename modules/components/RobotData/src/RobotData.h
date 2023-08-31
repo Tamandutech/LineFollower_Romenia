@@ -15,8 +15,8 @@
 #include "dataPID.h"
 #include "dataStatus.h"
 #include "dataSLatMarks.h"
-#include "VectorUint16/dataUint16.h"
-#include "VectorInt32/dataInt32.h"
+#include "dataUint16.h"
+#include "dataInt32.h"
 #include "VectorFloat/dataFloat.h"
 
 #include "esp_log.h"

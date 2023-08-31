@@ -25,7 +25,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 void MotorService::Run()
 {
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
-    TickType_t xLastWakeTime = xTaskGetTickCount();
+    // TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)

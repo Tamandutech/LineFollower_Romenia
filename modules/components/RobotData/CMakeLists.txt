@@ -7,7 +7,8 @@ idf_component_register(
         "src/Status/dataStatus.cpp"
         "src/SLatMarks/dataSLatMarks.cpp" 
         "src/VectorUint16/dataUint16.cpp" 
-        "src/VectorInt32/dataInt32.cpp" 
+        "src/VectorInt32/dataInt32.cpp"
+        "src/VectorFloat/dataFloat.cpp"
 
     REQUIRES
         "DataObjects" "MappingService"
@@ -21,4 +22,5 @@ idf_component_register(
         "src/SLatMarks"
         "src/VectorUint16" 
         "src/VectorInt32"
+        "src/VectorFloat"
 )

@@ -42,6 +42,8 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     {
         AngleArray[i] = 0;
     }
+    std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
+    get_frontArray->setChannels(SChannelsAngle);
 
     // Calibracao
     auto_calibrate();
@@ -113,6 +115,7 @@ void SensorService::SaveAngle(float new_angle)
         AngleArray[i] = AngleArray[i-1];
     }
     AngleArray[0] = new_angle;
+
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
 }

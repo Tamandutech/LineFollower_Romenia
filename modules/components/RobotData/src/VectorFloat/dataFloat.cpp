@@ -30,7 +30,7 @@ int dataFloat::setLine(float value)
     }
     else
     {
-        ////ESP_LOGE(tag, "Variável Line ocupada, não foi possível definir valor.");
+        //ESP_LOGE(tag, "Variável Line ocupada, não foi possível definir valor.");
         return RETORNO_VARIAVEL_OCUPADA;
     }
 }

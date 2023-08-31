@@ -39,6 +39,8 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
 void ControlService::ControlePID(){
     CarState state = (CarState) get_Status->robotState->getData();
     TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
+
+    from_sensor->AngleError();
     float erro = get_Angle->getChannel(0);
 
     if(state == CAR_STOPPED){

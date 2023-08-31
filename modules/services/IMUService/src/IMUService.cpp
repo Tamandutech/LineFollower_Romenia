@@ -26,14 +26,14 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 
 void IMUService::Run()
 {
-    ESP_LOGI("Sensor", "Inicio.");
+    //ESP_LOGI("IMU_Sensor", "Inicio.");
     // Loop do servico
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
+        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
 
 		updateIMU();
     }
@@ -44,7 +44,7 @@ void IMUService::updateIMU()
 	imu.Get_X_Axes(acc);
 	imu.Get_G_Axes(gyr);
 
-	ESP_LOGD(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
+	//ESP_LOGD(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
 	saveData();
 }
 
