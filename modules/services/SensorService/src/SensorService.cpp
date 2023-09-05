@@ -18,25 +18,33 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
+    // Definindo configs do ADC1 no GPIO35
+    adc1_config_width(ADC_WIDTH_12Bit);
+    adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_11db);
+    adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_11db);
+
+    for(int i=0; i< 4; i++){
+        gpio_pad_select_gpio(sPins[i]);
+        gpio_set_direction((gpio_num_t)sPins[i], GPIO_MODE_OUTPUT);
+    }
+    
     // Inicializacao dos sensores frontais
     // Todos sao controlados na mesma porta, porém cada objeto do vetor representa um sensor diferente
     // Para controlar cada sensor, é preciso mudar as portas digitais com o selectMuxPin()
     for(int i=0; i < sQuant; i++)
     {
         sArray[i].setTypeAnalogESP();
-        sArray[i].setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s0Input}, 1);
+        sArray[i].setSensorPins((const adc1_channel_t[]){ADC1_CHANNEL_7}, 1);
         sArray[i].setSamplesPerSensor(5);
     }
     // Inicializacao dos sensores laterais
-    sLat.setTypeAnalogESP();
-    sLat.setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s_lat_esq, (adc1_channel_t)s_lat_dir}, 2);
-    sLat.setSamplesPerSensor(5);
-
-    //Inicializacao dos sensores do corpo
-    sCenter.setTypeAnalogESP();
-    sCenter.setSensorPins((const adc1_channel_t[]){(adc1_channel_t)s_c_esq, (adc1_channel_t)s_c_dir}, 2);
-    sCenter.setSamplesPerSensor(5);
-
+    for(int i=0; i < 6; i++)
+    {
+        sArray[i].setTypeAnalogESP();
+        sArray[i].setSensorPins((const adc1_channel_t[]){ADC1_CHANNEL_5}, 1);
+        sArray[i].setSamplesPerSensor(5);
+    }
+    
     // Setando todas as leituras anteriores como 0 (centralizado na reta)
     for(int i=0; i < sQuantReading; i++)
     {
@@ -45,79 +53,104 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
 
-    // Calibracao
-    auto_calibrate();
+    //Calibracao
+    //ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
+    auto_calibrate(0);
+    //ESP_LOGI(GetName().c_str(), "Fim da calibração frontal.");
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    auto_calibrate(0);
 }
 
 void SensorService::Run()
 {
-    //ESP_LOGE("Sensor", "Inicio.");
+    //ESP_LOGI(GetName().c_str(), "Início SensorService");
     // Loop do servico
-    TickType_t xLastWakeTime = xTaskGetTickCount();
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
+        vTaskDelay(0);
+        this->Suspend();
 
-        processSLat();
-        processSCenter();
+        //processSLat();
+        //processSCenter();
     }
 }
 
-void SensorService::auto_calibrate()
+void SensorService::Sensor_resume()
+{
+    this->Resume();
+}
+
+void SensorService::auto_calibrate(int mux)
 {// Calibracao automatica
+    
+    //ESP_LOGI(GetName().c_str(), "Início Calibração");
     
     MPR_Mot = get_Spec->MPR->getData();
 
     // Zera contagem dos encoders
-    rpm->ResetCount();
+    //rpm->ResetCount();
 
     // Calibração dos sensores frontais -> mux == 0
     // Calibracao dos sensores laterais -> mux == 1
-    for(int mux=0; mux < 2; mux++)
+    for(int voltas=1; voltas <= 4; voltas++)
     {
-        for(int voltas=1; voltas <= 4; voltas++)
+        rpm->ResetCount(); // Reseta a contagem para comecar outra volta
+        while((get_Vel->EncMedia->getData()) < (MPR_Mot/4)) // enquanto o robô não andou um giro da roda
         {
-            while((get_Vel->EncMedia->getData()) < MPR_Mot) // enquanto o robô não andou um giro da roda
-            {
-                // Anda para uma direcao por 1/4 da calibracao
-                // Anda pra direcao contraria por 2/4
-                // Volta a posicao original, andando o último 1/4 do tempo
-                if((voltas<2)||((voltas > 3)))
-                {
-                    // Chama a funcao do servico dos Motores para o robô andar reto
-                    control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
-                }
-                else
-                {
-                    // Chama a mesma funcao para o robô andar para o lado contraio
-                    control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
-                }
+            rpm->ReadBoth(); // atualiza a leitura dos encoders
+            /*
+            int32_t enc = get_Vel->EncMedia->getData();
+            int32_t enc_es = get_Vel->EncLeft->getData();
+            int32_t enc_di = get_Vel->EncRight->getData();
+            ESP_LOGI(GetName().c_str(), "EncEsq = %d, EncDir = %d, EncMedia = %d", enc_es, enc_di, enc);
+            */
 
-                // Escolhe qual sensor esta sendo calibrado:
-                if(mux == 0){
-                    MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
-                }else{
-                    sLat.calibrate(); // calibracao normal dos sensores laterais
-                }
-                vTaskDelay(100 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-                rpm->ReadBoth(); // atualiza a leitura dos encoders
+            // Anda para uma direcao por 1/4 da calibracao
+            // Anda pra direcao contraria por 2/4
+            // Volta a posicao original, andando o último 1/4 do tempo
+            if(voltas%2 == 0)
+            {
+                // Chama a funcao do servico dos Motores para o robô andar reto
+                control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
             }
-            rpm->ResetCount(); // Reseta a contagem para comecar outra volta
+            else
+            {
+                // Chama a mesma funcao para o robô andar para o lado contraio
+                control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
+            }
+
+            // Escolhe qual sensor esta sendo calibrado:
+            if(mux == 0){
+                MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
+            }
+            else{
+                MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
         }
+        control_motor->StopMotors();
+        vTaskDelay(1500 / portTICK_PERIOD_MS);
     }
+    control_motor->StopMotors();
+    rpm->ResetCount();
+    
 }
 
 void SensorService::SaveAngle(float new_angle)
 {// Salva a leitura do sensor em um vetor
-    for(int i=(sQuantReading-1); i > 0; i++){
+    ////ESP_LOGI(GetName().c_str(), "Salvando Array no RobotData...");
+    for(int i=(sQuantReading-1); i > 0; i--){
         AngleArray[i] = AngleArray[i-1];
     }
     AngleArray[0] = new_angle;
 
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
+    Sensor_resume();
+    ////ESP_LOGI(GetName().c_str(), "Array salvo.");
 }
 
 void SensorService::ReadArray(QTRSensors *array, dataUint16 *get_array)
@@ -138,21 +171,27 @@ void SensorService::AngleError()
     
     // Carregando as variaveis do RobotData, para facilitar a leitura
     bool is_white = get_Spec->WhiteLine->getData();
-    uint16_t max_angle = get_Spec->MaxAngle->getData(); // em graus
+    float max_angle = get_Spec->MaxAngle->getData(); // em graus
     uint16_t radius = get_Spec->RadiusSensor->getData();
     uint16_t dis_center = get_Spec->SensorToCenter->getData();
     
     max_angle = max_angle*M_PI/180; // converte graus em rad, sendo M_PI o valor de pi da biblioteca "cmath"
 
+    //vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
     int16_t position = MUX.read_all(sArray, sQuant, is_white); // le os sensores e recebe uma posicao
+    //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
+
     // position vai de 0 ate (sQuant - 1)*1000, sendo sQuant a quantidade de sensores
     // Para 16 sensores, vai de 0 a 15000
     position = position - (sQuant - 1)*500; // subtrai a metade do valor máximo, posicao central fica em 0
 
+    float angle_radius = position*max_angle/((sQuant - 1)*500); // converte a posicao para angulo, regra de 3s
     
-    float angle_radius = position * max_angle/((sQuant - 1)*500); // converte a posicao para angulo, regra de 3s
+    float angle_with_center = atan((sin(angle_radius))/(cos(angle_radius) -1 + (((float)(dis_center))/radius)));
+    angle_radius = angle_radius*180/M_PI;
+    angle_with_center = angle_with_center*180/M_PI;
     
-    float angle_with_center = atan((sin(angle_radius))/(cos(angle_radius) -1 +(dis_center/radius)));
+    //ESP_LOGI(GetName().c_str(), "Leitura = %d; Ang arco = %.2f; Ang centro = %.2f", position, angle_radius, angle_with_center);
     
     // Salvando esse angulo na variavel do servico:
     SaveAngle(angle_with_center);
@@ -160,7 +199,7 @@ void SensorService::AngleError()
 
 void SensorService::processSCenter()
 {
-    ReadArray(&sCenter, get_centerArray);
+    //ReadArray(&sCenter, get_centerArray);
 
     uint16_t slesq = get_centerArray->getChannel(0);
     uint16_t sldir = get_centerArray->getChannel(1);
@@ -181,7 +220,7 @@ void SensorService::processSCenter()
 
 void SensorService::processSLat()
 {
-    ReadArray(&sLat, get_latArray); // atualizando as leituras, funcao recebe dois ponteiros
+    //ReadArray(&sBody[0], get_latArray); // atualizando as leituras, funcao recebe dois ponteiros
     
     uint16_t slesq = get_latArray->getChannel(0);
     uint16_t sldir = get_latArray->getChannel(1);

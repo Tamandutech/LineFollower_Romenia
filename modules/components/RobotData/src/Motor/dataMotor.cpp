@@ -21,16 +21,16 @@ dataMotor::dataMotor(std::string name)
     vel_calibrate = new DataAbstract<float>("Velocidade Calibracao", name, 50); // inicia com valor 50
 
     //Setpoints para os tipos de trechos
-    Long_Line = new DataAbstract<float>("PWM_Long_line", name, 100);
-    Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 100);
-    Short_Line = new DataAbstract<float>("PWM_Short_line", name, 100);
-    Long_Curve = new DataAbstract<float>("PWM_Long_curve", name, 100);
-    Medium_Curve = new DataAbstract<float>("PWM_Medium_curve", name, 100);
-    Short_Curve = new DataAbstract<float>("PWM_Short_curve", name, 100);
-    Zigzag = new DataAbstract<float>("PWM_ZigZag", name, 100);
-    Special_Track = new DataAbstract<float>("PWM_SpecialTrack", name, 100);
-    Default_Track = new DataAbstract<float>("PWM_Default_Track", name, 100);
-    Tunning = new DataAbstract<float>("PWM_Tunning", name, 100);
+    Long_Line = new DataAbstract<float>("PWM_Long_line", name, 20);
+    Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 20);
+    Short_Line = new DataAbstract<float>("PWM_Short_line", name, 20);
+    Long_Curve = new DataAbstract<float>("PWM_Long_curve", name, 20);
+    Medium_Curve = new DataAbstract<float>("PWM_Medium_curve", name, 20);
+    Short_Curve = new DataAbstract<float>("PWM_Short_curve", name, 20);
+    Zigzag = new DataAbstract<float>("PWM_ZigZag", name, 20);
+    Special_Track = new DataAbstract<float>("PWM_SpecialTrack", name, 20);
+    Default_Track = new DataAbstract<float>("PWM_Default_Track", name, 20);
+    Tunning = new DataAbstract<float>("PWM_Tunning", name, 20);
     
 }
 

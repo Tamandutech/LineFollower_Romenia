@@ -20,6 +20,21 @@ dataFloat::dataFloat(uint16_t qtdChannels, std::string name)
     (xSemaphoreminChannel) = xSemaphoreCreateMutex();
 }
 
+int dataFloat::set_Channels_mutex(std::vector<float> values, std::vector<float> *channel)
+{
+    std::lock_guard<std::mutex> lock(channel_mutex);
+    (*channel) = values;
+    return RETORNO_OK;
+}
+
+int dataFloat::get_Channel_mutex(uint16_t channelNumber, std::vector<float> *channel)
+{
+    std::lock_guard<std::mutex> lock(channel_mutex);
+    float tempChannel;
+    tempChannel = (*channel)[channelNumber];
+    return tempChannel;
+}
+
 int dataFloat::setLine(float value)
 {
     if (xSemaphoreTake(xSemaphoreline, (TickType_t)10) == pdTRUE)
@@ -100,6 +115,7 @@ float dataFloat::getChannel(uint16_t channelNumber, std::vector<float> *channel,
         }
     }
 }
+
 float dataFloat::getChannel(uint16_t channelNumber)
 {
     return this->getChannel(channelNumber, &this->channel, &xSemaphorechannel);

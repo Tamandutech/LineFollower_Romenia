@@ -8,49 +8,49 @@ dataPID::dataPID(std::string name)
 
     dataManager = dataManager->getInstance();
 
-    Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 0.0421);
+    Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 3.0);
     dataManager->registerParamData(Kp_Long_Line);
-    Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 0.0978);
+    Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 0.0);
     dataManager->registerParamData(Kd_Long_Line);
 
-    Kp_Medium_Line = new DataAbstract<float>("Kp_Medium_Line", name, 0.0421);
+    Kp_Medium_Line = new DataAbstract<float>("Kp_Medium_Line", name, 3.0);
     dataManager->registerParamData(Kp_Medium_Line);
-    Kd_Medium_Line = new DataAbstract<float>("Kd_Medium_Line", name, 0.0978);
+    Kd_Medium_Line = new DataAbstract<float>("Kd_Medium_Line", name, 0.0);
     dataManager->registerParamData(Kd_Medium_Line);
 
-    Kp_Short_Line = new DataAbstract<float>("Kp_Short_Line", name, 0.0421);
+    Kp_Short_Line = new DataAbstract<float>("Kp_Short_Line", name, 3.0);
     dataManager->registerParamData(Kp_Short_Line);
-    Kd_Short_Line = new DataAbstract<float>("Kd_Short_Line", name, 0.0978);
+    Kd_Short_Line = new DataAbstract<float>("Kd_Short_Line", name, 0.0);
     dataManager->registerParamData(Kd_Short_Line);
 
-    Kp_Long_Curve = new DataAbstract<float>("Kp_Long_Curve", name, 0.0421);
+    Kp_Long_Curve = new DataAbstract<float>("Kp_Long_Curve", name, 3.0);
     dataManager->registerParamData(Kp_Long_Curve);
-    Kd_Long_Curve = new DataAbstract<float>("Kd_Long_Curve", name, 0.0978);
+    Kd_Long_Curve = new DataAbstract<float>("Kd_Long_Curve", name, 0.0);
     dataManager->registerParamData(Kd_Long_Curve);
 
-    Kp_Medium_Curve = new DataAbstract<float>("Kp_Medium_Curve", name, 0.0421);
+    Kp_Medium_Curve = new DataAbstract<float>("Kp_Medium_Curve", name, 3.0);
     dataManager->registerParamData(Kp_Medium_Curve);
-    Kd_Medium_Curve = new DataAbstract<float>("Kd_Medium_Curve", name, 0.0978);
+    Kd_Medium_Curve = new DataAbstract<float>("Kd_Medium_Curve", name, 0.0);
     dataManager->registerParamData(Kd_Medium_Curve);
 
-    Kp_Short_Curve = new DataAbstract<float>("Kp_Short_Curve", name, 0.0421);
+    Kp_Short_Curve = new DataAbstract<float>("Kp_Short_Curve", name, 3.0);
     dataManager->registerParamData(Kp_Short_Curve);
-    Kd_Short_Curve = new DataAbstract<float>("Kd_Short_Curve", name, 0.0978);
+    Kd_Short_Curve = new DataAbstract<float>("Kd_Short_Curve", name, 0.0);
     dataManager->registerParamData(Kd_Short_Curve);
 
-    Kp_Zigzag = new DataAbstract<float>("Kp_zigzag", name, 0.0421);
+    Kp_Zigzag = new DataAbstract<float>("Kp_zigzag", name, 3.0);
     dataManager->registerParamData(Kp_Zigzag);
-    Kd_Zigzag = new DataAbstract<float>("Kd_zigzag", name, 0.0978);
+    Kd_Zigzag = new DataAbstract<float>("Kd_zigzag", name, 0.0);
     dataManager->registerParamData(Kd_Zigzag);
 
-    Kp_Default = new DataAbstract<float>("Kp_Default", name, 0.0421);
+    Kp_Default = new DataAbstract<float>("Kp_Default", name, 3.0);
     dataManager->registerParamData(Kp_Default);
-    Kd_Default = new DataAbstract<float>("Kd_Default", name, 0.0978);
+    Kd_Default = new DataAbstract<float>("Kd_Default", name, 0.0);
     dataManager->registerParamData(Kd_Default);
 
-    Kp_Tunning = new DataAbstract<float>("Kp_Tunning", name, 0.0421);
+    Kp_Tunning = new DataAbstract<float>("Kp_Tunning", name, 3.0);
     dataManager->registerParamData(Kp_Tunning);
-    Kd_Tunning = new DataAbstract<float>("Kd_Tunning", name, 0.0978);
+    Kd_Tunning = new DataAbstract<float>("Kd_Tunning", name, 0.0);
     dataManager->registerParamData(Kd_Tunning);
 }
 

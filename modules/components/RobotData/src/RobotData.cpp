@@ -23,6 +23,26 @@ Robot::Robot(std::string name)
     //ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
     this->sLatMarks = new dataSLatMarks("Marcacoes sLatMarks");
     //ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
+
+    this->LatSensors = new dataUint16(2, "Vetor LatSensors");
+    //ESP_LOGD(name.c_str(), "LatSensors (%p)", this->LatSensors);
+    this->CenterSensors = new dataUint16(2, "Vetor CenterSensors");
+    //ESP_LOGD(name.c_str(), "CenterSensors (%p)", this->CenterSensors);
+    this->FrontSensors = new dataFloat(sQuant, "Vetor FrontSensors");
+    //ESP_LOGD(name.c_str(), "FrontSensors (%p)", this->FrontSensors);
+
+    this->IMUacc = new dataInt32(3, "IMU Acceleration");
+    //ESP_LOGD(name.c_str(), "IMUacc (%p)", this->IMUacc);
+    this->IMUgyr = new dataInt32(3, "IMU Gyroscope");
+    //ESP_LOGD(name.c_str(), "IMUgyr (%p)", this->IMUgyr);
+
+    // Inicializando os parâmetros do robô
+    // struct CarParameters initialParams;
+    // Setparams(initialParams);
+
+    dataManager = dataManager->getInstance();
+    dataManager->getRegistredParamDataCount();
+    dataManager->loadAllParamData();
 }
 
 std::string Robot::GetName()

@@ -10,18 +10,19 @@ uint32_t LEDsService::ws2812_t1l_ticks;
 
 LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
 {// Construtor do serviço
-    //ESP_LOGD("LEDsService", "Constructor Start");
+    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
+    ESP_LOGI("LEDsService", "Constructor Start");
 
     queueLedCommands = xQueueCreate(10, sizeof(ledCommand)); // cria uma fila de espera com o tipo de pacote 'led_command_t'
 
-    //ESP_LOGD("LEDsService", "Constructor END");
+    ESP_LOGI("LEDsService", "Constructor END");
 }
 
 void LEDsService::Run()
 {
-    //ESP_LOGD("LEDsService", "Run");
+    ESP_LOGI("LEDsService", "Run");
 
-    //ESP_LOGD("LEDsService", "GPIO: %d, Canal: %d", config.gpio_num, config.channel);
+    ESP_LOGI("LEDsService", "GPIO: %d, Canal: %d", config.gpio_num, config.channel);
 
     this->config.clk_div = 2;
 
@@ -37,7 +38,7 @@ void LEDsService::Run()
     this->strip = led_strip_new_rmt_ws2812(&strip_config); // Criando o LED strip driver
 
     if (!strip) // Se falhar em criar o driver
-        //ESP_LOGE(GetName().c_str(), "Falha ao iniciar driver do LED.");
+        ESP_LOGE(GetName().c_str(), "Falha ao iniciar driver do LED.");
 
     ESP_ERROR_CHECK(this->strip->clear(this->strip, 100));
 
@@ -83,19 +84,19 @@ void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t colo
 
 esp_err_t LEDsService::queueCommand(led_command_t command)
 {// Manda o pacote de dados 'led_command_t' para a fila pela porta portMAX_DELAY
-    //ESP_LOGD(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
+    ESP_LOGI(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
     return xQueueSend(queueLedCommands, &command, portMAX_DELAY);
 }
 
 void LEDsService::led_effect_set()
 {// Liga ou desliga a LED conforme indicado em ledCommand
-    //ESP_LOGD("LEDsService", "led_effect_set");
+    ESP_LOGI("LEDsService", "led_effect_set");
     vTaskDelay(1);
     for (size_t i = 0; i < NUM_LEDS; i++)
     {
         if (ledCommand.led[i] >= 0)
         {
-            //ESP_LOGD(GetName().c_str(), "led_effect_set: ledCommand.led[%d] = %d, R = %d, G = %d, B = %d", i, ledCommand.led[i], (*((uint8_t *)(&ledCommand.color) + 2)), (*((uint8_t *)(&ledCommand.color) + 1)), (*(uint8_t *)(&ledCommand.color)));
+            ESP_LOGI(GetName().c_str(), "led_effect_set: ledCommand.led[%d] = %d, R = %d, G = %d, B = %d", i, ledCommand.led[i], (*((uint8_t *)(&ledCommand.color) + 2)), (*((uint8_t *)(&ledCommand.color) + 1)), (*(uint8_t *)(&ledCommand.color)));
 #ifndef ESP32_QEMU
             ESP_ERROR_CHECK(this->strip->set_pixel(this->strip, ledCommand.led[i], ledCommand.brightness * (*((uint8_t *)(&ledCommand.color) + 2)), ledCommand.brightness * (*((uint8_t *)(&ledCommand.color) + 1)), ledCommand.brightness * (*(uint8_t *)(&ledCommand.color))));
 #endif

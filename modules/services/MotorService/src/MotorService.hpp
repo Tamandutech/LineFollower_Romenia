@@ -9,9 +9,12 @@
 #include "DShotRMT.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "ESP32MotorControl.h"
 #include "RobotData.h"
 
 using namespace cpp_freertos;
+
+#define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 
 #define LEDC_TIMER              LEDC_TIMER_0 // Timer do LEDC utilizado
 #define LEDC_MODE               LEDC_HIGH_SPEED_MODE // Modo de velocidade do LEDC
@@ -48,6 +51,8 @@ private:
     // Atalhos do RobotData:
     Robot *robot;
     dataStatus *status;
+
+    ESP32MotorControl motors;
 
     DShotRMT brush_dir = DShotRMT((gpio_num_t)brushless_dir, (rmt_channel_t)RMT_CHANNEL_0); // inicializacao do objeto para o brushless
     DShotRMT brush_esq = DShotRMT((gpio_num_t)brushless_esq, (rmt_channel_t)RMT_CHANNEL_0);

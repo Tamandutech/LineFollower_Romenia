@@ -12,10 +12,14 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->from_sensor = SensorService::getInstance();
+    this->rpm = RPMService::getInstance();
+
+    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 };
 
 void ControlService::Run()
 {// Loop do servico   
+    ESP_LOGI(GetName().c_str(), "Início ControlService");
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -37,11 +41,14 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
 }
 
 void ControlService::ControlePID(){
+    //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
     CarState state = (CarState) get_Status->robotState->getData();
     TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
 
     from_sensor->AngleError();
-    float erro = get_Angle->getChannel(0);
+    float erro = get_Angle->getChannel(0); // em graus
+    
+    //float erro = from_sensor->AngleArray[0];
 
     if(state == CAR_STOPPED){
         control_motor->StopMotors();
@@ -51,7 +58,14 @@ void ControlService::ControlePID(){
         float Kd = get_PID->Kd(line_state)->getData();
 
         float PID = CalculatePD(Kp, Kd, erro);
-        float vel_base = get_Vel->Setpoint(line_state)->getData();
-        control_motor->ControlMotors((vel_base + PID), (vel_base - PID));
+        float vel_base = 0;
+        if((get_Vel->EncMedia->getData()) < (get_Spec->MPR->getData()/4))
+        {
+            vel_base = get_Vel->Setpoint(line_state)->getData();
+        }else{
+            vel_base = get_Vel->Setpoint(line_state)->getData();
+        }
+        ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, VelDir = %.2f", erro, (vel_base - PID), (vel_base + PID));
+        //control_motor->ControlMotors((vel_base - PID), (vel_base + PID));
     }
 }

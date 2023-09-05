@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -20,6 +21,9 @@ class dataFloat
 {
 public:
     dataFloat(uint16_t qtdChannels, std::string name = "dataFloat");
+
+    int set_Channels_mutex(std::vector<float> values, std::vector<float> *channel);
+    int get_Channel_mutex(uint16_t channelNumber, std::vector<float> *channel);
 
     int setLine(float value);
     float getLine();
@@ -52,6 +56,7 @@ private:
 
     // Valores
     SemaphoreHandle_t xSemaphorechannel;
+    std::mutex channel_mutex;
     std::vector<float> channel;
 
     SemaphoreHandle_t xSemaphoreline;
@@ -59,6 +64,8 @@ private:
 
     // Parâmetros
     uint16_t qtdChannels = 0;
+
+    bool created = false;
 
     SemaphoreHandle_t xSemaphoremaxChannel;
     std::vector<float> maxChannel;

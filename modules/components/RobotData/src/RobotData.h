@@ -73,6 +73,9 @@ private:
     dataInt32 *IMUacc;
     dataInt32 *IMUgyr;
 
+    DataStorage *storage;
+    DataManager *dataManager;
+
     Robot(std::string name);
 };
 

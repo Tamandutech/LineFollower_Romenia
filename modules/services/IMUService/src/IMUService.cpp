@@ -9,7 +9,8 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    i2c_config_t conf;
+    /*
+	i2c_config_t conf;
 	conf.mode = I2C_MODE_MASTER;
 	conf.sda_io_num = (gpio_num_t)IMU_SDA;
 	conf.scl_io_num = (gpio_num_t)IMU_SCL;
@@ -21,21 +22,24 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 
 	imu.begin();
 	imu.Enable_X();
-	imu.Enable_G();
+	imu.Enable_G();*/
 }
 
 void IMUService::Run()
 {
-    //ESP_LOGI("IMU_Sensor", "Inicio.");
+    ESP_LOGI("IMU_Sensor", "Inicio.");
     // Loop do servico
-    TickType_t xLastWakeTime = xTaskGetTickCount();
+    //TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
+        //vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
 
-		updateIMU();
+		//updateIMU();
+
+		vTaskDelay(0);
+        this->Suspend();
     }
 }
 
@@ -44,7 +48,7 @@ void IMUService::updateIMU()
 	imu.Get_X_Axes(acc);
 	imu.Get_G_Axes(gyr);
 
-	//ESP_LOGD(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
+	ESP_LOGI(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
 	saveData();
 }
 

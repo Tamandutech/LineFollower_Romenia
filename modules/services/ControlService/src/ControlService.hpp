@@ -9,6 +9,7 @@
 #include "RobotData.h"
 // Bibliotecas de servicos
 #include "MotorService.hpp"
+#include "RPMService.hpp"
 #include "SensorService.hpp"
 
 
@@ -32,6 +33,7 @@ private:
     dataFloat *get_Angle;
     MotorService *control_motor;
     SensorService *from_sensor;
+    RPMService *rpm;
 
     float erro_anterior = 0;
 

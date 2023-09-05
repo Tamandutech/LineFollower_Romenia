@@ -42,7 +42,7 @@ public:
     // Raio da angulacao dos sensores frontais
     DataAbstract<uint16_t> *RadiusSensor; // mm
     // Angulo maximo de leitura = (1/2) * (tamanho do arco)/(raio do arco)
-    DataAbstract<uint16_t> *MaxAngle; // graus
+    DataAbstract<float> *MaxAngle; // graus
 
 private:
     std::string name;

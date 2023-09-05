@@ -29,6 +29,7 @@ public:
     void Run() override;
     void AngleError();
 
+    void Sensor_resume();
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
 
 private:
@@ -49,8 +50,7 @@ private:
     
     // Objetos usados no serviço:
     QTRSensors sArray[sQuant]; // sensores frontais
-    QTRSensors sLat; // sensores laterais
-    QTRSensors sCenter; // sensores no centro do corpo
+    QTRSensors sBody[6]; // sensores laterais e do centro
     QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
 
 
@@ -65,10 +65,14 @@ private:
     int sumSensDir = 0;
     int MarksToMean = 0;
     int nLatReads = 0;
+    uint16_t lastPosition; // para teste
+    uint16_t cont_calibracao = 0;
+    uint16_t cont_leituras = 0;
 
-    void auto_calibrate();
+    void auto_calibrate(int mux);
     void SaveAngle(float new_angle);
     void ReadArray(QTRSensors *array, dataUint16 *get_array);
+    int16_t readAll(QTRSensors *sArray, int quant, bool white_line); // para teste
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);

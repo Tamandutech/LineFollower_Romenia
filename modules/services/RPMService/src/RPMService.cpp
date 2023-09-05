@@ -14,11 +14,14 @@ RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priori
     // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
     uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
     uint16_t gear = get_Spec->GearRatio->getData(); // idem
-    get_Spec->MPR->setData((rev*gear));
+    get_Spec->MPR->setData(60);
+
+    ResetCount();
 };
 
 void RPMService::Run()
 {
+    ESP_LOGI(GetName().c_str(), "Início RPMService");
     // Loop do servico, em desenvolvimento
     
     // Variavel necerraria para funcionaliade do vTaskDelayUtil, guarda a contagem de pulsos da CPU
@@ -27,7 +30,8 @@ void RPMService::Run()
     // Loop
     for (;;)
     {
-        
+        vTaskDelay(0);
+        this->Suspend();
     }
 }
 
@@ -51,5 +55,6 @@ void RPMService::SaveEncData(int32_t pulseRight, int32_t pulseLeft)
 {
     get_Vel->EncRight->setData(pulseRight);
     get_Vel->EncLeft->setData(pulseLeft);
-    get_Vel->EncMedia->setData( (pulseRight+pulseLeft)/2 );
+    get_Vel->EncMedia->setData( abs((pulseRight+pulseLeft)/2) );
+    this->Resume();
 }
