@@ -24,7 +24,7 @@ Robot::Robot(std::string name)
     this->sLatMarks = new dataSLatMarks("Marcacoes sLatMarks");
     //ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
 
-    this->LatSensors = new dataUint16(2, "Vetor LatSensors");
+    this->LatSensors = new dataUint16(4, "Vetor LatSensors");
     //ESP_LOGD(name.c_str(), "LatSensors (%p)", this->LatSensors);
     this->CenterSensors = new dataUint16(2, "Vetor CenterSensors");
     //ESP_LOGD(name.c_str(), "CenterSensors (%p)", this->CenterSensors);

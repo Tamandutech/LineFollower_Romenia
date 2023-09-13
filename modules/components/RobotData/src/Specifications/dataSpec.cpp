@@ -28,7 +28,7 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
     RobotDiameter = new DataAbstract<uint8_t>("RobotDiameter", name, 126); //mm  // mudar depois
     dataManager->registerParamData(RobotDiameter);
     
-    SensorToCenter = new DataAbstract<uint16_t>("SensorToCenter", name, 190); //mm  // mudar depois
+    SensorToCenter = new DataAbstract<uint16_t>("SensorToCenter", name, 131); //mm  // mudar depois
     dataManager->registerParamData(SensorToCenter);
     
     RadiusSensor = new DataAbstract<uint16_t>("RadiusSensor", name, 164); //mm  // mudar depois

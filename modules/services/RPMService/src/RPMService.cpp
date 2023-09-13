@@ -2,6 +2,8 @@
 
 RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
 {
+    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
+    
     // Atalhos:
     this->robot = Robot::getInstance();
     this->get_Vel = robot->getMotorData();
@@ -14,7 +16,10 @@ RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priori
     // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
     uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
     uint16_t gear = get_Spec->GearRatio->getData(); // idem
-    get_Spec->MPR->setData(60);
+    uint16_t MPR = rev*gear;
+    ESP_LOGI(GetName().c_str(), "MPR = %d", MPR);
+
+    get_Spec->MPR->setData(MPR);
 
     ResetCount();
 };

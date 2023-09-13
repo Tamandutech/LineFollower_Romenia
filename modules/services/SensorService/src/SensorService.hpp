@@ -70,8 +70,9 @@ private:
     uint16_t cont_leituras = 0;
 
     void auto_calibrate(int mux);
+    void manual_calibrate(int mux);
     void SaveAngle(float new_angle);
-    void ReadArray(QTRSensors *array, dataUint16 *get_array);
+    void SaveArray(uint16_t *array, int array_len, dataUint16 *get_array);
     int16_t readAll(QTRSensors *sArray, int quant, bool white_line); // para teste
     void processSLat();
     void processSCenter();

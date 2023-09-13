@@ -36,6 +36,11 @@ private:
     RPMService *rpm;
 
     float erro_anterior = 0;
+    float vel_base = 0;
+    float lastPulseRight = 0;
+    float lastPulseLeft = 0;
+    uint16_t deltaTimeMS_inst = 0;
+    TickType_t lastTicksRevsCalc = 0;
 
     void ControlePID();
     float CalculatePD(float K_p, float K_d, float errof);

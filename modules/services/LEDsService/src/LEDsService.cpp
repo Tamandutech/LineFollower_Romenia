@@ -15,6 +15,28 @@ LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t prio
 
     queueLedCommands = xQueueCreate(10, sizeof(ledCommand)); // cria uma fila de espera com o tipo de pacote 'led_command_t'
 
+    /* gpio_pad_select_gpio(buzzer_pin);
+    gpio_set_direction((gpio_num_t)buzzer_pin, GPIO_MODE_OUTPUT);
+
+    ledc_timer_config_t timer_conf = {
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_10_BIT,
+        .timer_num = BUZZER_TIMER,
+        .freq_hz = BUZZER_FREQ,
+        .clk_cfg = LEDC_AUTO_CLK,
+    };
+
+    ledc_channel_config_t channel_conf = {
+        .gpio_num = buzzer_pin,
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .channel = BUZZER_CHANNEL,
+        .timer_sel = BUZZER_TIMER,
+        .duty = 0,
+        .hpoint = 0,
+    };
+
+    ledc_channel_config(&channel_conf); */
+
     ESP_LOGI("LEDsService", "Constructor END");
 }
 
@@ -69,6 +91,16 @@ void LEDsService::Run()
         }
     }
 }
+
+/* void LEDsService::Buzzer_on(){
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL, 512);
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL);
+}
+
+void LEDsService::Buzzer_off(){
+    ledc_set_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL, 0);
+    ledc_update_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL);
+} */
 
 void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t color, led_effect_t effect, float brigh)
 {// Salva os dados recebidos numa variável tipo led_command_t e a adiciona na fila

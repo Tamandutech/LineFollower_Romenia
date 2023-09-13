@@ -40,9 +40,9 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     // Inicializacao dos sensores laterais
     for(int i=0; i < 6; i++)
     {
-        sArray[i].setTypeAnalogESP();
-        sArray[i].setSensorPins((const adc1_channel_t[]){ADC1_CHANNEL_5}, 1);
-        sArray[i].setSamplesPerSensor(5);
+        sBody[i].setTypeAnalogESP();
+        sBody[i].setSensorPins((const adc1_channel_t[]){ADC1_CHANNEL_5}, 1);
+        sBody[i].setSamplesPerSensor(5);
     }
     
     // Setando todas as leituras anteriores como 0 (centralizado na reta)
@@ -54,26 +54,30 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     get_frontArray->setChannels(SChannelsAngle);
 
     //Calibracao
-    //ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
+    ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     auto_calibrate(0);
-    //ESP_LOGI(GetName().c_str(), "Fim da calibração frontal.");
+    ESP_LOGI(GetName().c_str(), "Delay...");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    auto_calibrate(0);
+    ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
+    auto_calibrate(1);
+    ESP_LOGI(GetName().c_str(), "Fim da calibração.");
 }
 
 void SensorService::Run()
 {
-    //ESP_LOGI(GetName().c_str(), "Início SensorService");
+    ESP_LOGI(GetName().c_str(), "Início SensorService");
     // Loop do servico
-    //TickType_t xLastWakeTime = xTaskGetTickCount();
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        vTaskDelay(0);
-        this->Suspend();
+        //vTaskDelay(0);
+        //this->Suspend();
 
-        //processSLat();
+        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
+
+        processSLat();
         //processSCenter();
     }
 }
@@ -81,6 +85,20 @@ void SensorService::Run()
 void SensorService::Sensor_resume()
 {
     this->Resume();
+}
+
+void SensorService::manual_calibrate(int mux)
+{
+    for(int i=0; i<50; i++)
+    {
+        if(mux == 0){
+            MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
+        }
+        else{
+            MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
 }
 
 void SensorService::auto_calibrate(int mux)
@@ -92,13 +110,19 @@ void SensorService::auto_calibrate(int mux)
 
     // Zera contagem dos encoders
     //rpm->ResetCount();
+    uint16_t limit_enc;
+    if(mux == 0){
+        limit_enc = MPR_Mot/3;
+    }else{
+        limit_enc = MPR_Mot/4;
+    }
 
     // Calibração dos sensores frontais -> mux == 0
     // Calibracao dos sensores laterais -> mux == 1
-    for(int voltas=1; voltas <= 4; voltas++)
+    for(int voltas=1; voltas <= 6; voltas++)
     {
         rpm->ResetCount(); // Reseta a contagem para comecar outra volta
-        while((get_Vel->EncMedia->getData()) < (MPR_Mot/4)) // enquanto o robô não andou um giro da roda
+        while((get_Vel->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
         {
             rpm->ReadBoth(); // atualiza a leitura dos encoders
             /*
@@ -129,14 +153,15 @@ void SensorService::auto_calibrate(int mux)
             else{
                 MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
             }
-            vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
+            //vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
+            rpm->ReadBoth();
         }
         control_motor->StopMotors();
-        vTaskDelay(1500 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     control_motor->StopMotors();
     rpm->ResetCount();
-    
+    vTaskDelay(10 / portTICK_PERIOD_MS);
 }
 
 void SensorService::SaveAngle(float new_angle)
@@ -153,13 +178,9 @@ void SensorService::SaveAngle(float new_angle)
     ////ESP_LOGI(GetName().c_str(), "Array salvo.");
 }
 
-void SensorService::ReadArray(QTRSensors *array, dataUint16 *get_array)
+void SensorService::SaveArray(uint16_t *array, int array_len, dataUint16 *get_array)
 {
-    // Arrays para armazenar leitura bruta dos sensores laterais
-    uint16_t SChannels[array->getSensorCount()];
-
-    array->readCalibrated(SChannels); // leitura dos sensores laterais
-    std::vector<uint16_t> SChannelsVec(SChannels, SChannels + array->getSensorCount()); // construtor de vector(array) com os valores dos sensores laterais
+    std::vector<uint16_t> SChannelsVec(array, array + array_len); // construtor de vector(array) com os valores dos sensores laterais
 
     // armazenando da leitura bruta do sensor lateral no objeto Braia
     get_array->setChannels(SChannelsVec);
@@ -174,7 +195,7 @@ void SensorService::AngleError()
     float max_angle = get_Spec->MaxAngle->getData(); // em graus
     uint16_t radius = get_Spec->RadiusSensor->getData();
     uint16_t dis_center = get_Spec->SensorToCenter->getData();
-    
+    //ESP_LOGI(GetName().c_str(), "MaxAngle = %d; Radius = %.2f; Ang centro = %.2f", max_angle, angle_radius, angle_with_center);
     max_angle = max_angle*M_PI/180; // converte graus em rad, sendo M_PI o valor de pi da biblioteca "cmath"
 
     //vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
@@ -199,7 +220,10 @@ void SensorService::AngleError()
 
 void SensorService::processSCenter()
 {
-    //ReadArray(&sCenter, get_centerArray);
+    bool is_white = get_Spec->WhiteLine->getData();
+    uint16_t center_values[2];
+    MUX.read_from_body(center_values, sBody, 6, 7, is_white);
+    SaveArray(center_values, 2, get_centerArray);
 
     uint16_t slesq = get_centerArray->getChannel(0);
     uint16_t sldir = get_centerArray->getChannel(1);
@@ -216,18 +240,29 @@ void SensorService::processSCenter()
     {
         get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
     }
+    //ESP_LOGI(GetName().c_str(), "Estado RobotCenter = ", get_Status->RobotCenter->getData());
 }
 
 void SensorService::processSLat()
 {
-    //ReadArray(&sBody[0], get_latArray); // atualizando as leituras, funcao recebe dois ponteiros
-    
-    uint16_t slesq = get_latArray->getChannel(0);
-    uint16_t sldir = get_latArray->getChannel(1);
+    bool is_white = get_Spec->WhiteLine->getData();
+    uint16_t values[4];
+    MUX.read_from_body(values, sBody, 0, 3, is_white);
+    //SaveArray(values, 4, get_centerArray); 
+    std::vector<uint16_t> SChannelsVec(values, values + 4);
+    get_centerArray->setChannels(SChannelsVec);
+
+    uint16_t slesq_1 = get_latArray->getChannel(0);
+    uint16_t slesq_2 = get_latArray->getChannel(1);
+    uint16_t sldir_1 = get_latArray->getChannel(2);
+    uint16_t sldir_2 = get_latArray->getChannel(3);
+
+    //ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
+    //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
     
     nLatReads++; 
-    sumSensEsq += slesq;
-    sumSensDir += sldir;
+    sumSensEsq += slesq_1;
+    sumSensDir += sldir_1;
 
     if(get_Status->robotIsMapping->getData())
     {
@@ -254,7 +289,7 @@ void SensorService::processSLat()
                         get_Marks->leftPassedInc();
                     }
                     latState(false, true);
-                    
+                    ESP_LOGI(GetName().c_str(), "Marcação esquerda");
                     // LED esquerda vermelha e direita apagada
                     LEDposition[0] = LED_POSITION_LEFT;
                     LEDposition[1] = LED_POSITION_NONE;
@@ -273,6 +308,7 @@ void SensorService::processSLat()
 
                     }
                     latState(true, false);
+                    ESP_LOGI(GetName().c_str(), "Marcação direita");
 
                     // LED esquerda apagada e direita vermelha
                     LEDposition[0] = LED_POSITION_RIGHT;
@@ -295,6 +331,7 @@ void SensorService::processSLat()
                     LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
                 latState(true, true);
+                ESP_LOGI(GetName().c_str(), "Marcação esquerda e direita");
             }
         }
         else
