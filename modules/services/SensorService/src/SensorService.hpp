@@ -30,6 +30,8 @@ public:
     void AngleError();
 
     void Sensor_resume();
+    void manual_calibrate(int mux);
+    void auto_calibrate(int mux);
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
 
 private:
@@ -69,8 +71,6 @@ private:
     uint16_t cont_calibracao = 0;
     uint16_t cont_leituras = 0;
 
-    void auto_calibrate(int mux);
-    void manual_calibrate(int mux);
     void SaveAngle(float new_angle);
     void SaveArray(uint16_t *array, int array_len, dataUint16 *get_array);
     int16_t readAll(QTRSensors *sArray, int quant, bool white_line); // para teste

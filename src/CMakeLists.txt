@@ -8,5 +8,5 @@ idf_component_register(SRCS ${app_sources})
 list(
 	APPEND
 	REQUIRES
-	"RobotData"
+	"RobotData" "BLEServerService"
 )
