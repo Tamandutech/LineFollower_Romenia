@@ -47,6 +47,7 @@ private:
     DataAbstract<float> *Default_Track;
     DataAbstract<float> *Tunning;
 
+    DataManager *dataManager;
 };
 
 #endif

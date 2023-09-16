@@ -81,7 +81,7 @@ void register_map_add(void)
 
     const better_console_cmd_t map_add_cmd = {
         .command = "map_add",
-        .help = "Adiciona um registro ao mapeamento.",
+        .help = "Adiciona um registro ao mapeamento.", // pode adicionar mais de um
         .hint = NULL,
         .func = &map_add,
         .argtable = &map_add_args};
@@ -182,7 +182,7 @@ static std::string map_clear(int argc, char **argv)
     return "OK";
 }
 
-void register_map_clear(void)
+void register_map_clear(void) // não está sendo usado
 {
     const better_console_cmd_t map_clear_cmd = {
         .command = "map_clear",
@@ -233,7 +233,7 @@ static std::string map_clearAtIndex(int argc, char **argv)
     return "OK";
 }
 
-void register_map_clearAtIndex(void)
+void register_map_clearAtIndex(void) // não está sendo usado
 {
     map_clearAtIndex_args.pos = arg_str1(NULL, NULL, "<pos>", "index do registro do mapeamento que será deletado da ram.");
     map_clearAtIndex_args.end = arg_end(2);

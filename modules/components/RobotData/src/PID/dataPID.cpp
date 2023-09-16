@@ -8,6 +8,15 @@ dataPID::dataPID(std::string name)
 
     dataManager = dataManager->getInstance();
 
+    output = new DataAbstract<float>("output", name, 0);
+    dataManager->registerRuntimeData(output);
+    setpoint = new DataAbstract<float>("Setpoint", name, 0);
+    dataManager->registerRuntimeData(setpoint);
+    erro = new DataAbstract<float>("erro", name, 0);
+    dataManager->registerRuntimeData(erro);
+    erroquad = new DataAbstract<float>("erroquad", name, 0);
+    dataManager->registerRuntimeData(erroquad);
+
     Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 5.43);
     dataManager->registerParamData(Kp_Long_Line);
     Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 5.8);

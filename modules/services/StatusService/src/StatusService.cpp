@@ -2,7 +2,7 @@
 
 QueueHandle_t StatusService::gpio_evt_queue; // variavel de fila
 
-void IRAM_ATTR StatusService::gpio_isr_handler(void *arg)
+void IRAM_ATTR StatusService::gpio_isr_handler(void *arg) // se precionar o botão
 {
     // Salva o estado do robo em uma fila
     // carstate soh diferencia entre curva e reta

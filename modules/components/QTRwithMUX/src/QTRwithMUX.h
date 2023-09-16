@@ -1,3 +1,6 @@
+#ifndef QTR_MUX_H
+#define QTR_MUX_H
+
 #include "esp_log.h"
 #include "QTRSensors.h"
 #include "RobotData.h"
@@ -22,3 +25,5 @@ private:
     uint16_t lastPosition;
 
 };
+
+#endif

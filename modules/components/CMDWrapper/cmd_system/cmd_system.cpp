@@ -37,6 +37,7 @@
 #endif
 
 static const char *TAG = "CMD_SYSTEM";
+CarState lastState = CAR_STOPPED;
 
 static void register_free(void);
 static void register_heap(void);
@@ -112,10 +113,13 @@ static void register_version(void)
 
 static std::string bat_voltage(int argc, char **argv)
 {
+    QTRwithMUX MUX;
+    MUX.selectMuxPin(std::bitset<4>(4));
+    
     esp_adc_cal_characteristics_t *adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, adc_chars);
     uint32_t calVoltage = 0;
-    esp_adc_cal_get_voltage(ADC_CHANNEL_0, adc_chars, &calVoltage);
+    esp_adc_cal_get_voltage(ADC_CHANNEL_5, adc_chars, &calVoltage);
 
     calVoltage *= 3.7;
 
@@ -173,19 +177,24 @@ static std::string resume(int argc, char **argv)
 {
     auto status = Robot::getInstance()->getStatus();
     auto latMarks = Robot::getInstance()->getSLatMarks();
-    if (latMarks->marks->getSize() <= 0)
+
+    if(!status->TunningMode->getData())
     {
-        status->encreading->setData(false);
-        status->robotIsMapping->setData(true);
+        if (latMarks->marks->getSize() <= 0)
+        {
+            status->encreading->setData(false);
+            status->robotIsMapping->setData(true);
+        }
+        else
+        {
+            status->robotIsMapping->setData(false);
+            status->encreading->setData(true);
+        }
+        status->robotState->setData(lastState);
     }
-    else
-    {
-        status->robotIsMapping->setData(false);
-        status->encreading->setData(true);
-    }
-    status->robotState->setData(CAR_IN_LINE);
-    auto carstate = status->robotState->getData();
+    auto carstate = CAR_IN_LINE;
     xQueueSend(StatusService::getInstance()->gpio_evt_queue, &carstate, portMAX_DELAY);
+    status->robotPaused->setData(false);
 
     return ("O robô voltará a andar");
 }
@@ -204,11 +213,20 @@ static void register_resume(void)
 static std::string pause(int argc, char **argv)
 {
     auto status = Robot::getInstance()->getStatus();
-    status->robotIsMapping->setData(false);
-    status->encreading->setData(false);
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
-    LEDposition[0] = LED_POSITION_FRONT;
-    LEDsService::getInstance()->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+    if(status->robotState->getData() != CAR_STOPPED)
+    {
+        lastState = (CarState) status->robotState->getData();
+        status->robotPaused->setData(true);
+        status->robotIsMapping->setData(false);
+        status->encreading->setData(false);
+        status->robotState->setData(CAR_STOPPED);
+        vTaskDelay(0);
+        DataManager::getInstance()->saveAllParamDataChanged();
+
+        led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
+        LEDposition[0] = LED_POSITION_FRONT;
+        LEDsService::getInstance()->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+    }
     return ("O robô será pausado");
 }
 

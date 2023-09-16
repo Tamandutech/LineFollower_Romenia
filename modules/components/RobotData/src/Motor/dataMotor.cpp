@@ -5,6 +5,7 @@ dataMotor::dataMotor(std::string name)
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
     //ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
+    dataManager = dataManager->getInstance();
 
     // Contagem atual dos encoders
     EncRight = new DataAbstract<int32_t>("EncRight", name, 0);
@@ -14,8 +15,11 @@ dataMotor::dataMotor(std::string name)
     
     // Valocidades atuais
     RPMRight_inst = new DataAbstract<int16_t>("RPMRight_inst", name, 0);
+    dataManager->registerRuntimeData(RPMRight_inst);
     RPMLeft_inst = new DataAbstract<int16_t>("RPMLeft_inst", name, 0);
+    dataManager->registerRuntimeData(RPMLeft_inst);
     RPMCar_media = new DataAbstract<int16_t>("RPMCar_media", name, 0);
+    dataManager->registerRuntimeData(RPMCar_media);
     
     // Vel. base para calibracao
     vel_calibrate = new DataAbstract<float>("Velocidade Calibracao", name, 46); // inicia com valor 46

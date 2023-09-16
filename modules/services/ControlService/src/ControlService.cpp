@@ -48,6 +48,8 @@ void ControlService::ControlePID(){
 
     from_sensor->AngleError();
     float erro = get_Angle->getChannel(0); // em graus
+    get_PID->erro->setData(erro);
+    get_PID->erroquad->setData((erro*erro));
     
     //float erro = from_sensor->AngleArray[0];
 
@@ -61,12 +63,17 @@ void ControlService::ControlePID(){
         deltaTimeMS_inst = (xTaskGetTickCount() - lastTicksRevsCalc) * portTICK_PERIOD_MS;
         lastTicksRevsCalc = xTaskGetTickCount();
         float PID = CalculatePD(Kp, Kd, erro);
+        get_PID->output->setData(PID);
         //vel_base += 1;
         int32_t enc_right = get_Vel->EncRight->getData();
         int32_t enc_left = get_Vel->EncLeft->getData();
 
-        float RPM_Right = (((enc_right - lastPulseRight) / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
-        float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
+        float RPM_Right = (((float)enc_right - lastPulseRight)*(float)60000) / ((float)MPR_Mot*(float)deltaTimeMS_inst);
+        float RPM_Left  = (((float)enc_left  - lastPulseLeft)*(float)60000)  / ((float)MPR_Mot*(float)deltaTimeMS_inst);
+        get_Vel->RPMRight_inst->setData(RPM_Right);
+        get_Vel->RPMLeft_inst->setData(RPM_Left);
+        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
+
         lastPulseRight = enc_right;
         lastPulseLeft = enc_left;
         /* if((get_Vel->EncMedia->getData()) < (get_Spec->MPR->getData()/8))
@@ -76,6 +83,7 @@ void ControlService::ControlePID(){
             vel_base = get_Vel->Setpoint(line_state)->getData();
         } */
         vel_base = get_Vel->Setpoint(line_state)->getData();
+        get_PID->setpoint->setData(vel_base);
         ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
         control_motor->ControlMotors((vel_base - PID), (vel_base + PID));\

@@ -15,6 +15,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     TrackStatus = new DataAbstract<uint8_t>("TrackStatus", name, SHORT_LINE);
     RobotCenter = new DataAbstract<uint8_t>("RobotCenter", name, CAR_CENTERED);
     RealTrackStatus = new DataAbstract<uint8_t>("RealTrackStatus", name, 0);
+    robotPaused = new DataAbstract<bool>("robotPaused", name, false);
 
     // Objetos do tipo bool
     robotIsMapping = new DataAbstract<bool>("robotIsMapping", name, 0);

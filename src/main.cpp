@@ -105,7 +105,7 @@ void app_main()
     //ESP_LOGI(MappingService::getInstance()->GetName().c_str(), "Mapeamento");
     
     //imuService = IMUService::getInstance("IMUService", 4096, 5);
-    ////ESP_LOGI(IMUService::getInstance()->GetName().c_str(), "IMUService");
+    //ESP_LOGI(IMUService::getInstance()->GetName().c_str(), "IMUService");
     
     statusService = StatusService::getInstance("StatusService", 10000, 8);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
