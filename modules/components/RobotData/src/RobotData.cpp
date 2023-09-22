@@ -8,32 +8,36 @@ Robot::Robot(std::string name)
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
     //ESP_LOGD(name.c_str(), "Criando objeto: %s (%p)", name.c_str(), this);
+    storage = storage->getInstance();
 
+    storage->mount_storage("/robotdata");
+
+    storage->list_files();
 
     // Instânciando objetos componentes do Robô.
     //ESP_LOGD(name.c_str(), "Criando sub-objetos para o %s", "Robô");
 
-    this->MotorVel = new dataMotor("Velocidade Motor");
+    this->MotorVel = new dataMotor("Velocidade_Motor");
     //ESP_LOGD(name.c_str(), "velocidade (%p)", this->MotorVel);
-    this->RobotSpec = new dataSpec("Especificacoes Robo");
+    this->RobotSpec = new dataSpec("Especificacoes_Robo");
     //ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
-    this->PID = new dataPID("Valores PID");
+    this->PID = new dataPID("Valores_PID");
     //ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
-    this->RobotStatus = new dataStatus(CAR_IN_LINE, "Estados RobotStatus"); // inicialmente se encontra numa linha
+    this->RobotStatus = new dataStatus(CAR_IN_LINE, "Estados_RobotStatus"); // inicialmente se encontra numa linha
     //ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
-    this->sLatMarks = new dataSLatMarks("Marcacoes sLatMarks");
+    this->sLatMarks = new dataSLatMarks("Marcacoes_sLatMarks");
     //ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);
 
-    this->LatSensors = new dataUint16(4, "Vetor LatSensors");
+    this->LatSensors = new dataUint16(4, "Vetor_LatSensors");
     //ESP_LOGD(name.c_str(), "LatSensors (%p)", this->LatSensors);
-    this->CenterSensors = new dataUint16(2, "Vetor CenterSensors");
+    this->CenterSensors = new dataUint16(2, "Vetor_CenterSensors");
     //ESP_LOGD(name.c_str(), "CenterSensors (%p)", this->CenterSensors);
-    this->FrontSensors = new dataFloat(sQuant, "Vetor FrontSensors");
+    this->FrontSensors = new dataFloat(sQuant, "Vetor_FrontSensors");
     //ESP_LOGD(name.c_str(), "FrontSensors (%p)", this->FrontSensors);
 
-    this->IMUacc = new dataInt32(3, "IMU Acceleration");
+    this->IMUacc = new dataInt32(3, "IMU_Acceleration");
     //ESP_LOGD(name.c_str(), "IMUacc (%p)", this->IMUacc);
-    this->IMUgyr = new dataInt32(3, "IMU Gyroscope");
+    this->IMUgyr = new dataInt32(3, "IMU_Gyroscope");
     //ESP_LOGD(name.c_str(), "IMUgyr (%p)", this->IMUgyr);
 
     // Inicializando os parâmetros do robô

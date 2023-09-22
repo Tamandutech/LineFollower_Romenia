@@ -75,14 +75,18 @@ void app_main()
 
     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
     LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
     ledsService->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
 
     //ESP_LOGI("Main", "Configurando LOGs...");
     esp_log_level_set("*", ESP_LOG_ERROR);
-    esp_log_level_set("*", ESP_LOG_DEBUG);
+    //esp_log_level_set("*", ESP_LOG_DEBUG);
     esp_log_level_set("LEDsService", ESP_LOG_ERROR);
     esp_log_level_set("StatusService", ESP_LOG_ERROR);
     esp_log_level_set("Main", ESP_LOG_DEBUG);
+    esp_log_level_set("BLEServerService", ESP_LOG_DEBUG);
+    esp_log_level_set("DataManager", ESP_LOG_ERROR);
+    esp_log_level_set("DataStorage", ESP_LOG_ERROR);
     esp_log_level_set("QTRSensorMUX", ESP_LOG_DEBUG);
 
     //ESP_LOGD("Main", "Configurando Comandos...");
@@ -130,11 +134,11 @@ void app_main()
     sensorService->Start();
     controlService->Start();
 
-    //ESP_LOGI("Main", "Ligando LEDs");
+    ESP_LOGI("Main", "Ligando LEDs");
     ledsService->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 1);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    //ESP_LOGI("Main", "Apagando LEDs");
+    ESP_LOGI("Main", "Apagando LEDs");
     ledsService->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
 
     

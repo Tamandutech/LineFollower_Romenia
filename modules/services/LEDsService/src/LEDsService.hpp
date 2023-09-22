@@ -50,9 +50,9 @@ enum led_position_t
 {
     // Which LED
     LED_POSITION_NONE = -1,
-    LED_POSITION_LEFT = 0,
-    LED_POSITION_RIGHT = 1,
-    LED_POSITION_FRONT = 2,
+    LED_POSITION_LEFT = 2,
+    LED_POSITION_RIGHT = 0,
+    LED_POSITION_FRONT = 1,
 };
 
 enum led_effect_t
