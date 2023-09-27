@@ -12,8 +12,7 @@ Robot::Robot(std::string name)
 
     storage->mount_storage("/robotdata");
 
-    storage->list_files();
-    
+
     // Instânciando objetos componentes do Robô.
     //ESP_LOGD(name.c_str(), "Criando sub-objetos para o %s", "Robô");
 

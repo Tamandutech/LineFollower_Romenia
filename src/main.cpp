@@ -87,6 +87,9 @@ void app_main()
     esp_log_level_set("DataManager", ESP_LOG_ERROR);
     esp_log_level_set("DataStorage", ESP_LOG_ERROR);
     esp_log_level_set("Main", ESP_LOG_DEBUG);
+    esp_log_level_set("BLEServerService", ESP_LOG_DEBUG);
+    esp_log_level_set("DataManager", ESP_LOG_ERROR);
+    esp_log_level_set("DataStorage", ESP_LOG_ERROR);
     esp_log_level_set("QTRSensorMUX", ESP_LOG_DEBUG);
 
     //ESP_LOGD("Main", "Configurando Comandos...");
