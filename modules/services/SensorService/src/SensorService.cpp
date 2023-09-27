@@ -55,11 +55,11 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
 
     //Calibracao
     ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
-    auto_calibrate(0);
+    manual_calibrate(0);
     ESP_LOGI(GetName().c_str(), "Delay...");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
-    auto_calibrate(1);
+    manual_calibrate(1);
     ESP_LOGI(GetName().c_str(), "Fim da calibração.");
 }
 

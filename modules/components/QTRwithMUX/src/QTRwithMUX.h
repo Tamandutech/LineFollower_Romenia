@@ -11,7 +11,7 @@
 class QTRwithMUX
 {
 public:
-    
+
     void calibrate_all(QTRSensors *sArray, int quant);
     void calibrate_body(QTRSensors *sArray, int quant);
     int16_t read_all(QTRSensors *sArray, int quant, bool white_line);

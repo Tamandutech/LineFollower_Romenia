@@ -16,8 +16,8 @@ using namespace cpp_freertos;
 
 #define NUM_LEDS 3 // Numero de leds
 
-#define BUZZER_CHANNEL LEDC_CHANNEL_0 
-#define BUZZER_TIMER LEDC_TIMER_0
+#define BUZZER_CHANNEL LEDC_CHANNEL_2 
+#define BUZZER_TIMER LEDC_TIMER_2
 #define BUZZER_FREQ 2000
 
 #define WS2812_T0H_NS (350)
@@ -50,9 +50,9 @@ enum led_position_t
 {
     // Which LED
     LED_POSITION_NONE = -1,
-    LED_POSITION_LEFT = 0,
-    LED_POSITION_RIGHT = 1,
-    LED_POSITION_FRONT = 2,
+    LED_POSITION_LEFT = 2,
+    LED_POSITION_RIGHT = 0,
+    LED_POSITION_FRONT = 1,
 };
 
 enum led_effect_t
@@ -178,7 +178,7 @@ public:
     void Run() override;
 
 private:
-    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(GPIO_NUM_32, RMT_CHANNEL_0);
+    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(GPIO_NUM_2, RMT_CHANNEL_0);
     led_strip_config_t strip_config;
     led_strip_t *strip;
 

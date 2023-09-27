@@ -20,21 +20,38 @@ dataMotor::dataMotor(std::string name)
     dataManager->registerRuntimeData(RPMLeft_inst);
     RPMCar_media = new DataAbstract<int16_t>("RPMCar_media", name, 0);
     dataManager->registerRuntimeData(RPMCar_media);
+
+    // Vel. máximo e mínimo
+    max = new DataAbstract<int8_t>("max", name, 100);
+    dataManager->registerParamData(max);
+    min = new DataAbstract<int8_t>("min", name, 0);
+    dataManager->registerParamData(min);
     
     // Vel. base para calibracao
-    vel_calibrate = new DataAbstract<float>("Velocidade Calibracao", name, 46); // inicia com valor 46
+    vel_calibrate = new DataAbstract<float>("Velocidade_Calibracao", name, 46); // inicia com valor 46
+    dataManager->registerParamData(vel_calibrate);
 
     //Setpoints para os tipos de trechos
     Long_Line = new DataAbstract<float>("PWM_Long_line", name, 80);
+    dataManager->registerParamData(Long_Line);
     Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 80);
+    dataManager->registerParamData(Medium_Line);
     Short_Line = new DataAbstract<float>("PWM_Short_line", name, 80);
+    dataManager->registerParamData(Short_Line);
     Long_Curve = new DataAbstract<float>("PWM_Long_curve", name, 80);
+    dataManager->registerParamData(Long_Curve);
     Medium_Curve = new DataAbstract<float>("PWM_Medium_curve", name, 80);
+    dataManager->registerParamData(Medium_Curve);
     Short_Curve = new DataAbstract<float>("PWM_Short_curve", name, 80);
+    dataManager->registerParamData(Short_Curve);
     Zigzag = new DataAbstract<float>("PWM_ZigZag", name, 80);
+    dataManager->registerParamData(Zigzag);
     Special_Track = new DataAbstract<float>("PWM_SpecialTrack", name, 80);
+    dataManager->registerParamData(Special_Track);
     Default_Track = new DataAbstract<float>("PWM_Default_Track", name, 80);
-    Tunning = new DataAbstract<float>("PWM_Tunning", name, 80);
+    dataManager->registerParamData(Default_Track);
+    Tunning = new DataAbstract<float>("PWM_Tunning", name, 500);
+    dataManager->registerParamData(Tunning);
     
 }
 

@@ -26,6 +26,12 @@ public:
     DataAbstract<int16_t> *RPMRight_inst;
     DataAbstract<int16_t> *RPMLeft_inst;
     DataAbstract<int16_t> *RPMCar_media;
+
+    // Restrições nos valores do PWM
+    DataAbstract<int8_t> *max;
+    DataAbstract<int8_t> *min;
+
+    
     
     // // Vel. base para calibracao:
     DataAbstract<float> *vel_calibrate;

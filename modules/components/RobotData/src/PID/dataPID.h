@@ -21,6 +21,11 @@ public:
     DataAbstract<float> *erroquad;
     DataAbstract<float> *output;
 
+    // PID Motores
+    DataAbstract<float> *Kp_Linear;
+    DataAbstract<float> *Kd_Linear;
+    DataAbstract<float> *Ki_Linear;
+
     // Funções que retornam as constantes do PID definidas para um trecho da pista
     DataAbstract<float> *Kp(TrackState state);
     DataAbstract<float> *Kd(TrackState state);
@@ -30,7 +35,7 @@ private:
     const char *tag = "RobotData";
 
     // Parâmetros do PID
-
+    
     // Linha
     DataAbstract<float> *Kp_Long_Line;
     DataAbstract<float> *Kd_Long_Line; 

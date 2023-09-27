@@ -198,7 +198,7 @@ static std::string map_clearFlash(int argc, char **argv)
 {
     DataMap* MapMarks = Robot::getInstance()->getSLatMarks()->marks;
     MapMarks->clearAllData();
-    DataStorage::getInstance()->delete_data("sLatMarks.marks");
+    DataStorage::getInstance()->delete_data("Marcacoes_sLatMarks.marks");
     return "OK";
 }
 

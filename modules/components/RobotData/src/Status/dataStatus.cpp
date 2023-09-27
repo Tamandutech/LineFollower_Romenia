@@ -7,7 +7,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
     //ESP_LOGD(tag, "Criando objeto: %s (%p)", name.c_str(), this);
-
+    dataManager = dataManager->getInstance();
     //variable = nex DataAbstract<variable_type>("variable_name", parentObjectName,value)
 
     // Obejetos do tipo uint8_t
@@ -23,6 +23,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
+    dataManager->registerParamData(TunningMode);
     HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, false);
     FirstMark = new DataAbstract<bool>("FirstMark", name, false);
     Transition = new DataAbstract<bool>("Transition", name, false);

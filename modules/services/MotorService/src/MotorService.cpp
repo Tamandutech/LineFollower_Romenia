@@ -9,15 +9,6 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    //gpio_set_direction((gpio_num_t)in_dir1, GPIO_MODE_OUTPUT);
-    //gpio_set_direction((gpio_num_t)in_dir2, GPIO_MODE_OUTPUT);
-    //gpio_set_direction((gpio_num_t)in_esq1, GPIO_MODE_OUTPUT);
-    //gpio_set_direction((gpio_num_t)in_esq2, GPIO_MODE_OUTPUT);
-    //gpio_set_direction((gpio_num_t)stby, GPIO_MODE_OUTPUT);
-    //gpio_set_level((gpio_num_t)stby, 1);
-    //InitPWM((gpio_num_t)pwmA, PWM_A_PIN);
-    //InitPWM((gpio_num_t)pwmB, PWM_B_PIN);
-
     motors.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN1, DRIVER_BIN2, DRIVER_PWMB);
 
     // Brushless:
@@ -27,7 +18,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
 void MotorService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início MotorService");
+    //ESP_LOGI(GetName().c_str(), "Início MotorService");
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     // TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -49,7 +40,7 @@ void MotorService::ControlMotors(float velesq, float veldir){
 
 void MotorService::StopMotors()
 {
-    ESP_LOGI(GetName().c_str(), "Desligando motores");
+    //ESP_LOGI(GetName().c_str(), "Desligando motores");
     motors.motorsStop();
 }
 

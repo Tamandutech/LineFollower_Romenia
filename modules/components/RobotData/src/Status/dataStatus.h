@@ -40,6 +40,7 @@ private:
     std::string name;
     const char *tag = "RobotData";
 
+    DataManager *dataManager;
 };
 
 #endif
