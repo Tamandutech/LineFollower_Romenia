@@ -50,8 +50,11 @@ private:
     TickType_t lastTicksRevsCalc = 0;
     int count =0;
 
-    void ControlePID();
+    void ControlePIDwithoutRPM();
+    void ControlePIDandRPM();
+    void Teste_vel_fixo();
     float ControlMotors(float RPM_insta, float vel_motor, bool right);
+    float ControlMotors_2PIDs(float RPM_insta, float vel_motor, bool right);
     float CalculatePD(float K_p, float K_d, float errof);
     
 };

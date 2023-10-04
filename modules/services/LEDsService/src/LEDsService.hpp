@@ -16,9 +16,6 @@ using namespace cpp_freertos;
 
 #define NUM_LEDS 3 // Numero de leds
 
-#define BUZZER_CHANNEL LEDC_CHANNEL_2 
-#define BUZZER_TIMER LEDC_TIMER_2
-#define BUZZER_FREQ 2000
 
 #define WS2812_T0H_NS (350)
 #define WS2812_T0L_NS (1000)
@@ -173,8 +170,6 @@ public:
     
     void config_LED(led_position_t position[NUM_LEDS], led_color_t color, led_effect_t effect, float brigh);
     led_command_t position_LED();
-    void Buzzer_on();
-    void Buzzer_off();
     void Run() override;
 
 private:

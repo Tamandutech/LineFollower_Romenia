@@ -54,13 +54,25 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     get_frontArray->setChannels(SChannelsAngle);
 
     //Calibracao
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
+    
+    LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
+
+    //buzzer.beep_buzzer();
     ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     manual_calibrate(0);
+    
+    LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
     ESP_LOGI(GetName().c_str(), "Delay...");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
     ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
+    LED->config_LED(LEDposition, COLOR_LIME, LED_EFFECT_SET, 1);
     manual_calibrate(1);
+    
     ESP_LOGI(GetName().c_str(), "Fim da calibração.");
+    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
 }
 
 void SensorService::Run()
@@ -243,6 +255,15 @@ void SensorService::processSCenter()
     //ESP_LOGI(GetName().c_str(), "Estado RobotCenter = ", get_Status->RobotCenter->getData());
 }
 
+int SensorService::lower_value(uint16_t s_1, uint16_t s_2){
+    if((s_1 < s_2)){
+        return s_1;
+    }
+    else{
+        return s_2;
+    }
+}
+
 void SensorService::processSLat()
 {
     bool is_white = get_Spec->WhiteLine->getData();
@@ -261,8 +282,8 @@ void SensorService::processSLat()
     //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
     
     nLatReads++; 
-    sumSensEsq += slesq_1;
-    sumSensDir += sldir_1;
+    sumSensEsq += lower_value(slesq_1, slesq_2);
+    sumSensDir += lower_value(sldir_1, sldir_2);
 
     if(get_Status->robotIsMapping->getData())
     {

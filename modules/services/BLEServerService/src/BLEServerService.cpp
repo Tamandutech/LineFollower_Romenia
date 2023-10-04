@@ -157,7 +157,7 @@ void RunStream(void *pvParameters)
     {
         vTaskDelayUntil(&xLastWakeTime, TaskDelay / portTICK_PERIOD_MS);
         //ESP_LOGD(Tag,"Bluetooth Conectado: %d, Itens para stream: %d", bleservice->deviceConnected, datamanager->NumItemsReadyStream());
-        if(datamanager->NumItemsReadyStream() > 0 && bleservice->deviceConnected && (CarState)status->robotState->getData() != CAR_STOPPED)
+        if(datamanager->NumItemsReadyStream() > 0 && bleservice->deviceConnected)
         {
             cJSON* StreamData = datamanager->getStreamData();
             char *json_Data = cJSON_PrintUnformatted(StreamData);

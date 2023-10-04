@@ -24,6 +24,20 @@ dataPID::dataPID(std::string name)
     Ki_Linear = new DataAbstract<float>("Ki_Linear", name, 0);
     dataManager->registerParamData(Ki_Linear);
 
+    Kp_L_Linear = new DataAbstract<float>("Kp_L_Linear", name, 5.43);
+    dataManager->registerParamData(Kp_L_Linear);
+    Kd_L_Linear = new DataAbstract<float>("Kd_L_Linear", name, 5.8);
+    dataManager->registerParamData(Kd_L_Linear);
+    Ki_L_Linear = new DataAbstract<float>("Ki_L_Linear", name, 0);
+    dataManager->registerParamData(Ki_L_Linear);
+
+    Kp_R_Linear = new DataAbstract<float>("Kp_R_Linear", name, 5.43);
+    dataManager->registerParamData(Kp_R_Linear);
+    Kd_R_Linear = new DataAbstract<float>("Kd_R_Linear", name, 5.8);
+    dataManager->registerParamData(Kd_R_Linear);
+    Ki_R_Linear = new DataAbstract<float>("Ki_R_Linear", name, 0);
+    dataManager->registerParamData(Ki_R_Linear);
+
     Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 5.43);
     dataManager->registerParamData(Kp_Long_Line);
     Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 5.8);

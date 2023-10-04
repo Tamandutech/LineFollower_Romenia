@@ -54,6 +54,7 @@ private:
     QTRSensors sArray[sQuant]; // sensores frontais
     QTRSensors sBody[6]; // sensores laterais e do centro
     QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
+    BuzzerControl buzzer; // objeto para acessar o buzzer
 
 
     // Variaveis do servico
@@ -73,7 +74,7 @@ private:
 
     void SaveAngle(float new_angle);
     void SaveArray(uint16_t *array, int array_len, dataUint16 *get_array);
-    int16_t readAll(QTRSensors *sArray, int quant, bool white_line); // para teste
+    int lower_value(uint16_t s_1, uint16_t s_2);
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);

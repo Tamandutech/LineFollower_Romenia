@@ -11,40 +11,21 @@ uint32_t LEDsService::ws2812_t1l_ticks;
 LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
 {// Construtor do serviço
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
-    ESP_LOGI("LEDsService", "Constructor Start");
+    //ESP_LOGI("LEDsService", "Constructor Start");
 
     queueLedCommands = xQueueCreate(10, sizeof(ledCommand)); // cria uma fila de espera com o tipo de pacote 'led_command_t'
 
-    /* gpio_pad_select_gpio(buzzer_pin);
+    gpio_pad_select_gpio(buzzer_pin);
     gpio_set_direction((gpio_num_t)buzzer_pin, GPIO_MODE_OUTPUT);
 
-    ledc_timer_config_t timer_conf = {
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .duty_resolution = LEDC_TIMER_10_BIT,
-        .timer_num = BUZZER_TIMER,
-        .freq_hz = BUZZER_FREQ,
-        .clk_cfg = LEDC_AUTO_CLK,
-    };
-
-    ledc_channel_config_t channel_conf = {
-        .gpio_num = buzzer_pin,
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .channel = BUZZER_CHANNEL,
-        .timer_sel = BUZZER_TIMER,
-        .duty = 0,
-        .hpoint = 0,
-    };
-
-    ledc_channel_config(&channel_conf); */
-
-    ESP_LOGI("LEDsService", "Constructor END");
+    //ESP_LOGI("LEDsService", "Constructor END");
 }
 
 void LEDsService::Run()
 {
-    ESP_LOGI("LEDsService", "Run");
+    //ESP_LOGI("LEDsService", "Run");
 
-    ESP_LOGI("LEDsService", "GPIO: %d, Canal: %d", config.gpio_num, config.channel);
+    //ESP_LOGI("LEDsService", "GPIO: %d, Canal: %d", config.gpio_num, config.channel);
 
     this->config.clk_div = 2;
 
@@ -60,7 +41,7 @@ void LEDsService::Run()
     this->strip = led_strip_new_rmt_ws2812(&strip_config); // Criando o LED strip driver
 
     if (!strip) // Se falhar em criar o driver
-        ESP_LOGE(GetName().c_str(), "Falha ao iniciar driver do LED.");
+        //ESP_LOGE(GetName().c_str(), "Falha ao iniciar driver do LED.");
 
     ESP_ERROR_CHECK(this->strip->clear(this->strip, 100));
 
@@ -92,16 +73,6 @@ void LEDsService::Run()
     }
 }
 
-/* void LEDsService::Buzzer_on(){
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL, 512);
-    ledc_update_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL);
-}
-
-void LEDsService::Buzzer_off(){
-    ledc_set_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL, 0);
-    ledc_update_duty(LEDC_HIGH_SPEED_MODE, BUZZER_CHANNEL);
-} */
-
 void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t color, led_effect_t effect, float brigh)
 {// Salva os dados recebidos numa variável tipo led_command_t e a adiciona na fila
     led_command_t command;
@@ -116,19 +87,19 @@ void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t colo
 
 esp_err_t LEDsService::queueCommand(led_command_t command)
 {// Manda o pacote de dados 'led_command_t' para a fila pela porta portMAX_DELAY
-    ESP_LOGI(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
+    //ESP_LOGI(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
     return xQueueSend(queueLedCommands, &command, portMAX_DELAY);
 }
 
 void LEDsService::led_effect_set()
 {// Liga ou desliga a LED conforme indicado em ledCommand
-    ESP_LOGI("LEDsService", "led_effect_set");
+    //ESP_LOGI("LEDsService", "led_effect_set");
     vTaskDelay(1);
     for (size_t i = 0; i < NUM_LEDS; i++)
     {
         if (ledCommand.led[i] >= 0)
         {
-            ESP_LOGI(GetName().c_str(), "led_effect_set: ledCommand.led[%d] = %d, R = %d, G = %d, B = %d", i, ledCommand.led[i], (*((uint8_t *)(&ledCommand.color) + 2)), (*((uint8_t *)(&ledCommand.color) + 1)), (*(uint8_t *)(&ledCommand.color)));
+            //ESP_LOGI(GetName().c_str(), "led_effect_set: ledCommand.led[%d] = %d, R = %d, G = %d, B = %d", i, ledCommand.led[i], (*((uint8_t *)(&ledCommand.color) + 2)), (*((uint8_t *)(&ledCommand.color) + 1)), (*(uint8_t *)(&ledCommand.color)));
 #ifndef ESP32_QEMU
             ESP_ERROR_CHECK(this->strip->set_pixel(this->strip, ledCommand.led[i], ledCommand.brightness * (*((uint8_t *)(&ledCommand.color) + 2)), ledCommand.brightness * (*((uint8_t *)(&ledCommand.color) + 1)), ledCommand.brightness * (*(uint8_t *)(&ledCommand.color))));
 #endif
