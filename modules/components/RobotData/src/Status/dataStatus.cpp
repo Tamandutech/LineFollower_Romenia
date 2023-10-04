@@ -21,6 +21,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     robotIsMapping = new DataAbstract<bool>("robotIsMapping", name, 0);
     encreading = new DataAbstract<bool>("encreading", name, 0);
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
+    dataManager->registerParamData(LineColorBlack);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
     dataManager->registerParamData(TunningMode);

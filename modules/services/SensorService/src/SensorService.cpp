@@ -59,7 +59,6 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     
     LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
 
-    //buzzer.beep_buzzer();
     ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     manual_calibrate(0);
     

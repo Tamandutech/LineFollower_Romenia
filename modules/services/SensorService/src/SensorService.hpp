@@ -54,7 +54,6 @@ private:
     QTRSensors sArray[sQuant]; // sensores frontais
     QTRSensors sBody[6]; // sensores laterais e do centro
     QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
-    BuzzerControl buzzer; // objeto para acessar o buzzer
 
 
     // Variaveis do servico
