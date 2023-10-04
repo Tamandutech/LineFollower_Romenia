@@ -258,6 +258,6 @@ void ControlService::ControlePIDandRPM(){
             count = 0;
         }else{ count++; }
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f", erro);
-        control_motor->ControlMotors(vel_base, vel_base);
+        control_motor->ControlMotors(vel_left, vel_right);
     }
 }
