@@ -61,5 +61,5 @@ void RPMService::SaveEncData(int32_t pulseRight, int32_t pulseLeft)
     get_Vel->EncRight->setData(pulseRight);
     get_Vel->EncLeft->setData(pulseLeft);
     get_Vel->EncMedia->setData( abs((pulseRight+pulseLeft)/2) );
-    this->Resume();
+    //this->Resume();
 }

@@ -9,7 +9,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    motors.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN1, DRIVER_BIN2, DRIVER_PWMB);
+    motors.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN2, DRIVER_BIN1, DRIVER_PWMB);
 
     // Brushless:
     //brush_dir.begin(DSHOT_MODE);
@@ -35,7 +35,6 @@ void MotorService::ControlMotors(float velesq, float veldir){
     veldir = constrain(veldir, -100, 100);
     motors.motorSpeed(0, velesq);
     motors.motorSpeed(1, veldir);
-    
 }
 
 void MotorService::StopMotors()

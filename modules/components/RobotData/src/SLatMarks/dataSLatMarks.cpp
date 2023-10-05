@@ -20,7 +20,7 @@ dataSLatMarks::dataSLatMarks(std::string name)
     // Variáveis Registradas
     
     marks = new DataMap("marks", name);
-    dataManager->registerParamData(marks);
+    //dataManager->registerParamData(marks);
 
     // - Variáveis do tipo uint8_t
     
