@@ -279,17 +279,19 @@ void ControlService::ControlePIDandRPM(){
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f MPR_Mot = %d deltaTimeMS_inst = %d", erro, MPR_Mot, deltaTimeMS_inst);
         //ESP_LOGI(GetName().c_str(), "VelBase = %.2f VelEsq = %.2f VelDir = %.2f", vel_base, vel_left, vel_right);
         
-        float max = get_Spec->MaxAngle_Center->getData();
-        if(abs(erro) >= (max-1.0))
+        float max_angle = get_Spec->MaxAngle_Center->getData();
+        if(abs(erro) >= (max_angle-1.0))
         {
+            int8_t min = get_Vel->min->getData();
+            int8_t max = get_Vel->max->getData();
             if(erro >= 0){
-                get_Vel->PWM_right->setData(60);
-                get_Vel->PWM_left->setData(-30);
-                control_motor->ControlMotors(-30, 60);
+                get_Vel->PWM_right->setData(max);
+                get_Vel->PWM_left->setData(min);
+                control_motor->ControlMotors(min, max);
             }else{
-                get_Vel->PWM_right->setData(-30);
-                get_Vel->PWM_left->setData(60);
-                control_motor->ControlMotors(60, -30);
+                get_Vel->PWM_right->setData(min);
+                get_Vel->PWM_left->setData(max);
+                control_motor->ControlMotors(max, min);
             }
         }else{
             get_Vel->PWM_right->setData(vel_right);
