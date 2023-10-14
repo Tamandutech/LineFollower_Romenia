@@ -29,7 +29,7 @@ void ControlService::Run()
     {
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
         if(get_Status->robotState->getData() != CAR_STOPPED){
-            Teste_vel_fixo();
+            ControlePIDandRPM();
         }else{
             control_motor->StopMotors();
             rpm->ResetCount();
@@ -48,7 +48,7 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
     return PID_now;
 }
 
-float ControlService::ControlMotors(float RPM_insta, float vel_motor, bool right)
+float ControlService::ControlRPM(float RPM_insta, float vel_motor, bool right)
 {
     float K_p = get_PID->Kp_Linear->getData();
     float K_d = get_PID->Kd_Linear->getData();
@@ -69,7 +69,7 @@ float ControlService::ControlMotors(float RPM_insta, float vel_motor, bool right
     return (PID_now);
 }
 
-float ControlService::ControlMotors_2PIDs(float RPM_insta, float vel_motor, bool right)
+float ControlService::ControlRPM_2PIDs(float RPM_insta, float vel_motor, bool right)
 {
     float PID_now;
     float erro = vel_motor - RPM_insta;
@@ -130,7 +130,7 @@ void ControlService::Teste_vel_fixo(){
         
         get_Vel->RPMRight_inst->setData(RPM_Right);
         get_Vel->RPMLeft_inst->setData(RPM_Left);
-        //get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
+        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
 
         lastPulseRight = enc_right;
         lastPulseLeft = enc_left;
@@ -141,10 +141,10 @@ void ControlService::Teste_vel_fixo(){
         float vel_right = vel_base;
         float vel_left = vel_base;
 
-        vel_right = ControlMotors(RPM_Right, vel_right, 1);
-        vel_left = ControlMotors(RPM_Left, vel_left, 0);
+        vel_right = ControlRPM(RPM_Right, vel_right, 1);
+        vel_left = ControlRPM(RPM_Left, vel_left, 0);
 
-        if(count > 400){
+        /* if(count > 400){
             RPM_Right = (((float)enc_right)*(float)60000) / ((float)MPR_Mot*(float)(xTaskGetTickCount()*portTICK_PERIOD_MS));
             RPM_Left  = (((float)enc_left)*(float)60000)  / ((float)MPR_Mot*(float)(xTaskGetTickCount()*portTICK_PERIOD_MS));
             get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
@@ -155,7 +155,12 @@ void ControlService::Teste_vel_fixo(){
             count++;
             control_motor->ControlMotors(vel_left, vel_right);
             //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
-        }
+        } */
+        control_motor->ControlMotors(20, 20);
+        if(count > 50){
+            ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
+            count = 0;
+        }else{ count++; }
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f", erro);
         
     }
@@ -190,6 +195,10 @@ void ControlService::ControlePIDwithoutRPM(){
         float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
         lastPulseRight = enc_right;
         lastPulseLeft = enc_left;
+
+        get_Vel->RPMRight_inst->setData(RPM_Right);
+        get_Vel->RPMLeft_inst->setData(RPM_Left);
+        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
         /* if((get_Vel->EncMedia->getData()) < (get_Spec->MPR->getData()/8))
         {
             vel_base = get_Vel->vel_calibrate->getData();
@@ -247,16 +256,16 @@ void ControlService::ControlePIDandRPM(){
         vel_base = get_Vel->Setpoint(line_state)->getData();
         get_PID->setpoint->setData(vel_base);
 
-        float vel_right = vel_base;
-        float vel_left = vel_base;
+        float vel_right = vel_base + PID;
+        float vel_left = vel_base - PID;
 
-        vel_right = ControlMotors(RPM_Right, vel_right, 1);
-        vel_left = ControlMotors(RPM_Left, vel_left, 0);
+        vel_right = ControlRPM(RPM_Right, vel_right, 1);
+        vel_left = ControlRPM(RPM_Left, vel_left, 0);
 
-        if(count > 50){
+        /* if(count > 50){
             //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
             count = 0;
-        }else{ count++; }
+        }else{ count++; } */
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f MPR_Mot = %d deltaTimeMS_inst = %d", erro, MPR_Mot, deltaTimeMS_inst);
         //ESP_LOGI(GetName().c_str(), "VelBase = %.2f VelEsq = %.2f VelDir = %.2f", vel_base, vel_left, vel_right);
         control_motor->ControlMotors(vel_left, vel_right);

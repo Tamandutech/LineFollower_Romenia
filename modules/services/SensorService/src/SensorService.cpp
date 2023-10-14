@@ -88,7 +88,7 @@ void SensorService::Run()
 
         vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
 
-        processSLat();
+        //processSLat();
         //processSCenter();
     }
 }
@@ -233,8 +233,10 @@ void SensorService::processSCenter()
 {
     bool is_white = get_Spec->WhiteLine->getData();
     uint16_t center_values[2];
-    MUX.read_from_body(center_values, sBody, 6, 7, is_white);
-    SaveArray(center_values, 2, get_centerArray);
+    MUX.read_from_body(center_values, sBody, 4, 5, is_white);
+    //SaveArray(center_values, 2, get_centerArray);
+    std::vector<uint16_t> SChannelsVec(center_values, center_values + 2);
+    get_centerArray->setChannels(SChannelsVec);
 
     uint16_t slesq = get_centerArray->getChannel(0);
     uint16_t sldir = get_centerArray->getChannel(1);
@@ -251,7 +253,8 @@ void SensorService::processSCenter()
     {
         get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
     }
-    //ESP_LOGI(GetName().c_str(), "Estado RobotCenter = ", get_Status->RobotCenter->getData());
+    uint16_t status = get_Status->RobotCenter->getData();
+    ESP_LOGI(GetName().c_str(), "Estado RobotCenter = %d", status);
 }
 
 int SensorService::lower_value(uint16_t s_1, uint16_t s_2){
@@ -270,7 +273,7 @@ void SensorService::processSLat()
     MUX.read_from_body(values, sBody, 0, 3, is_white);
     //SaveArray(values, 4, get_centerArray); 
     std::vector<uint16_t> SChannelsVec(values, values + 4);
-    get_centerArray->setChannels(SChannelsVec);
+    get_latArray->setChannels(SChannelsVec);
 
     uint16_t slesq_1 = get_latArray->getChannel(0);
     uint16_t slesq_2 = get_latArray->getChannel(1);

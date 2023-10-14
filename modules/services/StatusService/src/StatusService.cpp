@@ -82,12 +82,12 @@ void StatusService::Run()
 
     // int iloop = 0;
 
-    ESP_LOGI(GetName().c_str(), "Aguardando pressionamento do botão.");
+    //ESP_LOGI(GetName().c_str(), "Aguardando pressionamento do botão.");
     uint8_t num;
     do
     {// Aguarda o precionar do botao
         xQueueReceive(gpio_evt_queue, &num, portMAX_DELAY);
-        ESP_LOGI(GetName().c_str(), "Aguardando inicialização");
+        //ESP_LOGI(GetName().c_str(), "Aguardando inicialização");
         if(status->robotState->getData() != CAR_STOPPED) break;
     } while (num != CAR_IN_LINE);
 
@@ -103,12 +103,12 @@ void StatusService::Run()
     {
         DataStorage::getInstance()->delete_data("sLatMarks.marks");
         mappingStatus(false, true); // (bool is_reading, bool is_mapping)
-        ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
+        //ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
 
         // Mudando a led frontal para amarelo:
         LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
     }
-    ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
+    //ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(1500 / portTICK_PERIOD_MS);
     
 
@@ -116,7 +116,7 @@ void StatusService::Run()
     { // Se nao estiver em modo de teste
         if(status->robotIsMapping->getData())
         { // Se nao houver mapeamento salvo
-            ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+            //ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
             
             // Mudando a led frontal para amarelo:
             LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
@@ -162,7 +162,7 @@ void StatusService::Run()
         pulsesAfterCurve = latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) status->robotState->getData();
 
-        if(started_in_Tuning && status->TunningMode->getData() && status->robotState->getData() != CAR_TUNING &&  !status->encreading->getData() && !status->robotIsMapping->getData()) 
+        if(started_in_Tuning && status->TunningMode->getData() && status->robotState->getData() != CAR_TUNING && status->robotState->getData() != CAR_STOPPED &&  !status->encreading->getData() && !status->robotIsMapping->getData()) 
         {// Se iniciar em modo de teste
             status->robotState->setData(CAR_TUNING);
             status->TrackStatus->setData(TUNNING);
@@ -181,7 +181,7 @@ void StatusService::Run()
         {// Caso esteja mapeando
             lastMappingState = status->robotIsMapping->getData();
 
-            ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
+            //ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
             // LED frontal branca com brilho 50%
             LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
         }
@@ -192,7 +192,7 @@ void StatusService::Run()
             lastTransition = status->Transition->getData();
             if (lastState == CAR_IN_LINE && !lastTransition)
             {
-                ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
+                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
                 switch (TrackLen)
                 {
                     case SHORT_LINE:
@@ -214,7 +214,7 @@ void StatusService::Run()
             }
             else if(lastState == CAR_IN_CURVE && !lastTransition)
             {
-                ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
+                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
                 switch (TrackLen)
                 {
                     case SHORT_CURVE:
@@ -268,7 +268,7 @@ void StatusService::Run()
                 }
                 else
                 {
-                    ESP_LOGI(GetName().c_str(), "Parando o robô");
+                    //ESP_LOGI(GetName().c_str(), "Parando o robô");
                     status->encreading->setData(false);
                     //vTaskDelay(100 / portTICK_PERIOD_MS);
 

@@ -16,6 +16,7 @@
 #include "SensorService.hpp"
 #include "StatusService.hpp"
 #include "BLEServerService.hpp"
+#include "IRService.hpp"
 
 // Espressif (ESP-IDF)
 #include "freertos/FreeRTOS.h"
@@ -52,6 +53,7 @@ RPMService *rpmService;
 SensorService *sensorService;
 StatusService *statusService;
 BLEServerService *bleServerService;
+IRService *irService;
 
 extern "C"
 {
@@ -129,6 +131,9 @@ void app_main()
     controlService = ControlService::getInstance("ControlService", 8192, 10);
     //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
 
+    irService = IRService::getInstance("IRService", 4096, 9);
+    //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");
+
     mappingService->Start();
     //imuService->Start();
     statusService->Start();
@@ -136,6 +141,7 @@ void app_main()
     motorService->Start();
     sensorService->Start();
     controlService->Start();
+    irService->Start();
 
     ESP_LOGI("Main", "Ligando LEDs");
     ledsService->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 1);
