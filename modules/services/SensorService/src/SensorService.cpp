@@ -53,6 +53,13 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
 
+    float max_angle = (get_Spec->MaxAngle->getData())*M_PI/180; // em graus
+    uint16_t radius = get_Spec->RadiusSensor->getData();
+    uint16_t dis_center = get_Spec->SensorToCenter->getData();
+    float angle_with_center = atan((sin(max_angle))/(cos(max_angle) -1 + (((float)(dis_center))/radius)));
+    angle_with_center = angle_with_center*180/M_PI;
+    get_Spec->MaxAngle_Center->setData(angle_with_center);
+
     //Calibracao
     LEDposition[0] = LED_POSITION_FRONT;
     LEDposition[1] = LED_POSITION_NONE;

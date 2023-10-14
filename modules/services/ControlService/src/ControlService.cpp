@@ -38,6 +38,7 @@ void ControlService::Run()
             erro_ant_linear_r = 0;
             erro_ant_linear_l = 0;
         }
+        control_motor->ControlBrushless();
     }
 }
 
@@ -140,9 +141,12 @@ void ControlService::Teste_vel_fixo(){
 
         float vel_right = vel_base;
         float vel_left = vel_base;
-
+        
         vel_right = ControlRPM(RPM_Right, vel_right, 1);
         vel_left = ControlRPM(RPM_Left, vel_left, 0);
+
+        get_Vel->PWM_right->setData(vel_right);
+        get_Vel->PWM_left->setData(vel_left);
 
         /* if(count > 400){
             RPM_Right = (((float)enc_right)*(float)60000) / ((float)MPR_Mot*(float)(xTaskGetTickCount()*portTICK_PERIOD_MS));
@@ -156,9 +160,9 @@ void ControlService::Teste_vel_fixo(){
             control_motor->ControlMotors(vel_left, vel_right);
             //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
         } */
-        control_motor->ControlMotors(20, 20);
+        control_motor->ControlMotors(vel_left, vel_right);
         if(count > 50){
-            ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
+            //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
             count = 0;
         }else{ count++; }
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f", erro);
@@ -208,6 +212,9 @@ void ControlService::ControlePIDwithoutRPM(){
         vel_base = get_Vel->Setpoint(line_state)->getData();
         get_PID->setpoint->setData(vel_base);
 
+        get_Vel->PWM_right->setData((vel_base + PID));
+        get_Vel->PWM_left->setData((vel_base - PID));
+
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
         control_motor->ControlMotors((vel_base - PID), (vel_base + PID));\
@@ -236,6 +243,7 @@ void ControlService::ControlePIDandRPM(){
         //deltaTimeMS_inst = (xTaskGetTickCount() - lastTicksRevsCalc) * portTICK_PERIOD_MS;
         //lastTicksRevsCalc = xTaskGetTickCount();
         deltaTimeMS_inst = 10.0;
+        
         float PID = CalculatePD(Kp, Kd, erro);
         get_PID->output->setData(PID);
         //vel_base += 1;
@@ -262,12 +270,33 @@ void ControlService::ControlePIDandRPM(){
         vel_right = ControlRPM(RPM_Right, vel_right, 1);
         vel_left = ControlRPM(RPM_Left, vel_left, 0);
 
+        
+
         /* if(count > 50){
             //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
             count = 0;
         }else{ count++; } */
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f MPR_Mot = %d deltaTimeMS_inst = %d", erro, MPR_Mot, deltaTimeMS_inst);
         //ESP_LOGI(GetName().c_str(), "VelBase = %.2f VelEsq = %.2f VelDir = %.2f", vel_base, vel_left, vel_right);
-        control_motor->ControlMotors(vel_left, vel_right);
+        
+        float max = get_Spec->MaxAngle_Center->getData();
+        if(abs(erro) >= (max-1.0))
+        {
+            if(erro >= 0){
+                get_Vel->PWM_right->setData(60);
+                get_Vel->PWM_left->setData(-30);
+                control_motor->ControlMotors(-30, 60);
+            }else{
+                get_Vel->PWM_right->setData(-30);
+                get_Vel->PWM_left->setData(60);
+                control_motor->ControlMotors(60, -30);
+            }
+        }else{
+            get_Vel->PWM_right->setData(vel_right);
+            get_Vel->PWM_left->setData(vel_left);
+            control_motor->ControlMotors(vel_left, vel_right);
+        }
+        
+        
     }
 }

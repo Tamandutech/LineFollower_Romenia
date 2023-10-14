@@ -20,11 +20,11 @@ using namespace cpp_freertos;
 #define LEDC_MODE               LEDC_HIGH_SPEED_MODE // Modo de velocidade do LEDC
 #define PWM_A_PIN               LEDC_CHANNEL_0 // Canal do LEDC utilizado
 #define PWM_B_PIN               LEDC_CHANNEL_1 // Canal do LEDC utilizado
-#define LEDC_DUTY_RES           LEDC_TIMER_8_BIT // Resolução do PWM
-#define LEDC_FREQUENCY          5000 // Frequência em Hertz do sinal PWM
-#define MIN_THROTTLE            0
-#define MAX_THROTTLE            999
-#define THROTTLE_SPEED          40
+#define LEDC_DUTY_RES           LEDC_TIMER_12_BIT // Resolução do PWM
+#define LEDC_FREQUENCY          50 // Frequência em Hertz do sinal PWM
+#define MIN_THROTTLE            205
+#define MAX_THROTTLE            300
+#define THROTTLE_SPEED          20
 #define DSHOT_MODE              DSHOT600
 #define USB_SERIAL_BAUD         115200
 #define USB_Serial              Serial
@@ -38,6 +38,7 @@ public:
     
     void Run() override;
     void ControlMotors(float left, float right);
+    void ControlBrushless();
     void WalkStraight(float vel, bool frente);
     void StartBrushless();
     void StopBrushless();
@@ -54,13 +55,14 @@ private:
 
     ESP32MotorControl motors;
 
-    DShotRMT brush_dir = DShotRMT((gpio_num_t)brushless_dir, (rmt_channel_t)RMT_CHANNEL_0); // inicializacao do objeto para o brushless
-    DShotRMT brush_esq = DShotRMT((gpio_num_t)brushless_esq, (rmt_channel_t)RMT_CHANNEL_0);
+    int Brushless_ActualPwm = 205;
+
     
     // Bibliotecas para controlar os motores:
     void AnalogWrite(ledc_channel_t channel, int pwm);
     void InitPWM(gpio_num_t pin, ledc_channel_t channel);
-    void rampThrottle(DShotRMT esc, int start, int stop, int step);
+    void rampThrottle(int start, int stop, int step, int time);
+    void calibrate();
 };
 
 #endif

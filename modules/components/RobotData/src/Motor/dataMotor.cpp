@@ -21,6 +21,15 @@ dataMotor::dataMotor(std::string name)
     RPMCar_media = new DataAbstract<int16_t>("RPMCar_media", name, 0);
     dataManager->registerRuntimeData(RPMCar_media);
 
+    // PWM mandado ao motor
+    PWM_right = new DataAbstract<int16_t>("PWM_right", name, 0);
+    dataManager->registerRuntimeData(PWM_right);
+    PWM_left = new DataAbstract<int16_t>("PWM_left", name, 0);
+    dataManager->registerRuntimeData(PWM_left);
+
+    Brushless_TargetSpeed = new DataAbstract<int16_t>("Brushless_TargetSpeed", name, 205);
+
+
     // Vel. máximo e mínimo
     max = new DataAbstract<int8_t>("max", name, 100);
     dataManager->registerParamData(max);

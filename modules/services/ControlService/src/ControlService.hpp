@@ -7,6 +7,8 @@
 #include "Injector/singleton.hpp"
 // Bibliotecas de componentes/dados
 #include "RobotData.h"
+// Bibliotecas do C++
+#include <stdlib.h>
 // Bibliotecas de servicos
 #include "MotorService.hpp"
 #include "RPMService.hpp"

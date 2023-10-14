@@ -44,6 +44,8 @@ public:
     // Angulo maximo de leitura = (1/2) * (tamanho do arco)/(raio do arco)
     DataAbstract<float> *MaxAngle; // graus
 
+    DataAbstract<float> *MaxAngle_Center; // graus
+
 private:
     std::string name;
     const char *tag = "RobotData";

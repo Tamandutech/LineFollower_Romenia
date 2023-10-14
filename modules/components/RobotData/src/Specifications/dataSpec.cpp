@@ -36,4 +36,7 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
     
     MaxAngle = new DataAbstract<float>("MaxAngle", name, 13.8); //graus  // mudar depois
     dataManager->registerParamData(MaxAngle);
+
+    MaxAngle_Center = new DataAbstract<float>("MaxAngle_Center", name, 13.8); //graus  // mudar depois
+    dataManager->registerParamData(MaxAngle_Center);
 }

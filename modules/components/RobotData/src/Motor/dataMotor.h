@@ -27,6 +27,12 @@ public:
     DataAbstract<int16_t> *RPMLeft_inst;
     DataAbstract<int16_t> *RPMCar_media;
 
+    // PWM mandado ao motor
+    DataAbstract<int16_t> *PWM_right;
+    DataAbstract<int16_t> *PWM_left;
+
+    DataAbstract<int16_t> *Brushless_TargetSpeed;
+
     // Restrições nos valores do PWM
     DataAbstract<int8_t> *max;
     DataAbstract<int8_t> *min;
