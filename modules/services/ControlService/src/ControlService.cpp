@@ -29,7 +29,8 @@ void ControlService::Run()
     {
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
         if(get_Status->robotState->getData() != CAR_STOPPED){
-            ControlePIDandRPM();
+            if(get_Status->RPMControl->getData()) ControlePIDandRPM();
+            else ControlePIDwithoutRPM();
         }else{
             control_motor->StopMotors();
             rpm->ResetCount();
@@ -212,12 +213,28 @@ void ControlService::ControlePIDwithoutRPM(){
         vel_base = get_Vel->Setpoint(line_state)->getData();
         get_PID->setpoint->setData(vel_base);
 
-        get_Vel->PWM_right->setData((vel_base + PID));
-        get_Vel->PWM_left->setData((vel_base - PID));
-
+        float max_angle = get_Spec->MaxAngle_Center->getData();
+        bool OpenLoopControl = get_Status->OpenLoopControl->getData();
+        if(abs(erro) >= (max_angle-1.0) && OpenLoopControl)
+        {
+            int8_t min = get_Vel->min->getData();
+            int8_t max = get_Vel->max->getData();
+            if(erro >= 0){
+                get_Vel->PWM_right->setData(max);
+                get_Vel->PWM_left->setData(min);
+                control_motor->ControlMotors(min, max);
+            }else{
+                get_Vel->PWM_right->setData(min);
+                get_Vel->PWM_left->setData(max);
+                control_motor->ControlMotors(max, min);
+            }
+        }else{
+            get_Vel->PWM_right->setData((vel_base + PID));
+            get_Vel->PWM_left->setData((vel_base - PID));
+            control_motor->ControlMotors((vel_base - PID), (vel_base + PID));
+        }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
-        control_motor->ControlMotors((vel_base - PID), (vel_base + PID));\
     }
 }
 
@@ -280,7 +297,8 @@ void ControlService::ControlePIDandRPM(){
         //ESP_LOGI(GetName().c_str(), "VelBase = %.2f VelEsq = %.2f VelDir = %.2f", vel_base, vel_left, vel_right);
         
         float max_angle = get_Spec->MaxAngle_Center->getData();
-        if(abs(erro) >= (max_angle-1.0))
+        bool OpenLoopControl = get_Status->OpenLoopControl->getData();
+        if(abs(erro) >= (max_angle-1.0) && OpenLoopControl)
         {
             int8_t min = get_Vel->min->getData();
             int8_t max = get_Vel->max->getData();
