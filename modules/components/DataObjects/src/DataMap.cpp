@@ -180,13 +180,7 @@ void DataMap::saveData()
 
     size_t listSize = this->mapDataList.size();
 
-    if (listSize < 200)
-        ESP_LOGD(this->name.c_str(), "Quantidade de linhas: %d", listSize);
-    else
-    {
-        ESP_LOGE(this->name.c_str(), "Quantidade de linhas acima do esperado: %d", listSize);
-        return;
-    }
+    ESP_LOGD(this->name.c_str(), "Quantidade de linhas: %d", listSize);
 
     // // Armazena a quantidade de itens
     // dataStorage->save_data(this->name, (char *)&listSize, sizeof(listSize));
@@ -224,11 +218,6 @@ void DataMap::loadData()
         return;
     }
 
-    if (size > 200 * sizeof(MapData))
-    {
-        ESP_LOGE(this->name.c_str(), "Erro ao carregar dados do tipo DataMap. Tamanho do dado maior que o esperado.");
-        return;
-    }
 
     mapDataListMutex.lock();
     this->mapDataList.clear();

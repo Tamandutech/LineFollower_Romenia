@@ -89,6 +89,7 @@ void app_main()
     esp_log_level_set("DataManager", ESP_LOG_ERROR);
     esp_log_level_set("DataStorage", ESP_LOG_ERROR);
     esp_log_level_set("Main", ESP_LOG_DEBUG);
+    esp_log_level_set("MappingService", ESP_LOG_ERROR);
     esp_log_level_set("BLEServerService", ESP_LOG_DEBUG);
     esp_log_level_set("DataManager", ESP_LOG_ERROR);
     esp_log_level_set("DataStorage", ESP_LOG_ERROR);
@@ -134,7 +135,7 @@ void app_main()
     irService = IRService::getInstance("IRService", 4096, 9);
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");
 
-    mappingService->Start();
+    //mappingService->Start();
     //imuService->Start();
     statusService->Start();
     rpmService->Start();

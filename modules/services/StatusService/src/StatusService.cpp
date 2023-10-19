@@ -50,6 +50,8 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
 
     // Status inicial do robo (parado)
     status->robotState->setData(CAR_STOPPED);
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
 
     stateChanged = true;
     lastMappingState = false;
@@ -82,7 +84,7 @@ void StatusService::Run()
 
     // int iloop = 0;
 
-    //ESP_LOGI(GetName().c_str(), "Aguardando pressionamento do botão.");
+    ESP_LOGI(GetName().c_str(), "Aguardando pressionamento do botão.");
     uint8_t num;
     do
     {// Aguarda o precionar do botao
@@ -101,9 +103,9 @@ void StatusService::Run()
     // Deletar o mapeamento caso o botão de boot seja mantido pressionado e exista mapeamento na flash
     if(!gpio_get_level(GPIO_NUM_0) && latMarks->marks->getSize() > 0 && !status->TunningMode->getData() && status->HardDeleteMap->getData())
     {
-        DataStorage::getInstance()->delete_data("sLatMarks.marks");
+        DataStorage::getInstance()->delete_data("Marcacoes_sLatMarks.marks");
         mappingStatus(false, true); // (bool is_reading, bool is_mapping)
-        //ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
+        ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
 
         // Mudando a led frontal para amarelo:
         LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
@@ -116,7 +118,7 @@ void StatusService::Run()
     { // Se nao estiver em modo de teste
         if(status->robotIsMapping->getData())
         { // Se nao houver mapeamento salvo
-            //ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+            ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
             
             // Mudando a led frontal para amarelo:
             LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
@@ -129,8 +131,8 @@ void StatusService::Run()
         }
         else
         {// Se estiver mapeando, muda o status para linha curta (mais lento)
-            status->TrackStatus->setData(SHORT_LINE);
-            status->RealTrackStatus->setData(SHORT_LINE);
+            status->TrackStatus->setData(MEDIUM_CURVE);
+            status->RealTrackStatus->setData(MEDIUM_CURVE);
         }
 
         status->robotState->setData(CAR_IN_LINE); // Carro sai do estado parado
@@ -252,7 +254,7 @@ void StatusService::Run()
             DataManager::getInstance()->saveAllParamDataChanged();
             LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
         }
-        if (!status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && status->encreading->getData() && firstmark && (!status->TunningMode->getData() || !started_in_Tuning))
+        if (!status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && status->encreading->getData() /*&& firstmark*/ && (!status->TunningMode->getData() || !started_in_Tuning))
         {// Se estiver lendo o mapeamento, e já tiver passado pela linha de largada
             if ((mediaEncActual - initialmediaEnc) >= mediaEncFinal)
             {// 

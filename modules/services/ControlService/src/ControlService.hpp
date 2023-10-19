@@ -39,6 +39,7 @@ private:
 
     int8_t speedMin = 0;
     int8_t speedMax = 0;
+    uint8_t nloops = 0;
 
     float erro_anterior = 0;
     float erro_ant_linear_l = 0;

@@ -70,6 +70,9 @@ private:
     uint32_t tempDeltaDist = 0;
 
     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
+
+    void MappingWithMarks();
+    void MappingWithoutMarks(TickType_t *xLastWakeTime);
 };
 
 #endif

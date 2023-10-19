@@ -193,6 +193,7 @@ void ControlService::ControlePIDwithoutRPM(){
         float PID = CalculatePD(Kp, Kd, erro);
         get_PID->output->setData(PID);
         //vel_base += 1;
+        rpm->ReadBoth();
         int32_t enc_right = get_Vel->EncRight->getData();
         int32_t enc_left = get_Vel->EncLeft->getData();
 

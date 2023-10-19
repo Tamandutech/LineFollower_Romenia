@@ -22,9 +22,9 @@ dataSLatMarks::dataSLatMarks(std::string name)
     marks = new DataMap("marks", name);
     //dataManager->registerParamData(marks);
 
-    // - Variáveis do tipo uint8_t
+    // - Variáveis do tipo float
     
-    thresholdToCurve = new DataAbstract<uint8_t>("thresholdToCurve", name, 25);
+    thresholdToCurve = new DataAbstract<float>("thresholdToCurve", name, 25);
     dataManager->registerParamData(thresholdToCurve);
 
     // - Variáveis do tipo uint16_t
@@ -46,6 +46,9 @@ dataSLatMarks::dataSLatMarks(std::string name)
     
     thresholdMediumCurve = new DataAbstract<uint16_t>("thresholdMediumCurve", name, 500);
     dataManager->registerParamData(thresholdMediumCurve);
+
+    deltaT = new DataAbstract<uint16_t>("deltaT", name, 200);
+    dataManager->registerParamData(deltaT);
 
     // - Variáveis do tipo uint32_t
 

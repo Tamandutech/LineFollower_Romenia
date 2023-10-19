@@ -56,7 +56,10 @@ public:
     DataAbstract<uint32_t> *PulsesAfterCurve;
 
     // Limite de variação em milimetros de distância percorrida entre as rodas para considerar que o carro fez uma curva
-    DataAbstract<uint8_t> *thresholdToCurve;
+    DataAbstract<float> *thresholdToCurve;
+
+    // Tempo entre marcações, parâmmetro utilizado para o mapeamento sem marcações laterais
+    DataAbstract<uint16_t> *deltaT;
 
     // Condições para determinar que tipo de cada trecho da pista em mm
     DataAbstract<uint16_t> *thresholdLongLine;

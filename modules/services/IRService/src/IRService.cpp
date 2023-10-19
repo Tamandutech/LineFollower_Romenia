@@ -44,6 +44,7 @@ void IRService::Run()
                 if (ir_parser->get_scan_code(ir_parser, &addr, &cmd, &repeat) == ESP_OK) {
                     //ESP_LOGI(TAG, "Scan Code %s --- addr: 0x%04x cmd: 0x%04x", repeat ? "(repeat)" : "", addr, cmd);
                     status->robotState->setData(CAR_STOPPED);
+                    status->robotIsMapping->setData(false);
                     robot->getMotorData()->Brushless_TargetSpeed->setData(205);
                     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
                     LEDposition[0] = LED_POSITION_FRONT;
