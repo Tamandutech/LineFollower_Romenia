@@ -40,6 +40,10 @@ dataMotor::dataMotor(std::string name)
     vel_calibrate = new DataAbstract<float>("Velocidade_Calibracao", name, 46); // inicia com valor 46
     dataManager->registerParamData(vel_calibrate);
 
+    // Variável para guardar a velocidade do trecho
+    vel_mapped = new DataAbstract<float>("Velocidade_mapeada", name, 0);
+    dataManager->registerRuntimeData(vel_mapped);
+
     //Setpoints para os tipos de trechos
     Long_Line = new DataAbstract<float>("PWM_Long_line", name, 80);
     dataManager->registerParamData(Long_Line);

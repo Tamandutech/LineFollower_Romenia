@@ -22,6 +22,8 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     encreading = new DataAbstract<bool>("encreading", name, 0);
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
     dataManager->registerParamData(LineColorBlack);
+    VelCalculated = new DataAbstract<bool>("VelCalculated", name, 0);
+    dataManager->registerParamData(VelCalculated);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
     dataManager->registerParamData(TunningMode);

@@ -62,6 +62,7 @@ private:
 
     CarState trackType;
     TrackState trackLen;
+    float trackSpeed;
 
     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 

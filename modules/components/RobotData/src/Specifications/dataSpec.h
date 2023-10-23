@@ -23,9 +23,6 @@ class dataSpec
 public:
     dataSpec(std::string name = "dataSpec",bool PID_Select = false);
 
-    // Cor da linha
-    DataAbstract<bool> *WhiteLine;
-
     // Reducao dos motores
     DataAbstract<uint16_t> *GearRatio;
     // Num Revolucoes
@@ -45,6 +42,14 @@ public:
     DataAbstract<float> *MaxAngle; // graus
 
     DataAbstract<float> *MaxAngle_Center; // graus
+
+    DataAbstract<float> *Friction_Angle; // graus
+
+    DataAbstract<float> *Friction_Coef; // graus
+
+    DataAbstract<float> *Acceleration; // mm/s^2
+
+    DataAbstract<float> *MaxRPM; // RPM máximo estimado
 
 private:
     std::string name;

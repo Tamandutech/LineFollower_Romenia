@@ -37,9 +37,10 @@ public:
     DataAbstract<int8_t> *max;
     DataAbstract<int8_t> *min;
 
+    // Variável para guardar a velocidade do trecho
+    DataAbstract<float> *vel_mapped;
     
-    
-    // // Vel. base para calibracao:
+    // Vel. base para calibracao:
     DataAbstract<float> *vel_calibrate;
 
 private:

@@ -321,9 +321,9 @@ void StatusService::Run()
                         }
                         if(mark + 2 < numMarks)
                         {
-                            if((CarState)latMarks->marks->getData(mark+1).MapStatus == CAR_IN_LINE && (CarState)latMarks->marks->getData(mark + 2).MapStatus == CAR_IN_CURVE && offsetnxt == 0)
-                            {
-                                offsetnxt = -pulsesBeforeCurve; 
+                            if((CarState)latMarks->marks->getData(mark+1).MapStatus == CAR_IN_LINE && (CarState)latMarks->marks->getData(mark + 2).MapStatus == CAR_IN_CURVE){
+                                if(offsetnxt == 0) offsetnxt = -pulsesBeforeCurve;
+                                else offsetnxt = -offsetnxt;
                             }
                             if(offsetnxt < 0)
                             {
@@ -343,6 +343,7 @@ void StatusService::Run()
                         status->Transition->setData(transition);
                         status->robotState->setData(trackType);
                         status->TrackStatus->setData(trackLen);
+                        speed->vel_mapped->setData(trackSpeed);
                         break;
                     }
                 }
@@ -363,4 +364,5 @@ void StatusService::loadTrackMapped(int section)
 {// Carrega as variaveis de um trecho da pista, salvas no mapeamento.
     trackType = (CarState)latMarks->marks->getData(section).MapStatus;
     trackLen = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
+    trackSpeed = latMarks->marks->getData(section).MapMaxSpeed;
 }

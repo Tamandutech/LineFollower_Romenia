@@ -53,12 +53,21 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
 
-    float max_angle = (get_Spec->MaxAngle->getData())*M_PI/180; // em graus
+    // Calculo do ângulo máximo para a distância atual
+    float max_angle = (get_Spec->MaxAngle->getData())*M_PI/180; // de graus para rad
     uint16_t radius = get_Spec->RadiusSensor->getData();
     uint16_t dis_center = get_Spec->SensorToCenter->getData();
     float angle_with_center = atan((sin(max_angle))/(cos(max_angle) -1 + (((float)(dis_center))/radius)));
-    angle_with_center = angle_with_center*180/M_PI;
+    angle_with_center = angle_with_center*180/M_PI; // de rad para graus
     get_Spec->MaxAngle_Center->setData(angle_with_center);
+
+    // Calculo do coeficiente de atrito
+    float friction = (get_Spec->Friction_Angle->getData())*M_PI/180; // de graus para rad
+    friction = tan(friction);
+    get_Spec->Friction_Coef->setData(friction);
+
+    // Calculo da aceleracao máx
+    get_Spec->Acceleration->setData((friction*9806.65)); // g = 9806,65 
 
     //Calibracao
     LEDposition[0] = LED_POSITION_FRONT;
@@ -209,7 +218,7 @@ void SensorService::AngleError()
     // Funcao que retorna o erro em radianos, sendo esse erro o angulo em relacao ao centro de movimento
     
     // Carregando as variaveis do RobotData, para facilitar a leitura
-    bool is_white = get_Spec->WhiteLine->getData();
+    bool is_white = get_Status->LineColorBlack->getData();
     float max_angle = get_Spec->MaxAngle->getData(); // em graus
     uint16_t radius = get_Spec->RadiusSensor->getData();
     uint16_t dis_center = get_Spec->SensorToCenter->getData();
@@ -238,7 +247,7 @@ void SensorService::AngleError()
 
 void SensorService::processSCenter()
 {
-    bool is_white = get_Spec->WhiteLine->getData();
+    bool is_white = get_Status->LineColorBlack->getData();
     uint16_t center_values[2];
     MUX.read_from_body(center_values, sBody, 4, 5, is_white);
     //SaveArray(center_values, 2, get_centerArray);
@@ -275,7 +284,7 @@ int SensorService::lower_value(uint16_t s_1, uint16_t s_2){
 
 void SensorService::processSLat()
 {
-    bool is_white = get_Spec->WhiteLine->getData();
+    bool is_white = get_Status->LineColorBlack->getData();
     uint16_t values[4];
     MUX.read_from_body(values, sBody, 0, 3, is_white);
     //SaveArray(values, 4, get_centerArray); 

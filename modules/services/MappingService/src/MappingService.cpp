@@ -19,7 +19,7 @@ MappingService::MappingService(std::string name, uint32_t stackDepth, UBaseType_
 
 esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t mediaPulsesToStop, uint32_t timeToStop)
 {
-    ESP_LOGI(GetName().c_str(), "Iniciando novo mapeamento.");
+    //ESP_LOGI(GetName().c_str(), "Iniciando novo mapeamento.");
 
     status->robotIsMapping->setData(true);
 
@@ -51,7 +51,7 @@ esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t medi
 
 esp_err_t MappingService::stopNewMapping()
 {
-    ESP_LOGI(GetName().c_str(), "Parando novo mapeamento.");
+    //ESP_LOGI(GetName().c_str(), "Parando novo mapeamento.");
 
     status->stateMutex.lock();
     status->robotState->setData(CAR_STOPPED);
@@ -62,7 +62,7 @@ esp_err_t MappingService::stopNewMapping()
     this->Cleanup();
 
     this->saveMapping();
-    ESP_LOGI(GetName().c_str(), "Parada do novo mapeamento finalizada");
+    //ESP_LOGI(GetName().c_str(), "Parada do novo mapeamento finalizada");
     
     // Desligando aa LED:
     LEDposition[0] = LED_POSITION_FRONT;
@@ -73,7 +73,7 @@ esp_err_t MappingService::stopNewMapping()
 
 esp_err_t MappingService::loadMapping()
 {
-    ESP_LOGI(GetName().c_str(), "Carregando mapeamento da memória.");
+    //ESP_LOGI(GetName().c_str(), "Carregando mapeamento da memória.");
 
     latMarks->marks->loadData();
 
@@ -82,7 +82,7 @@ esp_err_t MappingService::loadMapping()
 
 esp_err_t MappingService::saveMapping()
 {
-    ESP_LOGI(GetName().c_str(), "Salvando mapeamento na memória.");
+    //ESP_LOGI(GetName().c_str(), "Salvando mapeamento na memória.");
 
     latMarks->marks->saveData();
 
@@ -93,7 +93,7 @@ esp_err_t MappingService::createNewMark()
 {
     if (status->robotIsMapping->getData() && status->robotState->getData() != CAR_STOPPED)
     {
-        ESP_LOGI(GetName().c_str(), "Criando nova marcação.");
+        //ESP_LOGI(GetName().c_str(), "Criando nova marcação.");
 
         this->Resume();
         return ESP_OK;
@@ -113,13 +113,13 @@ void MappingService::Run()
 
     latMarks->marks->newData(tempActualMark);
 
-    ESP_LOGI(GetName().c_str(), "Offset iniciais: initialLeftPulses: %d, initialRightPulses: %d, initialMediaPulses: %d, initialTicks: %d", initialLeftPulses, initialRightPulses, initialMediaPulses, initialTicks);
+    //ESP_LOGI(GetName().c_str(), "Offset iniciais: initialLeftPulses: %d, initialRightPulses: %d, initialMediaPulses: %d, initialTicks: %d", initialLeftPulses, initialRightPulses, initialMediaPulses, initialTicks);
     TickType_t xLastWakeTime = xTaskGetTickCount();
     for (;;)
     {
         if ((leftMarksToStop <= latMarks->leftMarks->getData()) || (latMarks->MarkstoStop->getData() <= latMarks->rightMarks->getData()) || (mediaPulsesToStop <= tempActualMark.MapEncMedia) || (!status->robotIsMapping->getData()))
         {// Finalizando o mapeamento
-            ESP_LOGI(GetName().c_str(), "Mapeamento finalizado.");
+            //ESP_LOGI(GetName().c_str(), "Mapeamento finalizado.");
 
             this->stopNewMapping();
             break;
@@ -177,7 +177,7 @@ void MappingService::MappingWithMarks()
             else if(latMarks->latDirPass->getData()) LEDposition[0] = LED_POSITION_RIGHT;
             LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
         }
-        ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
+        //ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
 
 }
 
@@ -192,10 +192,27 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
         tempActualMark.MapEncMedia = ((tempActualMark.MapEncLeft + tempActualMark.MapEncRight) / 2);
         tempActualMark.MapTime = ((xTaskGetTickCount() - initialTicks) * portTICK_PERIOD_MS);
 
+        int32_t delta_right = (tempActualMark.MapEncRight - tempPreviousMark.MapEncRight);
+        int32_t delta_left = (tempActualMark.MapEncLeft - tempPreviousMark.MapEncLeft);
+
+        if(delta_right != delta_left) tempActualMark.MapRadius = std::abs(((float)get_Spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
+        else tempActualMark.MapRadius = 0;
+
+        float speed = std::sqrt(tempActualMark.MapRadius * 9806.65 * get_Spec->Friction_Coef->getData()); // em mm/s
+        speed = (speed*60)/((float)get_Spec->WheelDiameter->getData()*M_PI); // conversão RPM
+        if(speed <= get_Spec->MaxRPM->getData()) tempActualMark.MapMaxSpeed = (speed/get_Spec->MaxRPM->getData())*100;
+        else tempActualMark.MapMaxSpeed = 100;
+
+        float offset_mm = (std::pow(tempActualMark.MapMaxSpeed, 2) - std::pow(tempPreviousMark.MapMaxSpeed, 2))/(2*get_Spec->Acceleration->getData());
+        offset_mm = std::abs(offset_mm);
+        float offset_enc = (offset_mm * (float)get_Spec->MPR->getData())/((float)get_Spec->WheelDiameter->getData() * M_PI);
+        tempActualMark.MapOffset = (int16_t)offset_enc;
+        
         // variação de encoder em pulsos
-        tempDeltaPulses = std::abs((tempActualMark.MapEncRight - tempPreviousMark.MapEncRight) - (tempActualMark.MapEncLeft - tempPreviousMark.MapEncLeft));
+        tempDeltaPulses = std::abs(delta_right - delta_left);
         // Quantidade de pulsos que o encoder precisa dar para avançar "x" milimetros
         tempMilimiterInPulses = (get_Spec->MPR->getData() * latMarks->thresholdToCurve->getData()) / (M_PI * get_Spec->WheelDiameter->getData());
+
 
         tempActualMark.MapStatus = (tempDeltaPulses > tempMilimiterInPulses) ? CAR_IN_CURVE : CAR_IN_LINE;
         tempDeltaDist = ((tempActualMark.MapEncMedia - tempPreviousMark.MapEncMedia) * (M_PI * get_Spec->WheelDiameter->getData())) / (get_Spec->MPR->getData()); // distância entre marcacões em mm
@@ -226,6 +243,6 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
             else if(latMarks->latDirPass->getData()) LEDposition[0] = LED_POSITION_RIGHT;
             LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
         }
-        ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
+        //ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
         vTaskDelayUntil(xLastWakeTime, latMarks->deltaT->getData() / portTICK_PERIOD_MS);
 }

@@ -205,13 +205,12 @@ void ControlService::ControlePIDwithoutRPM(){
         get_Vel->RPMRight_inst->setData(RPM_Right);
         get_Vel->RPMLeft_inst->setData(RPM_Left);
         get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
-        /* if((get_Vel->EncMedia->getData()) < (get_Spec->MPR->getData()/8))
-        {
-            vel_base = get_Vel->vel_calibrate->getData();
+        
+        if(get_Status->VelCalculated->getData()){
+            vel_base = get_Vel->vel_mapped->getData();
         }else{
             vel_base = get_Vel->Setpoint(line_state)->getData();
-        } */
-        vel_base = get_Vel->Setpoint(line_state)->getData();
+        }
         get_PID->setpoint->setData(vel_base);
 
         float max_angle = get_Spec->MaxAngle_Center->getData();
