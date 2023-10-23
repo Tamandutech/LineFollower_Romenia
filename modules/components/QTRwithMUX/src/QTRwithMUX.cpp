@@ -27,7 +27,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
     bool on_Line = false; // se falso até o final, os sensores estão todos fora da linha
     uint32_t avg = 0; // soma ponderada das leituras
     uint16_t sum = 0; // soma das leituras
-    uint16_t teste_value[sQuant];
+    //uint16_t teste_value[sQuant];
     
     
     for(int i=0; i < quant; i++)
@@ -39,7 +39,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
         //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         if (white_line == WHITE) { sensor_value = 1000 - sensor_value; } // inverte as leituras
-        teste_value[i] = sensor_value;
+        //teste_value[i] = sensor_value;
         if (sensor_value > 200) { on_Line = true; } // verifica se tem um sensor na linha
         if (sensor_value > 50) // valores menores que 50 são considerados ruídos
         {
