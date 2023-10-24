@@ -49,6 +49,7 @@ void IRService::Run()
                     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
                     LEDposition[0] = LED_POSITION_FRONT;
                     LEDposition[1] = LED_POSITION_NONE;
+                    DataManager::getInstance()->saveAllParamDataChanged();
                     LED->config_LED(LEDposition, COLOR_PINK, LED_EFFECT_SET, 1);
                 }
             }

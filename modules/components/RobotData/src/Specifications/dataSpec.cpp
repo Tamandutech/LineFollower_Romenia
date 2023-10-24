@@ -49,4 +49,10 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
 
     MaxRPM = new DataAbstract<float>("Max_RPM", name, 3000);  // mudar depois
     dataManager->registerParamData(MaxRPM);
+
+    Mass = new DataAbstract<float>("Mass", name, 0);  // mudar depois
+    dataManager->registerParamData(Mass);
+
+    Mass_BrushON = new DataAbstract<float>("Mass_Brushless_ON", name, 0);  // mudar depois
+    dataManager->registerParamData(Mass_BrushON);
 }

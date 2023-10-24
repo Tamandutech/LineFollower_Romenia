@@ -61,14 +61,6 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     angle_with_center = angle_with_center*180/M_PI; // de rad para graus
     get_Spec->MaxAngle_Center->setData(angle_with_center);
 
-    // Calculo do coeficiente de atrito
-    float friction = (get_Spec->Friction_Angle->getData())*M_PI/180; // de graus para rad
-    friction = tan(friction);
-    get_Spec->Friction_Coef->setData(friction);
-
-    // Calculo da aceleracao máx
-    get_Spec->Acceleration->setData((friction*9806.65)); // g = 9806,65 
-
     //Calibracao
     LEDposition[0] = LED_POSITION_FRONT;
     LEDposition[1] = LED_POSITION_NONE;

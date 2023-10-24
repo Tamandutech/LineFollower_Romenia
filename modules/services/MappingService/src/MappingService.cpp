@@ -195,7 +195,7 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
         int32_t delta_right = (tempActualMark.MapEncRight - tempPreviousMark.MapEncRight);
         int32_t delta_left = (tempActualMark.MapEncLeft - tempPreviousMark.MapEncLeft);
 
-        if(delta_right != delta_left) tempActualMark.MapRadius = std::abs(((float)get_Spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
+        /* if(delta_right != delta_left) tempActualMark.MapRadius = std::abs(((float)get_Spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
         else tempActualMark.MapRadius = 0;
 
         float speed = std::sqrt(tempActualMark.MapRadius * 9806.65 * get_Spec->Friction_Coef->getData()); // em mm/s
@@ -206,7 +206,7 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
         float offset_mm = (std::pow(tempActualMark.MapMaxSpeed, 2) - std::pow(tempPreviousMark.MapMaxSpeed, 2))/(2*get_Spec->Acceleration->getData());
         offset_mm = std::abs(offset_mm);
         float offset_enc = (offset_mm * (float)get_Spec->MPR->getData())/((float)get_Spec->WheelDiameter->getData() * M_PI);
-        tempActualMark.MapOffset = (int16_t)offset_enc;
+        tempActualMark.MapOffset = (int16_t)offset_enc; */
         
         // variação de encoder em pulsos
         tempDeltaPulses = std::abs(delta_right - delta_left);

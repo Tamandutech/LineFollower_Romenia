@@ -34,6 +34,7 @@ private:
     dataMotor *speed;
     dataSLatMarks *latMarks;
     dataPID *PID;
+    dataSpec *spec;
     // Atalhos de outros serviços:
     LEDsService *LED;
     MappingService *mappingService;
@@ -47,6 +48,8 @@ private:
 
     bool stateChanged; // verifica se o carrinho mudou seu estado quanto ao mapeamento
     bool lastTransition = false;
+
+    float friction_angle = 0; // salva o angulo de atrito para verificar se a variável mudou
 
     TrackState lastTrack = SHORT_LINE; // armazena último tipo de trecho da pista percorrido
     uint8_t lastState; // armazena último estado do mapeamento
@@ -64,11 +67,14 @@ private:
     TrackState trackLen;
     float trackSpeed;
 
+
     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 
     static void IRAM_ATTR gpio_isr_handler(void *arg);
     void mappingStatus(bool is_reading, bool is_mapping);
-    void loadTrackMapped(int section);
+    void loadTrackMapped(int section, int section_speed);
+    float calculate_speed(int section);
+    int16_t calculate_offset(int section);
 };
 
 #endif

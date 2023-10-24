@@ -22,8 +22,12 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     encreading = new DataAbstract<bool>("encreading", name, 0);
     LineColorBlack = new DataAbstract<bool>("LineColorBlack", name, WHITE);
     dataManager->registerParamData(LineColorBlack);
-    VelCalculated = new DataAbstract<bool>("VelCalculated", name, 0);
+    VelCalculated = new DataAbstract<bool>("Vel_Calculated", name, 0);
     dataManager->registerParamData(VelCalculated);
+    BrushlessON = new DataAbstract<bool>("Brushless_ON", name, 0);
+    dataManager->registerParamData(BrushlessON);
+    LineInMaxSpeed = new DataAbstract<bool>("Line_In_Max_Speed", name, 0);
+    dataManager->registerParamData(LineInMaxSpeed);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
     dataManager->registerParamData(TunningMode);
@@ -31,7 +35,8 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     dataManager->registerParamData(OpenLoopControl);
     RPMControl = new DataAbstract<bool>("RPMControl", name, false);
     dataManager->registerParamData(RPMControl);
-    HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, false);
+    HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, true);
+    dataManager->registerParamData(HardDeleteMap);
     FirstMark = new DataAbstract<bool>("FirstMark", name, false);
     Transition = new DataAbstract<bool>("Transition", name, false);
     TuningMapped = new DataAbstract<bool>("TuningMapped", name, false);

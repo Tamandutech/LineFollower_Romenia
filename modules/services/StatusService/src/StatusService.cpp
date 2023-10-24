@@ -24,6 +24,7 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->speed = robot->getMotorData();
     this->latMarks = robot->getSLatMarks();
     this->PID = robot->getPID();
+    this->spec = robot->getSpecification();
     // Atalhos para servicos:
     mappingService = MappingService::getInstance();
     this->LED = LEDsService::getInstance();
@@ -74,6 +75,15 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
     gpio_install_isr_service(0);
 
     gpio_isr_handler_add(GPIO_NUM_0, gpio_isr_handler, (void *)GPIO_NUM_0);
+
+    // Calculo do coeficiente de atrito
+    friction_angle = spec->Friction_Angle->getData();
+    float friction = (friction_angle)*M_PI/180; // de graus para rad
+    friction = tan(friction);
+    spec->Friction_Coef->setData(friction);
+
+    // Calculo da aceleracao máx
+    spec->Acceleration->setData((friction*9806.65)); // g = 9806,65 
 }
 
 // Main do servico
@@ -156,7 +166,7 @@ void StatusService::Run()
     // Loop
     for (;;)
     {
-        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
+        vTaskDelayUntil(&xLastWakeTime, 30 / portTICK_PERIOD_MS);
         // Carregando status atual
         status->stateMutex.lock();
         TrackLen = (TrackState)status->TrackStatus->getData();
@@ -270,7 +280,7 @@ void StatusService::Run()
                 }
                 else
                 {
-                    //ESP_LOGI(GetName().c_str(), "Parando o robô");
+                    ESP_LOGI(GetName().c_str(), "Parando o robô");
                     status->encreading->setData(false);
                     //vTaskDelay(100 / portTICK_PERIOD_MS);
 
@@ -295,47 +305,47 @@ void StatusService::Run()
 
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
-                        loadTrackMapped(mark+1);
+                        loadTrackMapped(mark+1, mark+1);
                         status->RealTrackStatus->setData(trackLen);
                         bool transition = false;
 
                         int16_t offset = latMarks->marks->getData(mark).MapOffset;
-                        int16_t offsetnxt = latMarks->marks->getData(mark).MapOffset;
+                        int16_t offsetnxt = latMarks->marks->getData(mark+1).MapOffset;
                         // Verifica se o robô precisa reduzir a velocidade, entrando no modo curva
-                        if((CarState)latMarks->marks->getData(mark).MapStatus == CAR_IN_CURVE && (CarState)latMarks->marks->getData(mark + 1).MapStatus == CAR_IN_LINE && offset == 0)
+                        if((CarState)latMarks->marks->getData(mark).MapStatus == CAR_IN_CURVE && (CarState)latMarks->marks->getData(mark + 1).MapStatus == CAR_IN_LINE)
                         {
-                            offset = pulsesAfterCurve; 
+                            ManualmediaNxt += pulsesAfterCurve;
                         }
                         if(offset > 0)
                         {
                             if((Manualmedia + offset) < ManualmediaNxt && (mediaEncActual - initialmediaEnc) < (Manualmedia + offset)) 
                             {
                                 transition = true;
-                                loadTrackMapped(mark);
+                                loadTrackMapped(mark, mark+1);
                             }
                             else if((Manualmedia + offset) >= ManualmediaNxt) 
                             {
                                 transition = true;
-                                loadTrackMapped(mark);
+                                loadTrackMapped(mark, mark+1);
                             }
                         }
                         if(mark + 2 < numMarks)
                         {
                             if((CarState)latMarks->marks->getData(mark+1).MapStatus == CAR_IN_LINE && (CarState)latMarks->marks->getData(mark + 2).MapStatus == CAR_IN_CURVE){
-                                if(offsetnxt == 0) offsetnxt = -pulsesBeforeCurve;
-                                else offsetnxt = -offsetnxt;
+                                ManualmediaNxt += -pulsesBeforeCurve;
+                                offsetnxt = -offsetnxt;
                             }
                             if(offsetnxt < 0)
                             {
                                 if((ManualmediaNxt + offsetnxt) > Manualmedia && (mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt)) 
                                 {
                                     transition = true;
-                                    loadTrackMapped(mark+2);
+                                    loadTrackMapped(mark+1, mark+2);
                                 }
                                 else if((ManualmediaNxt + offsetnxt) <= Manualmedia) 
                                 {
                                     transition = true;
-                                    loadTrackMapped(mark+2);
+                                    loadTrackMapped(mark+1, mark+2);
                                 }
                             }
                         }
@@ -360,9 +370,74 @@ void StatusService::mappingStatus(bool is_reading, bool is_mapping)
     status->robotIsMapping->setData(is_mapping);
 }
 
-void StatusService::loadTrackMapped(int section)
+void StatusService::loadTrackMapped(int section, int section_speed)
 {// Carrega as variaveis de um trecho da pista, salvas no mapeamento.
     trackType = (CarState)latMarks->marks->getData(section).MapStatus;
     trackLen = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
-    trackSpeed = latMarks->marks->getData(section).MapMaxSpeed;
+    trackSpeed = calculate_speed(section_speed);
+    //ESP_LOGI(GetName().c_str(), "Para marcação %d Raio = %.2f e Velocidade = %.2f", section);
+}
+
+float StatusService::calculate_speed(int section){
+    int32_t delta_right = (latMarks->marks->getData(section).MapEncRight - latMarks->marks->getData(section-1).MapEncRight);
+    int32_t delta_left = (latMarks->marks->getData(section).MapEncLeft - latMarks->marks->getData(section-1).MapEncLeft);
+    
+    float radius;
+    if(delta_right != delta_left) radius = std::abs(((float)spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
+    else radius = 0;
+
+    if(spec->Friction_Angle->getData() != friction_angle){
+        friction_angle = spec->Friction_Angle->getData();
+        spec->Friction_Coef->setData(tan(friction_angle*M_PI/180));
+        if(status->BrushlessON->getData()){
+            spec->Acceleration->setData(spec->Friction_Coef->getData() * 9806.65 * (spec->Mass->getData()/spec->Mass_BrushON->getData())); // g = 9806,65
+        }else{
+            spec->Acceleration->setData(spec->Friction_Coef->getData()*9806.65); // g = 9806,65
+        }
+    }
+
+    float speed;
+    float accel;
+    if(status->BrushlessON->getData()){
+        accel = (spec->Mass->getData()/spec->Mass_BrushON->getData())* 9806.65;
+    }else{
+        accel = 9806.65;
+    }
+
+    if(status->LineInMaxSpeed->getData()){
+        if(latMarks->marks->getData(section).MapStatus == CAR_IN_LINE){ 
+            speed = 100;
+        }else{
+            speed = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
+            speed = (speed*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
+            if(speed <= spec->MaxRPM->getData()) speed = (speed/spec->MaxRPM->getData())*100;
+            else speed = 100;
+        }
+    }else{
+        speed = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
+        speed = (speed*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
+        if(speed <= spec->MaxRPM->getData()) speed = (speed/spec->MaxRPM->getData())*100;
+        else speed = 100;
+    }
+    
+    return speed;
+}
+
+int16_t StatusService::calculate_offset(int section){
+    float actual_speed;
+    float next_speed;
+    if(status->VelCalculated->getData()){
+        actual_speed = calculate_speed(section);
+        next_speed = calculate_speed(section+1);
+    }else{
+        TrackState line_state = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
+        TrackState line_state_next = (TrackState)latMarks->marks->getData(section+1).MapTrackStatus;
+        actual_speed = speed->Setpoint(line_state)->getData();
+        next_speed = speed->Setpoint(line_state_next)->getData();
+    }
+    
+    float offset_mm = (std::pow(actual_speed, 2) - std::pow(next_speed, 2))/(2*spec->Acceleration->getData());
+    offset_mm = std::abs(offset_mm);
+    float offset_enc = (offset_mm * (float)spec->MPR->getData())/((float)spec->WheelDiameter->getData() * M_PI);
+    return (int16_t)offset_enc;
 }

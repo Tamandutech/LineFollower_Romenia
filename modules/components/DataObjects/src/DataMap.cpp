@@ -76,8 +76,6 @@ void DataMap::newData(std::string mapData)
     mapDataTemp.MapStatus = std::stoi(mapDataVector[5]);
     mapDataTemp.MapTrackStatus = std::stoi(mapDataVector[6]);
     mapDataTemp.MapOffset = std::stoi(mapDataVector[7]);
-    mapDataTemp.MapRadius = std::stoi(mapDataVector[8]);
-    mapDataTemp.MapMaxSpeed = std::stoi(mapDataVector[9]);
 
     this->newData(mapDataTemp);
 }
@@ -107,8 +105,7 @@ std::string DataMap::getDataString(std::string ctrl)
     line = std::to_string(posicao) + "," + std::to_string(itList->MapTime) + "," + 
     std::to_string(itList->MapEncMedia) + "," + std::to_string(itList->MapEncLeft) + "," + 
     std::to_string(itList->MapEncRight) + "," + std::to_string(itList->MapStatus) + "," + 
-    std::to_string(itList->MapTrackStatus) + "," + std::to_string(itList->MapOffset) + "," + 
-    std::to_string(itList->MapRadius) + "," + std::to_string(itList->MapMaxSpeed);
+    std::to_string(itList->MapTrackStatus) + "," + std::to_string(itList->MapOffset);
 
     ESP_LOGD(this->name.c_str(), "Dados: %s", line.c_str());
 
@@ -136,8 +133,6 @@ void DataMap::setData(uint8_t posicao, MapData data)
     itList->MapTime = data.MapTime;
     itList->MapTrackStatus = data.MapTrackStatus;
     itList->MapOffset = data.MapOffset;
-    itList->MapRadius = data.MapRadius;
-    itList->MapMaxSpeed = data.MapMaxSpeed;
 }
 
 void DataMap::setData(std::string data)
@@ -173,8 +168,6 @@ void DataMap::setData(std::string data)
     tempMapData.MapStatus = stoi(dataList[5]);
     tempMapData.MapTrackStatus = stoi(dataList[6]);
     tempMapData.MapOffset = stoi(dataList[7]);
-    tempMapData.MapRadius = stoi(dataList[8]);
-    tempMapData.MapMaxSpeed = stoi(dataList[9]);
 
     setData(stoi(dataList[0]), tempMapData);
 }

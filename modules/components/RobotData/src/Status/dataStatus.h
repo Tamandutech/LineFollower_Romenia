@@ -26,6 +26,8 @@ public:
     DataAbstract<bool> *LineColorBlack; // Se a linha é branca ou preta (TRUE/BLACK para preta)]
     DataAbstract<bool> *WithBrushless; // Se o brushless vai ser ligado ou não
     DataAbstract<bool> *VelCalculated; // Se vai ser utilizado a velocidade calculada (TRUE) ou a fixa de cada trecho (FALSE)
+    DataAbstract<bool> *BrushlessON; // Se o brushless será ligado ou não
+    DataAbstract<bool> *LineInMaxSpeed; // Velocidade máxima em qualquer reta
     DataAbstract<uint8_t> *RobotCenter; // Se o robô está centralizado e, se não, para que lado da linha o centro está
 
     DataAbstract<bool> *TunningMode; // Modo de teste

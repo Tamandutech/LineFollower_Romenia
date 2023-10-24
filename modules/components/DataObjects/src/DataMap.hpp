@@ -33,8 +33,6 @@ struct MapData
     int16_t MapOffset;
     uint8_t MapStatus;
     uint8_t MapTrackStatus;
-    float MapRadius; // em mm
-    float MapMaxSpeed; // em mm/s
 };
 
 class DataMap : public IDataAbstract

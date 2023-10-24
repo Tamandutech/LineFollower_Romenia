@@ -51,6 +51,10 @@ public:
 
     DataAbstract<float> *MaxRPM; // RPM máximo estimado
 
+    DataAbstract<float> *Mass; // Massa com brushless desligado
+
+    DataAbstract<float> *Mass_BrushON; // Massa quando o brushless está ligado
+
 private:
     std::string name;
     const char *tag = "RobotData";
