@@ -31,6 +31,7 @@ public:
     DataAbstract<uint8_t> *RobotCenter; // Se o robô está centralizado e, se não, para que lado da linha o centro está
 
     DataAbstract<bool> *TunningMode; // Modo de teste
+    DataAbstract<bool> *ControlOff; // Desliga o robô por controle remoto
     DataAbstract<bool> *OpenLoopControl; // Controle em malha aberta se o robô sair da linha
     DataAbstract<bool> *RPMControl; // Controle da velocidade dos motores em RPM
     DataAbstract<bool> *HardDeleteMap; // Se o mapa deve ser deletado
@@ -38,6 +39,7 @@ public:
     DataAbstract<bool> *FirstMark; // Verifica se o robô já passou pela primeira marcação lateral
     DataAbstract<bool> *Transition; // Verifica se o robô está numa transição de curva para reta e vice-versa
     DataAbstract<bool> *TuningMapped; // Ativar tuningMode com o mapeamento da pista
+    DataAbstract<bool> *MappingTuningParam; // Usa os parâmetros de Tunning mesmo quando está mapeado
 
     static std::mutex stateMutex;
 

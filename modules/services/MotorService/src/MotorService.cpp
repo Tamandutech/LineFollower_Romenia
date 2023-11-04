@@ -6,6 +6,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     // Atalhos para o RobotData:
     this->robot = Robot::getInstance();
     this->status = robot->getStatus();
+    this->LED = LEDsService::getInstance();
     // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
@@ -35,18 +36,24 @@ void MotorService::Run()
 }
 
 void MotorService::calibrate(){
-    AnalogWrite(PWM_A_PIN, 205);
-    AnalogWrite(PWM_B_PIN, 205);
-    ESP_LOGI(GetName().c_str(), "Brushless: %d", 205);
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
-    //rampThrottle(205, 300, 1, 1000);
-    robot->getMotorData()->Brushless_TargetSpeed->setData(220);
-    AnalogWrite(PWM_A_PIN, 220);
-    AnalogWrite(PWM_B_PIN, 220);
-    Brushless_ActualPwm = 220;
-    //ESP_LOGI(GetName().c_str(), "Brushless: %d", 220);
-    //vTaskDelay(2000 / portTICK_PERIOD_MS);
-    //rampThrottle(220, 205, -20, 200);
+    AnalogWrite(PWM_A_PIN, MAX_THROTTLE);
+    AnalogWrite(PWM_B_PIN, MAX_THROTTLE);
+    //ESP_LOGI(GetName().c_str(), "Brushless: %d", MAX_THROTTLE);
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
+    LED->config_LED(LEDposition, COLOR_BLUE, LED_EFFECT_SET, 1);
+    vTaskDelay(5200 / portTICK_PERIOD_MS);
+    
+    AnalogWrite(PWM_A_PIN, MIN_THROTTLE);
+    AnalogWrite(PWM_B_PIN, MIN_THROTTLE);
+    LEDposition[0] = LED_POSITION_FRONT;
+    LEDposition[1] = LED_POSITION_NONE;
+    LED->config_LED(LEDposition, COLOR_PINK, LED_EFFECT_SET, 1);
+    ESP_LOGI(GetName().c_str(), "Brushless: %d", MIN_THROTTLE);
+    vTaskDelay(5200 / portTICK_PERIOD_MS);
+    
+    Brushless_ActualPwm = MIN_THROTTLE;
+    //ESP_LOGI(GetName().c_str(), "Brushless: %d", 300);
 }
 
 void MotorService::ControlMotors(float velesq, float veldir){
@@ -58,14 +65,11 @@ void MotorService::ControlMotors(float velesq, float veldir){
 }
 
 void MotorService::ControlBrushless(){
-
-    int speed = robot->getMotorData()->Brushless_TargetSpeed->getData();
-    speed = constrain(speed, MIN_THROTTLE, MAX_THROTTLE);
+    int speed = 205;
+    // speed = constrain(speed, MIN_THROTTLE, MAX_THROTTLE);
     if(Brushless_ActualPwm  <= speed)  rampThrottle(Brushless_ActualPwm, speed, THROTTLE_SPEED, 200);
     else rampThrottle(speed, Brushless_ActualPwm, -THROTTLE_SPEED, 200);
     Brushless_ActualPwm = speed;
-    //motors.motorSpeed(0, velesq);
-    //motors.motorSpeed(1, veldir);
 }
 
 void MotorService::StopMotors()
@@ -90,16 +94,19 @@ void MotorService::WalkStraight(float vel, bool frente){
     
 }
 
-void MotorService::StartBrushless()
+bool MotorService::StartBrushless()
 {
-    rampThrottle(MIN_THROTTLE, MAX_THROTTLE, THROTTLE_SPEED, 1);
-    rampThrottle(MIN_THROTTLE, MAX_THROTTLE, THROTTLE_SPEED, 1);
+    int speed = 205;
+    rampThrottle(MIN_THROTTLE, speed, THROTTLE_SPEED, 200);
+    Brushless_ActualPwm = speed;
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+    return true;
 }
 
 void MotorService::StopBrushless()
 {
-    rampThrottle(Brushless_ActualPwm, MIN_THROTTLE, -THROTTLE_SPEED, 200);
-    rampThrottle(Brushless_ActualPwm, MIN_THROTTLE, -THROTTLE_SPEED, 200);
+    if(Brushless_ActualPwm  > MIN_THROTTLE) rampThrottle(Brushless_ActualPwm, MIN_THROTTLE, -THROTTLE_SPEED, 200);
+    Brushless_ActualPwm = MIN_THROTTLE;
 }
 
 void MotorService::rampThrottle(int start, int stop, int step, int time)
@@ -109,13 +116,13 @@ void MotorService::rampThrottle(int start, int stop, int step, int time)
 
     for (int i = start; step > 0 ? i < stop : i > stop; i += step)
     {
-        AnalogWrite(PWM_A_PIN, i);
-        AnalogWrite(PWM_B_PIN, i);
+        AnalogWrite(PWM_A_PIN, (i));
+        AnalogWrite(PWM_B_PIN, (i));
         ESP_LOGI(GetName().c_str(), "Brushless: %d", i);
         vTaskDelay(time / portTICK_PERIOD_MS);
     }
-    AnalogWrite(PWM_A_PIN, stop);
-    AnalogWrite(PWM_B_PIN, stop);
+    AnalogWrite(PWM_A_PIN, (stop));
+    AnalogWrite(PWM_B_PIN, (stop));
 }
 
 void MotorService::AnalogWrite(ledc_channel_t channel, int pwm){

@@ -77,6 +77,7 @@ private:
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);
+    void processSLat_romenia();
 
     led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 };

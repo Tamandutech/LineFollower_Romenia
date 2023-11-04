@@ -55,6 +55,8 @@ public:
 
     DataAbstract<float> *Mass_BrushON; // Massa quando o brushless está ligado
 
+    DataAbstract<float> *Malha_Aberta; // Angulo para ligar a malha aberta
+
 private:
     std::string name;
     const char *tag = "RobotData";

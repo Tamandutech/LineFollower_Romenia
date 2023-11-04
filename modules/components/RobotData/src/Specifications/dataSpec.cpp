@@ -55,4 +55,7 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
 
     Mass_BrushON = new DataAbstract<float>("Mass_Brushless_ON", name, 0);  // mudar depois
     dataManager->registerParamData(Mass_BrushON);
+
+    Malha_Aberta = new DataAbstract<float>("Malha_Aberta", name, 1.0);  // mudar depois
+    dataManager->registerParamData(Malha_Aberta);
 }

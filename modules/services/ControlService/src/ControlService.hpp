@@ -53,6 +53,8 @@ private:
     TickType_t lastTicksRevsCalc = 0;
     int count =0;
 
+    bool brushless_started = false;
+
     void ControlePIDwithoutRPM();
     void ControlePIDandRPM();
     void Teste_vel_fixo();

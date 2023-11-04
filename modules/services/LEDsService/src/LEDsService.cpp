@@ -17,6 +17,7 @@ LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t prio
 
     gpio_pad_select_gpio(buzzer_pin);
     gpio_set_direction((gpio_num_t)buzzer_pin, GPIO_MODE_OUTPUT);
+    
 
     //ESP_LOGI("LEDsService", "Constructor END");
 }

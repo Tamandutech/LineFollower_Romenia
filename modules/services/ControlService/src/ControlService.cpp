@@ -29,17 +29,30 @@ void ControlService::Run()
     {
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
         if(get_Status->robotState->getData() != CAR_STOPPED){
-            if(get_Status->RPMControl->getData()) ControlePIDandRPM();
-            else ControlePIDwithoutRPM();
+            if(brushless_started){
+                if(get_Status->RPMControl->getData()) {
+                    ControlePIDandRPM();
+                    control_motor->ControlBrushless();
+                }
+                else {
+                    ControlePIDwithoutRPM();
+                    control_motor->ControlBrushless();
+                }
+            }else{
+                brushless_started = control_motor->StartBrushless();
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
+            }
+            
         }else{
             control_motor->StopMotors();
+            control_motor->StopBrushless();
             rpm->ResetCount();
             erro_int_linear_r = 0;
             erro_int_linear_l = 0;
             erro_ant_linear_r = 0;
             erro_ant_linear_l = 0;
         }
-        control_motor->ControlBrushless();
+        
     }
 }
 
@@ -174,7 +187,12 @@ void ControlService::Teste_vel_fixo(){
 void ControlService::ControlePIDwithoutRPM(){
     //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
     CarState state = (CarState) get_Status->robotState->getData();
-    TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
+    TrackState line_state;
+    if(get_Status->MappingTuningParam->getData()){
+        line_state = (TrackState) TUNNING;
+    }else{
+        line_state = (TrackState) get_Status->TrackStatus->getData();
+    }
 
     from_sensor->AngleError();
     float erro = get_Angle->getChannel(0); // em graus
@@ -183,7 +201,6 @@ void ControlService::ControlePIDwithoutRPM(){
 
     if(state == CAR_STOPPED){
         control_motor->StopMotors();
-        
     }else{
         float Kp = get_PID->Kp(line_state)->getData();
         float Kd = get_PID->Kd(line_state)->getData();
@@ -206,16 +223,18 @@ void ControlService::ControlePIDwithoutRPM(){
         get_Vel->RPMLeft_inst->setData(RPM_Left);
         get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
         
-        if(get_Status->VelCalculated->getData()){
-            vel_base = get_Vel->vel_mapped->getData();
+        if(line_state == TUNNING){
+            vel_base = get_Vel->Setpoint(TUNNING)->getData();
         }else{
-            vel_base = get_Vel->Setpoint(line_state)->getData();
+            vel_base = get_Vel->vel_mapped->getData();
         }
+        
         get_PID->setpoint->setData(vel_base);
 
         float max_angle = get_Spec->MaxAngle_Center->getData();
         bool OpenLoopControl = get_Status->OpenLoopControl->getData();
-        if(abs(erro) >= (max_angle-1.0) && OpenLoopControl)
+        float limite = get_Spec->Malha_Aberta->getData();
+        if(abs(erro) >= (max_angle-limite) && OpenLoopControl)
         {
             int8_t min = get_Vel->min->getData();
             int8_t max = get_Vel->max->getData();

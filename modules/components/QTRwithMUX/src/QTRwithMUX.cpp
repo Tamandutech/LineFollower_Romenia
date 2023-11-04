@@ -99,7 +99,7 @@ void QTRwithMUX::read_from_body(uint16_t *values, QTRSensors *sArray, int pin_in
         
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         values[position] = sensor_value;
-        if (white_line == WHITE) { values[position] = 1000 - values[position]; }
+        if (white_line != WHITE) { values[position] = 1000 - values[position]; }
 
         vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
         ets_delay_us(1); // função que pausa o código por N microsegundos

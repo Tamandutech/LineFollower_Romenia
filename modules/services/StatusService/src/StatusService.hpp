@@ -62,6 +62,9 @@ private:
     int32_t pulsesBeforeCurve = 200;
     int32_t pulsesAfterCurve = 200;
     bool firstmark = false;
+    bool in_transition = false;
+    int16_t offset_transition = 0;
+    int mark_in_transition = 0;
 
     CarState trackType;
     TrackState trackLen;
@@ -74,6 +77,7 @@ private:
     void mappingStatus(bool is_reading, bool is_mapping);
     void loadTrackMapped(int section, int section_speed);
     float calculate_speed(int section);
+    float convert_RPM_to_speed(float RPM);
     int16_t calculate_offset(int section);
 };
 

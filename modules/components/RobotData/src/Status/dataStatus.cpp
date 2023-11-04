@@ -12,6 +12,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
 
     // Obejetos do tipo uint8_t
     robotState = new DataAbstract<uint8_t>("robotState", name, initialState); // criado com o estado inicial
+    ControlOff = new DataAbstract<bool>("Controloff", name, false);
     TrackStatus = new DataAbstract<uint8_t>("TrackStatus", name, SHORT_LINE);
     RobotCenter = new DataAbstract<uint8_t>("RobotCenter", name, CAR_CENTERED);
     RealTrackStatus = new DataAbstract<uint8_t>("RealTrackStatus", name, 0);
@@ -26,7 +27,7 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     dataManager->registerParamData(VelCalculated);
     BrushlessON = new DataAbstract<bool>("Brushless_ON", name, 0);
     dataManager->registerParamData(BrushlessON);
-    LineInMaxSpeed = new DataAbstract<bool>("Line_In_Max_Speed", name, 0);
+    LineInMaxSpeed = new DataAbstract<bool>("Use_Line_In_Max_Speed", name, 0);
     dataManager->registerParamData(LineInMaxSpeed);
     WithBrushless = new DataAbstract<bool>("WithBrushless", name, true);
     TunningMode = new DataAbstract<bool>("TunningMode", name, false);
@@ -40,4 +41,6 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     FirstMark = new DataAbstract<bool>("FirstMark", name, false);
     Transition = new DataAbstract<bool>("Transition", name, false);
     TuningMapped = new DataAbstract<bool>("TuningMapped", name, false);
+    MappingTuningParam = new DataAbstract<bool>("Mapping_with_TuningParam", name, false);
+    dataManager->registerParamData(MappingTuningParam);
 }

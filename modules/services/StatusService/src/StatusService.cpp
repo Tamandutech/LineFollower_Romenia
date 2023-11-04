@@ -120,8 +120,8 @@ void StatusService::Run()
         // Mudando a led frontal para amarelo:
         LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
     }
-    //ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
-    vTaskDelay(1500 / portTICK_PERIOD_MS);
+    ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
     
 
     if(!status->TunningMode->getData())
@@ -137,12 +137,14 @@ void StatusService::Run()
             // Começa mapeamento
             status->RealTrackStatus->setData(UNDEFINED);
             status->TrackStatus->setData(UNDEFINED);
+            speed->vel_mapped->setData(speed->Setpoint(UNDEFINED)->getData());
             mappingService->startNewMapping();
         }
         else
         {// Se estiver mapeando, muda o status para linha curta (mais lento)
             status->TrackStatus->setData(MEDIUM_CURVE);
             status->RealTrackStatus->setData(MEDIUM_CURVE);
+            speed->vel_mapped->setData(speed->Setpoint(MEDIUM_CURVE)->getData());
         }
 
         status->robotState->setData(CAR_IN_LINE); // Carro sai do estado parado
@@ -154,6 +156,8 @@ void StatusService::Run()
         status->robotState->setData(CAR_TUNING);
         status->TrackStatus->setData(TUNNING);
         status->RealTrackStatus->setData(TUNNING);
+        trackSpeed = speed->Setpoint(TUNNING)->getData();
+        speed->vel_mapped->setData(trackSpeed);
         mappingStatus(false, false); // (bool is_reading, bool is_mapping)
         latMarks->marks->clearAllData();
         numMarks = 0;
@@ -174,11 +178,23 @@ void StatusService::Run()
         pulsesAfterCurve = latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) status->robotState->getData();
 
+        if(spec->Friction_Angle->getData() != friction_angle){
+            friction_angle = spec->Friction_Angle->getData();
+            spec->Friction_Coef->setData(tan(friction_angle*M_PI/180));
+            if(status->BrushlessON->getData()){
+                spec->Acceleration->setData(spec->Friction_Coef->getData() * 9806.65 * (spec->Mass->getData()/spec->Mass_BrushON->getData())); // g = 9806,65
+            }else{
+                spec->Acceleration->setData(spec->Friction_Coef->getData()*9806.65); // g = 9806,65
+            }
+        }
+
         if(started_in_Tuning && status->TunningMode->getData() && status->robotState->getData() != CAR_TUNING && status->robotState->getData() != CAR_STOPPED &&  !status->encreading->getData() && !status->robotIsMapping->getData()) 
         {// Se iniciar em modo de teste
             status->robotState->setData(CAR_TUNING);
             status->TrackStatus->setData(TUNNING);
             status->RealTrackStatus->setData(TUNNING);
+            trackSpeed = speed->Setpoint(TUNNING)->getData();
+            speed->vel_mapped->setData(trackSpeed);
             
             // LED frontal branca com brilho 50%
             LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 0.5);
@@ -202,6 +218,7 @@ void StatusService::Run()
             lastState = status->robotState->getData();
             lastTrack =  (TrackState)status->TrackStatus->getData();
             lastTransition = status->Transition->getData();
+            gpio_set_level((gpio_num_t)buzzer_pin, 0);
             if (lastState == CAR_IN_LINE && !lastTransition)
             {
                 //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
@@ -233,10 +250,10 @@ void StatusService::Run()
                         LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 0.05);
                         break;
                     case MEDIUM_CURVE:
-                        LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 0.3);
+                        LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 0.3);
                         break;
                     case LONG_CURVE:
-                        LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+                        LED->config_LED(LEDposition, COLOR_PINK, LED_EFFECT_SET, 1);
                         break;
                     case ZIGZAG:
                         LED->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 1);
@@ -251,14 +268,18 @@ void StatusService::Run()
             }
             else if(lastTransition)
             {
+                gpio_set_level((gpio_num_t)buzzer_pin,1);
                 LED->config_LED(LEDposition, COLOR_BLUE, LED_EFFECT_SET, 0.5);
             }
         }
 
         mediaEncActual = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2; // calcula media dos encoders
 
-        if(!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData() && actualCarState != CAR_STOPPED)
+        if(((!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData()) || status->ControlOff->getData()) && actualCarState != CAR_STOPPED)
         {// Muda o status do carro para parado, caso esteja no momento certo
+            status->robotIsMapping->setData(false);
+            status->encreading->setData(false);
+            status->TunningMode->setData(false);
             status->robotState->setData(CAR_STOPPED);
             vTaskDelay(0);
             DataManager::getInstance()->saveAllParamDataChanged();
@@ -308,44 +329,56 @@ void StatusService::Run()
                         loadTrackMapped(mark+1, mark+1);
                         status->RealTrackStatus->setData(trackLen);
                         bool transition = false;
-
-                        int16_t offset = latMarks->marks->getData(mark).MapOffset;
-                        int16_t offsetnxt = latMarks->marks->getData(mark+1).MapOffset;
+                        if(mark_in_transition != mark){
+                            in_transition = false;
+                        }
+                        int16_t offset = 0;
+                        int16_t offsetnxt = 0;
                         // Verifica se o robô precisa reduzir a velocidade, entrando no modo curva
                         if((CarState)latMarks->marks->getData(mark).MapStatus == CAR_IN_CURVE && (CarState)latMarks->marks->getData(mark + 1).MapStatus == CAR_IN_LINE)
                         {
-                            ManualmediaNxt += pulsesAfterCurve;
+                            offset += pulsesAfterCurve;
                         }
                         if(offset > 0)
                         {
                             if((Manualmedia + offset) < ManualmediaNxt && (mediaEncActual - initialmediaEnc) < (Manualmedia + offset)) 
                             {
                                 transition = true;
-                                loadTrackMapped(mark, mark+1);
+                                loadTrackMapped(mark+1, mark+1);
                             }
-                            else if((Manualmedia + offset) >= ManualmediaNxt) 
+                            else if((Manualmedia + offset) >= ManualmediaNxt)
                             {
                                 transition = true;
-                                loadTrackMapped(mark, mark+1);
+                                loadTrackMapped(mark+1, mark+1);
                             }
                         }
                         if(mark + 2 < numMarks)
                         {
                             if((CarState)latMarks->marks->getData(mark+1).MapStatus == CAR_IN_LINE && (CarState)latMarks->marks->getData(mark + 2).MapStatus == CAR_IN_CURVE){
-                                ManualmediaNxt += -pulsesBeforeCurve;
-                                offsetnxt = -offsetnxt;
+                                /* if(in_transition){
+                                    offsetnxt = -calculate_offset(mark+1) - pulsesBeforeCurve;
+                                }else{
+                                    offset = offset_transition;
+                                } */
+                                offsetnxt = - pulsesBeforeCurve;
                             }
                             if(offsetnxt < 0)
                             {
                                 if((ManualmediaNxt + offsetnxt) > Manualmedia && (mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt)) 
                                 {
                                     transition = true;
-                                    loadTrackMapped(mark+1, mark+2);
+                                    in_transition = true;
+                                    mark_in_transition = mark;
+                                    offset_transition = offsetnxt;
+                                    loadTrackMapped(mark+2, mark+2);
                                 }
                                 else if((ManualmediaNxt + offsetnxt) <= Manualmedia) 
                                 {
                                     transition = true;
-                                    loadTrackMapped(mark+1, mark+2);
+                                    in_transition = true;
+                                    mark_in_transition = mark;
+                                    offset_transition = offsetnxt;
+                                    loadTrackMapped(mark+2, mark+2);
                                 }
                             }
                         }
@@ -379,65 +412,71 @@ void StatusService::loadTrackMapped(int section, int section_speed)
 }
 
 float StatusService::calculate_speed(int section){
-    int32_t delta_right = (latMarks->marks->getData(section).MapEncRight - latMarks->marks->getData(section-1).MapEncRight);
-    int32_t delta_left = (latMarks->marks->getData(section).MapEncLeft - latMarks->marks->getData(section-1).MapEncLeft);
-    
-    float radius;
-    if(delta_right != delta_left) radius = std::abs(((float)spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
-    else radius = 0;
+    float vel;
+    if(status->VelCalculated->getData()){
+        int32_t delta_right = (latMarks->marks->getData(section).MapEncRight - latMarks->marks->getData(section-1).MapEncRight);
+        int32_t delta_left = (latMarks->marks->getData(section).MapEncLeft - latMarks->marks->getData(section-1).MapEncLeft);
+        
+        float radius;
+        if(delta_right != delta_left) radius = std::abs(((float)spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
+        else radius = 0;
 
-    if(spec->Friction_Angle->getData() != friction_angle){
-        friction_angle = spec->Friction_Angle->getData();
-        spec->Friction_Coef->setData(tan(friction_angle*M_PI/180));
+        float accel;
         if(status->BrushlessON->getData()){
-            spec->Acceleration->setData(spec->Friction_Coef->getData() * 9806.65 * (spec->Mass->getData()/spec->Mass_BrushON->getData())); // g = 9806,65
+            accel = (spec->Mass->getData()/spec->Mass_BrushON->getData())* 9806.65;
         }else{
-            spec->Acceleration->setData(spec->Friction_Coef->getData()*9806.65); // g = 9806,65
+            accel = 9806.65;
         }
-    }
 
-    float speed;
-    float accel;
-    if(status->BrushlessON->getData()){
-        accel = (spec->Mass->getData()/spec->Mass_BrushON->getData())* 9806.65;
-    }else{
-        accel = 9806.65;
-    }
-
-    if(status->LineInMaxSpeed->getData()){
-        if(latMarks->marks->getData(section).MapStatus == CAR_IN_LINE){ 
-            speed = 100;
+        if(status->LineInMaxSpeed->getData()){
+            if(latMarks->marks->getData(section).MapStatus == CAR_IN_LINE){ 
+                vel = 100;
+            }else{
+                vel = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
+                vel = (vel*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
+                if(vel <= spec->MaxRPM->getData()) vel = (vel/spec->MaxRPM->getData())*100;
+                else vel = 100;
+            }
         }else{
-            speed = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
-            speed = (speed*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
-            if(speed <= spec->MaxRPM->getData()) speed = (speed/spec->MaxRPM->getData())*100;
-            else speed = 100;
+            vel = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
+            vel = (vel*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
+            if(vel <= spec->MaxRPM->getData()) vel = (vel/spec->MaxRPM->getData())*100; // RPM para porcentagem
+            else vel = 100;
         }
     }else{
-        speed = std::sqrt(radius * accel * spec->Friction_Coef->getData()); // em mm/s
-        speed = (speed*60)/((float)spec->WheelDiameter->getData()*M_PI); // conversão RPM
-        if(speed <= spec->MaxRPM->getData()) speed = (speed/spec->MaxRPM->getData())*100;
-        else speed = 100;
+        TrackState line_state = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
+        vel = speed->Setpoint(line_state)->getData();
     }
     
-    return speed;
+    return vel;
 }
 
 int16_t StatusService::calculate_offset(int section){
     float actual_speed;
     float next_speed;
-    if(status->VelCalculated->getData()){
-        actual_speed = calculate_speed(section);
-        next_speed = calculate_speed(section+1);
-    }else{
+    //if(status->VelCalculated->getData()){
+    actual_speed = (float)speed->RPMCar_media->getData();
+    next_speed = calculate_speed(section+1);
+    /* }else{
         TrackState line_state = (TrackState)latMarks->marks->getData(section).MapTrackStatus;
         TrackState line_state_next = (TrackState)latMarks->marks->getData(section+1).MapTrackStatus;
         actual_speed = speed->Setpoint(line_state)->getData();
         next_speed = speed->Setpoint(line_state_next)->getData();
-    }
+    } */
+
+    //actual_speed = (actual_speed*spec->MaxRPM->getData())/100;
+    actual_speed = convert_RPM_to_speed(actual_speed);
+    next_speed = (next_speed*spec->MaxRPM->getData())/100;
+    next_speed = convert_RPM_to_speed(next_speed);
     
     float offset_mm = (std::pow(actual_speed, 2) - std::pow(next_speed, 2))/(2*spec->Acceleration->getData());
     offset_mm = std::abs(offset_mm);
     float offset_enc = (offset_mm * (float)spec->MPR->getData())/((float)spec->WheelDiameter->getData() * M_PI);
     return (int16_t)offset_enc;
+}
+
+float StatusService::convert_RPM_to_speed(float RPM){
+    float speed; // mm/s
+    speed = (M_PI * spec->WheelDiameter->getData() * RPM)/60;
+    return speed;
 }

@@ -126,7 +126,7 @@ void app_main()
     motorService = MotorService::getInstance("MotorService", 4096, 5);
     //ESP_LOGI(MotorService::getInstance()->GetName().c_str(), "MotorService");
     
-    sensorService = SensorService::getInstance("SensorService", 8192, 5);
+    sensorService = SensorService::getInstance("SensorService", 8192, 9);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10);

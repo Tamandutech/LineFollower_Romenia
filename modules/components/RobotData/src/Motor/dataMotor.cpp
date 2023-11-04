@@ -28,6 +28,7 @@ dataMotor::dataMotor(std::string name)
     dataManager->registerRuntimeData(PWM_left);
 
     Brushless_TargetSpeed = new DataAbstract<int16_t>("Brushless_TargetSpeed", name, 205);
+    dataManager->registerParamData(Brushless_TargetSpeed);
 
 
     // Vel. máximo e mínimo
