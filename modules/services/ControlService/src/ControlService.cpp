@@ -40,7 +40,7 @@ void ControlService::Run()
                 }
             }else{
                 brushless_started = control_motor->StartBrushless();
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                //vTaskDelay(2000 / portTICK_PERIOD_MS);
             }
             
         }else{

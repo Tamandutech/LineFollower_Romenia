@@ -99,10 +99,18 @@ void StatusService::Run()
     do
     {// Aguarda o precionar do botao
         xQueueReceive(gpio_evt_queue, &num, portMAX_DELAY);
-        //ESP_LOGI(GetName().c_str(), "Aguardando inicialização");
+        ESP_LOGI(GetName().c_str(), "Aguardando inicialização");
         if(status->robotState->getData() != CAR_STOPPED) break;
     } while (num != CAR_IN_LINE);
-
+    
+    std::string MapString = "";
+    DataMap* MapMarks = Robot::getInstance()->getSLatMarks()->marks;
+    MapMarks->loadData();
+    for(int i = 0; i < MapMarks->getSize(); i++)
+    {
+        MapString += MapMarks->getDataString(std::to_string(i)) + '\n';
+    }
+    ESP_LOGI(GetName().c_str(), "%s", MapString.c_str());
     // Acendendo a luz vermelha na LED da frente:
     LEDposition[0] = LED_POSITION_FRONT;
     LEDposition[1] = LED_POSITION_NONE;
@@ -209,7 +217,7 @@ void StatusService::Run()
         {// Caso esteja mapeando
             lastMappingState = status->robotIsMapping->getData();
 
-            //ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
+            ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
             // LED frontal branca com brilho 50%
             LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
         }
@@ -221,7 +229,7 @@ void StatusService::Run()
             gpio_set_level((gpio_num_t)buzzer_pin, 0);
             if (lastState == CAR_IN_LINE && !lastTransition)
             {
-                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
+                ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
                 switch (TrackLen)
                 {
                     case SHORT_LINE:
@@ -243,7 +251,7 @@ void StatusService::Run()
             }
             else if(lastState == CAR_IN_CURVE && !lastTransition)
             {
-                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
+                ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
                 switch (TrackLen)
                 {
                     case SHORT_CURVE:
@@ -323,10 +331,10 @@ void StatusService::Run()
                     // Verifica a contagem do encoder e atribui o estado ao robô
                     int32_t Manualmedia = latMarks->marks->getData(mark).MapEncMedia;        // Média dos encoders na chave mark
                     int32_t ManualmediaNxt = latMarks->marks->getData(mark + 1).MapEncMedia; // Média dos encoders na chave mark + 1
-
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
                         loadTrackMapped(mark+1, mark+1);
+                        ESP_LOGI(GetName().c_str(), "Marcação = %d Manualmedia = %d, MediaEnc = %d, Track = %d, Brushless = %d", mark, Manualmedia, mediaEncActual, trackLen, speed->Brushless_TargetSpeed->getData());
                         status->RealTrackStatus->setData(trackLen);
                         bool transition = false;
                         if(mark_in_transition != mark){

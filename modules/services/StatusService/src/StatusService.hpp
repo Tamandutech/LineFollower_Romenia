@@ -42,7 +42,7 @@ private:
     // Variáveis
     
     CarState actualCarState;
-    TrackState TrackLen = SHORT_CURVE;    
+    TrackState TrackLen = SHORT_CURVE;
 
     int numMarks = 0; // Número total de marcações laterais na pista
 

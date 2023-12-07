@@ -65,7 +65,7 @@ void MotorService::ControlMotors(float velesq, float veldir){
 }
 
 void MotorService::ControlBrushless(){
-    int speed = 205;
+    int speed = robot->getMotorData()->Brushless_TargetSpeed->getData();
     // speed = constrain(speed, MIN_THROTTLE, MAX_THROTTLE);
     if(Brushless_ActualPwm  <= speed)  rampThrottle(Brushless_ActualPwm, speed, THROTTLE_SPEED, 200);
     else rampThrottle(speed, Brushless_ActualPwm, -THROTTLE_SPEED, 200);
@@ -96,7 +96,7 @@ void MotorService::WalkStraight(float vel, bool frente){
 
 bool MotorService::StartBrushless()
 {
-    int speed = 205;
+    int speed = robot->getMotorData()->Brushless_TargetSpeed->getData();
     rampThrottle(MIN_THROTTLE, speed, THROTTLE_SPEED, 200);
     Brushless_ActualPwm = speed;
     vTaskDelay(200 / portTICK_PERIOD_MS);
