@@ -180,7 +180,7 @@ void RunStream(void *pvParameters)
 
 }
 
-BLEServerService::BLEServerService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+BLEServerService::BLEServerService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority,  coreid)
 {
 
     ESP_LOGD(this->GetName().c_str(), "Iniciando fila");

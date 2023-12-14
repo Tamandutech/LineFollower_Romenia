@@ -1,6 +1,6 @@
 #include "ControlService.hpp"
 
-ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority, coreid)
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
@@ -13,8 +13,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->control_motor = MotorService::getInstance();
     this->from_sensor = SensorService::getInstance();
     this->rpm = RPMService::getInstance();
-
-    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
+    esp_log_level_set(name.c_str(), ESP_LOG_ERROR);
 };
 
 void ControlService::Run()
@@ -28,6 +27,8 @@ void ControlService::Run()
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
+        //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
+        //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
         if(get_Status->robotState->getData() != CAR_STOPPED){
             if(brushless_started){
                 if(get_Status->RPMControl->getData()) {
@@ -40,7 +41,7 @@ void ControlService::Run()
                 }
             }else{
                 brushless_started = control_motor->StartBrushless();
-                //vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(2000 / portTICK_PERIOD_MS);
             }
             
         }else{

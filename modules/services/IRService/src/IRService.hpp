@@ -18,7 +18,7 @@ using namespace cpp_freertos;
 class IRService : public Thread, public Singleton<IRService>
 {
 public:
-    IRService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    IRService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
     
     void Run() override;
 private:

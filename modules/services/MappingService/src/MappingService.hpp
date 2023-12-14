@@ -23,7 +23,7 @@ class MappingService : public Thread, public Singleton<MappingService>
 {
 public:
 
-    MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
     
     void Run() override;
 

@@ -1,6 +1,6 @@
 #include "MappingService.hpp"
 
-MappingService::MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+MappingService::MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority,  coreid)
 {
     this->robot = Robot::getInstance();
     get_Spec = robot->getSpecification();

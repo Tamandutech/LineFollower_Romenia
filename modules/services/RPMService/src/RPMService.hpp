@@ -15,7 +15,7 @@ using namespace cpp_freertos;
 class RPMService : public Thread, public Singleton<RPMService>
 {
 public:
-    RPMService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    RPMService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     ESP32Encoder enc_motEsq;
     ESP32Encoder enc_motDir;

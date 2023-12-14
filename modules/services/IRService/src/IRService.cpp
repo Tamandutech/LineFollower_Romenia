@@ -1,6 +1,6 @@
 #include "IRService.hpp"
 
-IRService::IRService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
+IRService::IRService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid):Thread(name, stackDepth, priority,  coreid)
 {
     tag = name;
     // Atalhos para o RobotData:

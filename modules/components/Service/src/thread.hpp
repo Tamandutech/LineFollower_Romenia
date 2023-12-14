@@ -98,7 +98,8 @@ namespace cpp_freertos
 #ifndef CPP_FREERTOS_NO_CPP_STRINGS
                 Thread(const std::string Name,
                        uint16_t StackDepth,
-                       UBaseType_t Priority);
+                       UBaseType_t Priority,
+                       BaseType_t xCoreID = tskNO_AFFINITY);
 #else
                 Thread(const char *Name,
                        uint16_t StackDepth,
@@ -396,6 +397,7 @@ namespace cpp_freertos
                  */
                 UBaseType_t Priority;
 
+                BaseType_t CoreId;
                 /**
                  *  Flag whether or not the Thread was started.
                  */

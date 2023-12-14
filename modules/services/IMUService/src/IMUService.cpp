@@ -1,6 +1,6 @@
 #include "IMUService.hpp"
 
-IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
+IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid):Thread(name, stackDepth, priority,  coreid)
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();

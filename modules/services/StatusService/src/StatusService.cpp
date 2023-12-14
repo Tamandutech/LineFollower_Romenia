@@ -16,7 +16,7 @@ void IRAM_ATTR StatusService::gpio_isr_handler(void *arg) // se precionar o bot�
 }
 
 // Construtor do servico
-StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority, coreid)
 {
     // Atalhos para o RobotData:
     this->robot = Robot::getInstance();
@@ -76,14 +76,7 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
 
     gpio_isr_handler_add(GPIO_NUM_0, gpio_isr_handler, (void *)GPIO_NUM_0);
 
-    // Calculo do coeficiente de atrito
-    friction_angle = spec->Friction_Angle->getData();
-    float friction = (friction_angle)*M_PI/180; // de graus para rad
-    friction = tan(friction);
-    spec->Friction_Coef->setData(friction);
 
-    // Calculo da aceleracao máx
-    spec->Acceleration->setData((friction*9806.65)); // g = 9806,65 
 }
 
 // Main do servico
@@ -103,14 +96,6 @@ void StatusService::Run()
         if(status->robotState->getData() != CAR_STOPPED) break;
     } while (num != CAR_IN_LINE);
     
-    std::string MapString = "";
-    DataMap* MapMarks = Robot::getInstance()->getSLatMarks()->marks;
-    MapMarks->loadData();
-    for(int i = 0; i < MapMarks->getSize(); i++)
-    {
-        MapString += MapMarks->getDataString(std::to_string(i)) + '\n';
-    }
-    ESP_LOGI(GetName().c_str(), "%s", MapString.c_str());
     // Acendendo a luz vermelha na LED da frente:
     LEDposition[0] = LED_POSITION_FRONT;
     LEDposition[1] = LED_POSITION_NONE;
@@ -175,7 +160,20 @@ void StatusService::Run()
         LED->config_LED(LEDposition, COLOR_WHITE, LED_EFFECT_SET, 0.5);
     }
     status->FirstMark->setData(false); // Indica que nao passou pela primeira marcaçao
-    // Loop
+    
+    // Calculo do coeficiente de atrito
+    friction_angle = spec->Friction_Angle->getData();
+    float friction = (friction_angle)*M_PI/180; // de graus para rad
+    friction = tan(friction);
+    spec->Friction_Coef->setData(friction);
+    // Calculo da aceleracao máx
+    if(status->BrushlessON->getData()){
+        spec->Acceleration->setData(friction * 9806.65 * (spec->Mass->getData()/spec->Mass_BrushON->getData())); // g = 9806,65
+    }else{
+        spec->Acceleration->setData(friction*9806.65); // g = 9806,65
+    }
+
+    //Loop
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, 30 / portTICK_PERIOD_MS);
@@ -185,17 +183,6 @@ void StatusService::Run()
         pulsesBeforeCurve = latMarks->PulsesBeforeCurve->getData();
         pulsesAfterCurve = latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) status->robotState->getData();
-
-        if(spec->Friction_Angle->getData() != friction_angle){
-            friction_angle = spec->Friction_Angle->getData();
-            spec->Friction_Coef->setData(tan(friction_angle*M_PI/180));
-            if(status->BrushlessON->getData()){
-                spec->Acceleration->setData(spec->Friction_Coef->getData() * 9806.65 * (spec->Mass->getData()/spec->Mass_BrushON->getData())); // g = 9806,65
-            }else{
-                spec->Acceleration->setData(spec->Friction_Coef->getData()*9806.65); // g = 9806,65
-            }
-        }
-
         if(started_in_Tuning && status->TunningMode->getData() && status->robotState->getData() != CAR_TUNING && status->robotState->getData() != CAR_STOPPED &&  !status->encreading->getData() && !status->robotIsMapping->getData()) 
         {// Se iniciar em modo de teste
             status->robotState->setData(CAR_TUNING);
@@ -282,7 +269,6 @@ void StatusService::Run()
         }
 
         mediaEncActual = (speed->EncRight->getData() + speed->EncLeft->getData()) / 2; // calcula media dos encoders
-
         if(((!status->robotIsMapping->getData() && !status->encreading->getData() && !status->TunningMode->getData()) || status->ControlOff->getData()) && actualCarState != CAR_STOPPED)
         {// Muda o status do carro para parado, caso esteja no momento certo
             status->robotIsMapping->setData(false);
@@ -334,7 +320,12 @@ void StatusService::Run()
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
                         loadTrackMapped(mark+1, mark+1);
-                        ESP_LOGI(GetName().c_str(), "Marcação = %d Manualmedia = %d, MediaEnc = %d, Track = %d, Brushless = %d", mark, Manualmedia, mediaEncActual, trackLen, speed->Brushless_TargetSpeed->getData());
+                        if(iloop >= 30)
+                        {
+                            ESP_LOGI(GetName().c_str(), "Marcação = %d Manualmedia = %d, MediaEnc = %d, Track = %d, Brushless = %d", mark, Manualmedia, mediaEncActual, trackLen, speed->Brushless_TargetSpeed->getData());
+                            iloop = 0;
+                        }
+                        iloop++;
                         status->RealTrackStatus->setData(trackLen);
                         bool transition = false;
                         if(mark_in_transition != mark){
@@ -399,9 +390,11 @@ void StatusService::Run()
                     }
                 }
             }
+        
         }
 
         status->stateMutex.unlock();
+
     }
 }
 

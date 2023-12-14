@@ -8,7 +8,7 @@ uint32_t LEDsService::ws2812_t1h_ticks;
 uint32_t LEDsService::ws2812_t0l_ticks;
 uint32_t LEDsService::ws2812_t1l_ticks;
 
-LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority, coreid)
 {// Construtor do serviço
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
     //ESP_LOGI("LEDsService", "Constructor Start");

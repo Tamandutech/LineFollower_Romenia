@@ -13,6 +13,7 @@
 #include "MotorService.hpp"
 #include "RPMService.hpp"
 #include "SensorService.hpp"
+#include "StatusService.hpp"
 
 
 using namespace cpp_freertos;
@@ -20,7 +21,7 @@ using namespace cpp_freertos;
 class ControlService : public Thread, public Singleton<ControlService>
 {
 public:
-    ControlService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    ControlService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
 

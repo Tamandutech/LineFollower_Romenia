@@ -84,7 +84,7 @@ void app_main()
     esp_log_level_set("*", ESP_LOG_ERROR);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
     esp_log_level_set("LEDsService", ESP_LOG_ERROR);
-    esp_log_level_set("StatusService", ESP_LOG_ERROR);
+    esp_log_level_set("StatusService", ESP_LOG_INFO);
     esp_log_level_set("BLEServerService", ESP_LOG_DEBUG);
     esp_log_level_set("DataManager", ESP_LOG_ERROR);
     esp_log_level_set("DataStorage", ESP_LOG_ERROR);
@@ -117,7 +117,7 @@ void app_main()
     //imuService = IMUService::getInstance("IMUService", 4096, 5);
     //ESP_LOGI(IMUService::getInstance()->GetName().c_str(), "IMUService");
     
-    statusService = StatusService::getInstance("StatusService", 10000, 8);
+    statusService = StatusService::getInstance("StatusService", 10000, 8, APP_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
     
     rpmService = RPMService::getInstance("RPMService", 4096, 9);
@@ -129,7 +129,7 @@ void app_main()
     sensorService = SensorService::getInstance("SensorService", 8192, 9);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
     
-    controlService = ControlService::getInstance("ControlService", 8192, 10);
+    controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
     //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
 
     irService = IRService::getInstance("IRService", 4096, 9);
@@ -155,14 +155,14 @@ void app_main()
 
     for (;;)
     {
-      //ESP_LOGD("main", "StatusService: %d", eTaskGetState(statusService->GetHandle()));
+      //ESP_LOGD("Main", "StatusService: %d", eTaskGetState(statusService->GetHandle()));
       //ESP_LOGD("main", "mappingService: %d", eTaskGetState(mappingService->GetHandle()));
       //ESP_LOGD("main", "rpmService: %d", eTaskGetState(rpmService->GetHandle()));
       //ESP_LOGD("main", "motorService: %d", eTaskGetState(motorService->GetHandle()));
       //ESP_LOGD("main", "sensorService: %d", eTaskGetState(sensorService->GetHandle()));
-      //ESP_LOGD("main", "controlService: %d", eTaskGetState(controlService->GetHandle()));
+      //ESP_LOGD("Main", "controlService: %d", eTaskGetState(controlService->GetHandle()));
       //ESP_LOGD("main", "ledsService: %d", eTaskGetState(ledsService->GetHandle()));
 
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
+      vTaskDelay(30 / portTICK_PERIOD_MS);
     }
 }

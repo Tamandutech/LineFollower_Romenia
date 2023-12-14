@@ -24,7 +24,7 @@ using namespace cpp_freertos;
 class SensorService : public Thread, public Singleton<SensorService>
 {
 public:
-    SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
     void AngleError();

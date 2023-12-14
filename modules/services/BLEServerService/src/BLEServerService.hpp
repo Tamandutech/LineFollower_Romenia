@@ -44,7 +44,7 @@ struct ble_gatt_uart_packet_t
 class BLEServerService : public Thread, public Singleton<BLEServerService>
 {
 public:
-    BLEServerService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    BLEServerService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
 

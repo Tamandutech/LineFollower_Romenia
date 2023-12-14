@@ -1,8 +1,8 @@
 #include "RPMService.hpp"
 
-RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priority) : Thread(name, stackDepth, priority)
+RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority, coreid)
 {
-    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
+    esp_log_level_set(name.c_str(), ESP_LOG_ERROR);
     
     // Atalhos:
     this->robot = Robot::getInstance();
@@ -30,12 +30,11 @@ void RPMService::Run()
     // Loop do servico, em desenvolvimento
     
     // Variavel necerraria para funcionaliade do vTaskDelayUtil, guarda a contagem de pulsos da CPU
-    //TickType_t xLastWakeTime = xTaskGetTickCount();
+    TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        vTaskDelay(0);
         this->Suspend();
     }
 }

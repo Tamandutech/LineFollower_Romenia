@@ -164,7 +164,7 @@ typedef struct
 class LEDsService : public Thread, public Singleton<LEDsService>
 {
 public:
-    LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     esp_err_t queueCommand(led_command_t command);
     

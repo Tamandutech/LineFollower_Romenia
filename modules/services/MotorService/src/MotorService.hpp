@@ -35,7 +35,7 @@ using namespace cpp_freertos;
 class MotorService : public Thread, public Singleton<MotorService>
 {
 public:
-    MotorService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    MotorService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
     
     void Run() override;
     void ControlMotors(float left, float right);

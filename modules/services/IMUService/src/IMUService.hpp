@@ -17,7 +17,7 @@ using namespace cpp_freertos;
 class IMUService : public Thread, public Singleton<IMUService>
 {
 public:
-    IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
 

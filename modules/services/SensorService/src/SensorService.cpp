@@ -1,6 +1,6 @@
 #include "SensorService.hpp"
 
-SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority):Thread(name, stackDepth, priority)
+SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid):Thread(name, stackDepth, priority,  coreid)
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();

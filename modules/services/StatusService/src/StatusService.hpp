@@ -21,7 +21,7 @@ class StatusService : public Thread, public Singleton<StatusService>
 {
 public:
     
-    StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
     static QueueHandle_t gpio_evt_queue;
@@ -40,6 +40,8 @@ private:
     MappingService *mappingService;
 
     // Variáveis
+    
+    int iloop = 0;
     
     CarState actualCarState;
     TrackState TrackLen = SHORT_CURVE;
