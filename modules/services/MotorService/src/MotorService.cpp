@@ -5,7 +5,8 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     tag = name;
     // Atalhos para o RobotData:
     this->robot = Robot::getInstance();
-    this->status = robot->getStatus();
+    this->get_Speed = robot->getMotorData();
+
     this->LED = LEDsService::getInstance();
     // Motores:
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
@@ -14,19 +15,15 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
     InitPWM((gpio_num_t)brushless_dir, PWM_A_PIN);
     InitPWM((gpio_num_t)brushless_esq, PWM_B_PIN);
-    ESP_LOGI(GetName().c_str(), "Iniciando Calibracao");
+    //ESP_LOGI(GetName().c_str(), "Iniciando Calibracao");
     calibrate();
-    ESP_LOGI(GetName().c_str(), "Fim Calibracao");
+    //ESP_LOGI(GetName().c_str(), "Fim Calibracao");
 }
 
 
 
 void MotorService::Run()
 {
-    //ESP_LOGI(GetName().c_str(), "Início MotorService");
-    // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
-    // TickType_t xLastWakeTime = xTaskGetTickCount();
-
     // Loop
     for (;;)
     {
@@ -49,7 +46,7 @@ void MotorService::calibrate(){
     LEDposition[0] = LED_POSITION_FRONT;
     LEDposition[1] = LED_POSITION_NONE;
     LED->config_LED(LEDposition, COLOR_PINK, LED_EFFECT_SET, 1);
-    ESP_LOGI(GetName().c_str(), "Brushless: %d", MIN_THROTTLE);
+    //ESP_LOGI(GetName().c_str(), "Brushless: %d", MIN_THROTTLE);
     vTaskDelay(5200 / portTICK_PERIOD_MS);
     
     Brushless_ActualPwm = MIN_THROTTLE;
@@ -65,7 +62,7 @@ void MotorService::ControlMotors(float velesq, float veldir){
 }
 
 void MotorService::ControlBrushless(){
-    int speed = robot->getMotorData()->Brushless_TargetSpeed->getData();
+    int speed = get_Speed->Brushless_TargetSpeed->getData();
     // speed = constrain(speed, MIN_THROTTLE, MAX_THROTTLE);
     if(Brushless_ActualPwm  <= speed)  rampThrottle(Brushless_ActualPwm, speed, THROTTLE_SPEED, 200);
     else rampThrottle(speed, Brushless_ActualPwm, -THROTTLE_SPEED, 200);
@@ -118,7 +115,7 @@ void MotorService::rampThrottle(int start, int stop, int step, int time)
     {
         AnalogWrite(PWM_A_PIN, (i));
         AnalogWrite(PWM_B_PIN, (i));
-        ESP_LOGI(GetName().c_str(), "Brushless: %d", i);
+        //ESP_LOGI(GetName().c_str(), "Brushless: %d", i);
         vTaskDelay(time / portTICK_PERIOD_MS);
     }
     AnalogWrite(PWM_A_PIN, (stop));

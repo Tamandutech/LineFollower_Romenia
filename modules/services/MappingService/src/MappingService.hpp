@@ -40,9 +40,9 @@ private:
 
     // Atalhos para o RobotData
     Robot *robot;
-    dataMotor *speedMapping;
-    dataSLatMarks *latMarks;
-    dataStatus *status;
+    dataMotor *get_Speed;
+    dataSLatMarks *get_latMarks;
+    dataStatus *get_Status;
     dataSpec *get_Spec;
     // Atalhos para serviços
     LEDsService *LED;
@@ -69,10 +69,9 @@ private:
     uint32_t tempMilimiterInPulses = 0;
     uint32_t tempDeltaDist = 0;
 
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
-
     void MappingWithMarks();
     void MappingWithoutMarks(TickType_t *xLastWakeTime);
+    void AtualizarLEDs();
 };
 
 #endif

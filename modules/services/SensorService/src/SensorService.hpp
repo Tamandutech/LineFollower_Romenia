@@ -38,11 +38,11 @@ private:
 
     // Atalhos para o RobotData
     Robot *robot;
-    dataMotor *get_Vel;
+    dataMotor *get_Speed;
     dataSpec *get_Spec;
     dataStatus *get_Status;
     dataSLatMarks *get_Marks;
-    dataUint16 *get_latArray;
+    dataUint16 *get_latMarks;
     dataUint16 *get_centerArray;
     dataFloat *get_frontArray;
     // Atalhos de servico
@@ -67,19 +67,14 @@ private:
     int sumSensDir = 0;
     int MarksToMean = 0;
     int nLatReads = 0;
-    uint16_t lastPosition; // para teste
-    uint16_t cont_calibracao = 0;
-    uint16_t cont_leituras = 0;
 
     void SaveAngle(float new_angle);
-    void SaveArray(uint16_t *array, int array_len, dataUint16 *get_array);
     int lower_value(uint16_t s_1, uint16_t s_2);
     void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);
     void processSLat_romenia();
 
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
 };
 
 #endif

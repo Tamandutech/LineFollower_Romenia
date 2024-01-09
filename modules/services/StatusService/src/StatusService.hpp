@@ -30,18 +30,15 @@ private:
 
     // Atalhos do RobotData:
     Robot *robot;
-    dataStatus *status;
-    dataMotor *speed;
-    dataSLatMarks *latMarks;
-    dataPID *PID;
-    dataSpec *spec;
+    dataStatus *get_Status;
+    dataMotor *get_Speed;
+    dataSLatMarks *get_latMarks;
+    dataSpec *get_Spec;
     // Atalhos de outros serviços:
     LEDsService *LED;
     MappingService *mappingService;
 
     // Variáveis
-    
-    int iloop = 0;
     
     CarState actualCarState;
     TrackState TrackLen = SHORT_CURVE;
@@ -51,10 +48,8 @@ private:
     bool stateChanged; // verifica se o carrinho mudou seu estado quanto ao mapeamento
     bool lastTransition = false;
 
-    float friction_angle = 0; // salva o angulo de atrito para verificar se a variável mudou
-
     TrackState lastTrack = SHORT_LINE; // armazena último tipo de trecho da pista percorrido
-    uint8_t lastState; // armazena último estado do mapeamento
+    uint8_t lastState; //armazena último estado do mapeamento
     bool lastMappingState;
 
     bool started_in_Tuning = false; // se o robo esta em modo de teste
@@ -73,14 +68,13 @@ private:
     float trackSpeed;
 
 
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
-
     static void IRAM_ATTR gpio_isr_handler(void *arg);
     void mappingStatus(bool is_reading, bool is_mapping);
     void loadTrackMapped(int section, int section_speed);
     float calculate_speed(int section);
     float convert_RPM_to_speed(float RPM);
     int16_t calculate_offset(int section);
+    void actualize_friction();
 };
 
 #endif

@@ -33,7 +33,6 @@ public:
     DataAbstract<bool> *TunningMode; // Modo de teste
     DataAbstract<bool> *ControlOff; // Desliga o robô por controle remoto
     DataAbstract<bool> *OpenLoopControl; // Controle em malha aberta se o robô sair da linha
-    DataAbstract<bool> *RPMControl; // Controle da velocidade dos motores em RPM
     DataAbstract<bool> *HardDeleteMap; // Se o mapa deve ser deletado
     DataAbstract<uint8_t> *RealTrackStatus; // status real do trecho da pista em que o robô se encontra
     DataAbstract<bool> *FirstMark; // Verifica se o robô já passou pela primeira marcação lateral

@@ -21,20 +21,6 @@ public:
     DataAbstract<float> *erroquad;
     DataAbstract<float> *output;
 
-    // PID igual para os dois Motores
-    DataAbstract<float> *Kp_Linear;
-    DataAbstract<float> *Kd_Linear;
-    DataAbstract<float> *Ki_Linear;
-
-    // PID diferente para os dois motores
-    DataAbstract<float> *Kp_L_Linear;
-    DataAbstract<float> *Kd_L_Linear;
-    DataAbstract<float> *Ki_L_Linear;
-    
-    DataAbstract<float> *Kp_R_Linear;
-    DataAbstract<float> *Kd_R_Linear;
-    DataAbstract<float> *Ki_R_Linear;
-
     // Funções que retornam as constantes do PID definidas para um trecho da pista
     DataAbstract<float> *Kp(TrackState state);
     DataAbstract<float> *Kd(TrackState state);

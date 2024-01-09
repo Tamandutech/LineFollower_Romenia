@@ -47,9 +47,10 @@ enum led_position_t
 {
     // Which LED
     LED_POSITION_NONE = -1,
-    LED_POSITION_LEFT = 2,
     LED_POSITION_RIGHT = 0,
     LED_POSITION_FRONT = 1,
+    LED_POSITION_LEFT = 2,
+    LED_POSITION_BOTH_SIDES = 3,
 };
 
 enum led_effect_t
@@ -169,7 +170,8 @@ public:
     esp_err_t queueCommand(led_command_t command);
     
     void config_LED(led_position_t position[NUM_LEDS], led_color_t color, led_effect_t effect, float brigh);
-    led_command_t position_LED();
+    void set_LED(led_position_t position, led_color_t color, led_effect_t effect, float brigh);
+    
     void Run() override;
 
 private:

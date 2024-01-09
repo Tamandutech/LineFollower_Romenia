@@ -5,12 +5,9 @@ IRService::IRService(std::string name, uint32_t stackDepth, UBaseType_t priority
     tag = name;
     // Atalhos para o RobotData:
     this->robot = Robot::getInstance();
-    this->status = robot->getStatus();
-    this->LED = LEDsService::getInstance();
-    // Motores:
-    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
+    this->get_Status = robot->getStatus();
 
-    
+    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 }
 
 void IRService::Run()
@@ -42,13 +39,9 @@ void IRService::Run()
             length /= 4; // one RMT = 4 Bytes
             if (ir_parser->input(ir_parser, items, length) == ESP_OK) {
                 if (ir_parser->get_scan_code(ir_parser, &addr, &cmd, &repeat) == ESP_OK) {
-                    //ESP_LOGI(TAG, "Scan Code %s --- addr: 0x%04x cmd: 0x%04x", repeat ? "(repeat)" : "", addr, cmd);
-                    status->ControlOff->setData(true);
-                    // led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
-                    // LEDposition[0] = LED_POSITION_FRONT;
-                    // LEDposition[1] = LED_POSITION_NONE;
-                    // DataManager::getInstance()->saveAllParamDataChanged();
-                    // LED->config_LED(LEDposition, COLOR_PINK, LED_EFFECT_SET, 1);
+
+                    get_Status->ControlOff->setData(true);
+                    
                 }
             }
             //after parsing the data, return spaces to ringbuffer.

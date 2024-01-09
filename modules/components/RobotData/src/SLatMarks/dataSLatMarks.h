@@ -47,6 +47,12 @@ public:
 
     // Número de leituras dos sensores laterais para determinar a média que será utilizada na contagem de marcações laterais 
     DataAbstract<uint16_t> *MarkstoMean;
+
+    // Leitura do sensor esquerdo
+    DataAbstract<uint16_t> *MeanSensorLeft;
+    // Leitura do sensor direito
+    DataAbstract<uint16_t> *MeanSensorRight;
+
     //Número de marcações direita para a parada 
     DataAbstract<uint16_t> *MarkstoStop;
     //Pulsos antes de inicar uma curva para iniciar a desaceleração

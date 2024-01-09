@@ -4,7 +4,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
-    this->get_Vel = robot->getMotorData();
+    this->get_Speed = robot->getMotorData();
     this->get_Spec = robot->getSpecification();
     this->get_PID = robot->getPID();
     this->get_Status = robot->getStatus();
@@ -12,8 +12,18 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     // Atalhos de servicos:
     this->control_motor = MotorService::getInstance();
     this->from_sensor = SensorService::getInstance();
-    this->rpm = RPMService::getInstance();
+    //this->rpm = RPMService::getInstance();
+
     esp_log_level_set(name.c_str(), ESP_LOG_ERROR);
+
+    // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
+    uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
+    uint16_t gear = get_Spec->GearRatio->getData(); // idem
+    uint16_t MPR = rev*gear;
+
+    get_Spec->MPR->setData(MPR);
+
+    encs.ConfigEncoders();
 };
 
 void ControlService::Run()
@@ -26,169 +36,29 @@ void ControlService::Run()
     // Loop
     for (;;)
     {
-        vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
+        vTaskDelayUntil(&xLastWakeTime, deltaTimeMS_inst / portTICK_PERIOD_MS);
         //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
         //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
         if(get_Status->robotState->getData() != CAR_STOPPED){
             if(brushless_started){
-                if(get_Status->RPMControl->getData()) {
-                    ControlePIDandRPM();
-                    control_motor->ControlBrushless();
-                }
-                else {
-                    ControlePIDwithoutRPM();
-                    control_motor->ControlBrushless();
-                }
+                ControlePID();
+                control_motor->ControlBrushless();
             }else{
                 brushless_started = control_motor->StartBrushless();
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
             }
             
         }else{
-            control_motor->StopMotors();
-            control_motor->StopBrushless();
-            rpm->ResetCount();
-            erro_int_linear_r = 0;
-            erro_int_linear_l = 0;
-            erro_ant_linear_r = 0;
-            erro_ant_linear_l = 0;
+            StopCar();
         }
         
     }
 }
 
-float ControlService::CalculatePD(float K_p, float K_d, float errof){
-    float PID_now;
-    PID_now = (K_p * (errof)) + (K_d * (errof - erro_anterior));
-    erro_anterior = errof;
-    return PID_now;
-}
-
-float ControlService::ControlRPM(float RPM_insta, float vel_motor, bool right)
-{
-    float K_p = get_PID->Kp_Linear->getData();
-    float K_d = get_PID->Kd_Linear->getData();
-    float K_i = get_PID->Ki_Linear->getData();
-    float PID_now;
-    float erro = vel_motor - RPM_insta;
-    if(right){
-        erro_int_linear_r += erro;
-        erro_int_linear_r = constrain(erro_int_linear_r, -100, 100);
-        PID_now = (K_p * (erro)) + (K_d * (erro - erro_ant_linear_r)) + (K_i * erro_int_linear_r);
-        erro_ant_linear_r = erro;
-    }else{
-        erro_int_linear_l += erro;
-        erro_int_linear_l = constrain(erro_int_linear_l, -100, 100);
-        PID_now = (K_p * (erro)) + (K_d * (erro - erro_ant_linear_l)) + (K_i * erro_int_linear_l);
-        erro_ant_linear_l = erro;
-    }
-    return (PID_now);
-}
-
-float ControlService::ControlRPM_2PIDs(float RPM_insta, float vel_motor, bool right)
-{
-    float PID_now;
-    float erro = vel_motor - RPM_insta;
-
-    if(right){
-        float K_p = get_PID->Kp_R_Linear->getData();
-        float K_d = get_PID->Kd_R_Linear->getData();
-        float K_i = get_PID->Ki_R_Linear->getData();
-        
-        erro_int_linear_r += erro;
-        erro_int_linear_r = constrain(erro_int_linear_r, -100, 100);
-        PID_now = (K_p * (erro)) + (K_d * (erro - erro_ant_linear_r)) + (K_i * erro_int_linear_r);
-        erro_ant_linear_r = erro;
-    }else{
-        float K_p = get_PID->Kp_L_Linear->getData();
-        float K_d = get_PID->Kd_L_Linear->getData();
-        float K_i = get_PID->Ki_L_Linear->getData();
-        
-        erro_int_linear_l += erro;
-        erro_int_linear_l = constrain(erro_int_linear_l, -100, 100);
-        PID_now = (K_p * (erro)) + (K_d * (erro - erro_ant_linear_l)) + (K_i * erro_int_linear_l);
-        erro_ant_linear_l = erro;
-    }
-    
-    return (PID_now);
-}
-
-void ControlService::Teste_vel_fixo(){
-    //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
-    CarState state = (CarState) get_Status->robotState->getData();
-    TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
-
-    from_sensor->AngleError();
-    float erro = get_Angle->getChannel(0); // em graus
-    get_PID->erro->setData(erro);
-    get_PID->erroquad->setData((erro*erro));
-    
-    //float erro = from_sensor->AngleArray[0];
-
-    if(state == CAR_STOPPED){
-        control_motor->StopMotors();
-        
-    }else{
-        float Kp = get_PID->Kp(line_state)->getData();
-        float Kd = get_PID->Kd(line_state)->getData();
-        uint16_t MPR_Mot = get_Spec->MPR->getData();
-        deltaTimeMS_inst = 10.0;
-        lastTicksRevsCalc = xTaskGetTickCount();
-        float PID = CalculatePD(Kp, Kd, erro);
-        get_PID->output->setData(PID);
-        //vel_base += 1;
-        rpm->ReadBoth();
-        int32_t enc_right = get_Vel->EncRight->getData();
-        int32_t enc_left = get_Vel->EncLeft->getData();
-
-        float RPM_Right = (((float)enc_right - lastPulseRight)*(float)60000) / ((float)MPR_Mot*(float)deltaTimeMS_inst);
-        float RPM_Left  = (((float)enc_left  - lastPulseLeft)*(float)60000)  / ((float)MPR_Mot*(float)deltaTimeMS_inst);
-        
-        get_Vel->RPMRight_inst->setData(RPM_Right);
-        get_Vel->RPMLeft_inst->setData(RPM_Left);
-        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
-
-        lastPulseRight = enc_right;
-        lastPulseLeft = enc_left;
-        
-        vel_base = get_Vel->Setpoint(line_state)->getData();
-        get_PID->setpoint->setData(vel_base);
-
-        float vel_right = vel_base;
-        float vel_left = vel_base;
-        
-        vel_right = ControlRPM(RPM_Right, vel_right, 1);
-        vel_left = ControlRPM(RPM_Left, vel_left, 0);
-
-        get_Vel->PWM_right->setData(vel_right);
-        get_Vel->PWM_left->setData(vel_left);
-
-        /* if(count > 400){
-            RPM_Right = (((float)enc_right)*(float)60000) / ((float)MPR_Mot*(float)(xTaskGetTickCount()*portTICK_PERIOD_MS));
-            RPM_Left  = (((float)enc_left)*(float)60000)  / ((float)MPR_Mot*(float)(xTaskGetTickCount()*portTICK_PERIOD_MS));
-            get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
-            control_motor->ControlMotors(0, 0);
-            get_Status->robotState->setData(CAR_STOPPED);
-            //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
-        }else{ 
-            count++;
-            control_motor->ControlMotors(vel_left, vel_right);
-            //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
-        } */
-        control_motor->ControlMotors(vel_left, vel_right);
-        if(count > 50){
-            //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
-            count = 0;
-        }else{ count++; }
-        //ESP_LOGI(GetName().c_str(), "Erro = %.2f", erro);
-        
-    }
-}
-
-void ControlService::ControlePIDwithoutRPM(){
+void ControlService::ControlePID(){
     //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
     CarState state = (CarState) get_Status->robotState->getData();
     TrackState line_state;
+
     if(get_Status->MappingTuningParam->getData()){
         line_state = (TrackState) TUNNING;
     }else{
@@ -205,138 +75,74 @@ void ControlService::ControlePIDwithoutRPM(){
     }else{
         float Kp = get_PID->Kp(line_state)->getData();
         float Kd = get_PID->Kd(line_state)->getData();
-        uint16_t MPR_Mot = get_Spec->MPR->getData();
-        deltaTimeMS_inst = 10.0;
-        lastTicksRevsCalc = xTaskGetTickCount();
+
         float PID = CalculatePD(Kp, Kd, erro);
         get_PID->output->setData(PID);
-        //vel_base += 1;
-        rpm->ReadBoth();
-        int32_t enc_right = get_Vel->EncRight->getData();
-        int32_t enc_left = get_Vel->EncLeft->getData();
-
-        float RPM_Right = (((enc_right - lastPulseRight) / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
-        float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
-        lastPulseRight = enc_right;
-        lastPulseLeft = enc_left;
-
-        get_Vel->RPMRight_inst->setData(RPM_Right);
-        get_Vel->RPMLeft_inst->setData(RPM_Left);
-        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
         
         if(line_state == TUNNING){
-            vel_base = get_Vel->Setpoint(TUNNING)->getData();
+            vel_base = get_Speed->Setpoint(TUNNING)->getData();
         }else{
-            vel_base = get_Vel->vel_mapped->getData();
+            vel_base = get_Speed->vel_mapped->getData();
         }
         
         get_PID->setpoint->setData(vel_base);
+
+        SaveRPM();
 
         float max_angle = get_Spec->MaxAngle_Center->getData();
         bool OpenLoopControl = get_Status->OpenLoopControl->getData();
         float limite = get_Spec->Malha_Aberta->getData();
         if(abs(erro) >= (max_angle-limite) && OpenLoopControl)
         {
-            int8_t min = get_Vel->min->getData();
-            int8_t max = get_Vel->max->getData();
+            int8_t min = get_Speed->min->getData();
+            int8_t max = get_Speed->max->getData();
             if(erro >= 0){
-                get_Vel->PWM_right->setData(max);
-                get_Vel->PWM_left->setData(min);
-                control_motor->ControlMotors(min, max);
+                NewSpeed(min, max);
             }else{
-                get_Vel->PWM_right->setData(min);
-                get_Vel->PWM_left->setData(max);
-                control_motor->ControlMotors(max, min);
+                NewSpeed(max, min);
             }
         }else{
-            get_Vel->PWM_right->setData((vel_base + PID));
-            get_Vel->PWM_left->setData((vel_base - PID));
-            control_motor->ControlMotors((vel_base - PID), (vel_base + PID));
+            NewSpeed((vel_base - PID), (vel_base + PID));
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
     }
 }
 
-void ControlService::ControlePIDandRPM(){
-    //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
-    CarState state = (CarState) get_Status->robotState->getData();
-    TrackState line_state = (TrackState) get_Status->TrackStatus->getData();
+float ControlService::CalculatePD(float K_p, float K_d, float errof){
+    float PID_now;
+    PID_now = (K_p * (errof)) + (K_d * (errof - erro_anterior));
+    erro_anterior = errof;
+    return PID_now;
+}
 
-    from_sensor->AngleError();
-    float erro = get_Angle->getChannel(0); // em graus
-    get_PID->erro->setData(erro);
-    get_PID->erroquad->setData((erro*erro));
+void ControlService::StopCar(){
+    control_motor->StopMotors();
+    control_motor->StopBrushless();
+    //rpm->ResetCount();
+    encs.ResetCount();
+}
+
+void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel){
+    get_Speed->PWM_right->setData(right_wheel);
+    get_Speed->PWM_left->setData(left_wheel);
+    control_motor->ControlMotors(left_wheel, right_wheel);
+}
+
+void ControlService::SaveRPM(){
+    uint16_t MPR_Mot = get_Spec->MPR->getData();
     
-    //float erro = from_sensor->AngleArray[0];
+    //rpm->ReadBoth();
+    encs.ReadBoth();
+    int32_t enc_right = get_Speed->EncRight->getData();
+    int32_t enc_left = get_Speed->EncLeft->getData();
 
-    if(state == CAR_STOPPED){
-        control_motor->StopMotors();
-        
-    }else{
-        float Kp = get_PID->Kp(line_state)->getData();
-        float Kd = get_PID->Kd(line_state)->getData();
-        uint16_t MPR_Mot = get_Spec->MPR->getData();
-        //deltaTimeMS_inst = (xTaskGetTickCount() - lastTicksRevsCalc) * portTICK_PERIOD_MS;
-        //lastTicksRevsCalc = xTaskGetTickCount();
-        deltaTimeMS_inst = 10.0;
-        
-        float PID = CalculatePD(Kp, Kd, erro);
-        get_PID->output->setData(PID);
-        //vel_base += 1;
-        rpm->ReadBoth();
-        int32_t enc_right = get_Vel->EncRight->getData();
-        int32_t enc_left = get_Vel->EncLeft->getData();
+    float RPM_Right = (((enc_right - lastPulseRight) / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
+    float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
+    lastPulseRight = enc_right;
+    lastPulseLeft = enc_left;
 
-        float RPM_Right = (((float)enc_right - lastPulseRight)*(float)60000) / ((float)MPR_Mot*(float)deltaTimeMS_inst);
-        float RPM_Left  = (((float)enc_left  - lastPulseLeft)*(float)60000)  / ((float)MPR_Mot*(float)deltaTimeMS_inst);
-        
-        get_Vel->RPMRight_inst->setData(RPM_Right);
-        get_Vel->RPMLeft_inst->setData(RPM_Left);
-        get_Vel->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
-
-        lastPulseRight = enc_right;
-        lastPulseLeft = enc_left;
-        
-        vel_base = get_Vel->Setpoint(line_state)->getData();
-        get_PID->setpoint->setData(vel_base);
-
-        float vel_right = vel_base + PID;
-        float vel_left = vel_base - PID;
-
-        vel_right = ControlRPM(RPM_Right, vel_right, 1);
-        vel_left = ControlRPM(RPM_Left, vel_left, 0);
-
-        
-
-        /* if(count > 50){
-            //ESP_LOGI(GetName().c_str(), "RPM_R = %.2f, RPM_L = %.2f", RPM_Right, RPM_Left);
-            count = 0;
-        }else{ count++; } */
-        //ESP_LOGI(GetName().c_str(), "Erro = %.2f MPR_Mot = %d deltaTimeMS_inst = %d", erro, MPR_Mot, deltaTimeMS_inst);
-        //ESP_LOGI(GetName().c_str(), "VelBase = %.2f VelEsq = %.2f VelDir = %.2f", vel_base, vel_left, vel_right);
-        
-        float max_angle = get_Spec->MaxAngle_Center->getData();
-        bool OpenLoopControl = get_Status->OpenLoopControl->getData();
-        if(abs(erro) >= (max_angle-1.0) && OpenLoopControl)
-        {
-            int8_t min = get_Vel->min->getData();
-            int8_t max = get_Vel->max->getData();
-            if(erro >= 0){
-                get_Vel->PWM_right->setData(max);
-                get_Vel->PWM_left->setData(min);
-                control_motor->ControlMotors(min, max);
-            }else{
-                get_Vel->PWM_right->setData(min);
-                get_Vel->PWM_left->setData(max);
-                control_motor->ControlMotors(max, min);
-            }
-        }else{
-            get_Vel->PWM_right->setData(vel_right);
-            get_Vel->PWM_left->setData(vel_left);
-            control_motor->ControlMotors(vel_left, vel_right);
-        }
-        
-        
-    }
+    get_Speed->RPMRight_inst->setData(RPM_Right);
+    get_Speed->RPMLeft_inst->setData(RPM_Left);
+    get_Speed->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
 }

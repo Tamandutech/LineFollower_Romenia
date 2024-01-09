@@ -4,11 +4,11 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
-    this->get_Vel = robot->getMotorData();
+    this->get_Speed = robot->getMotorData();
     this->get_Spec = robot->getSpecification();
     this->get_Status = robot->getStatus();
     this->get_Marks = robot->getSLatMarks();
-    this->get_latArray = robot->getFotoSensors(SENSOR_SIDE);
+    this->get_latMarks = robot->getFotoSensors(SENSOR_SIDE);
     this->get_centerArray = robot->getFotoSensors(SENSOR_CENTER);
     this->get_frontArray = robot->getFrontSensors();
     // Atalhos de servicos:
@@ -62,41 +62,36 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     get_Spec->MaxAngle_Center->setData(angle_with_center);
 
     //Calibracao
-    LEDposition[0] = LED_POSITION_FRONT;
-    LEDposition[1] = LED_POSITION_NONE;
     
-    LED->config_LED(LEDposition, COLOR_GREEN, LED_EFFECT_SET, 1);
+    LED->set_LED(LED_POSITION_FRONT, COLOR_GREEN, LED_EFFECT_SET, 1);
 
-    ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
+    //ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     manual_calibrate(0);
     
-    LED->config_LED(LEDposition, COLOR_YELLOW, LED_EFFECT_SET, 1);
-    /* ESP_LOGI(GetName().c_str(), "Delay...");
+    LED->set_LED(LED_POSITION_FRONT, COLOR_YELLOW, LED_EFFECT_SET, 1);
+    //ESP_LOGI(GetName().c_str(), "Delay...");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     
-    ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
-    LED->config_LED(LEDposition, COLOR_LIME, LED_EFFECT_SET, 1);
+    //ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
+    LED->set_LED(LED_POSITION_FRONT, COLOR_LIME, LED_EFFECT_SET, 1);
     manual_calibrate(1);
     
-    ESP_LOGI(GetName().c_str(), "Fim da calibração.");
-    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1); */
+    //ESP_LOGI(GetName().c_str(), "Fim da calibração.");
+    LED->set_LED(LED_POSITION_FRONT, COLOR_BLACK, LED_EFFECT_SET, 1);
 }
 
 void SensorService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início SensorService");
+    //ESP_LOGI(GetName().c_str(), "Início SensorService");
     // Loop do servico
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
     // Loop
     for (;;)
     {
-        //vTaskDelay(0);
-        //this->Suspend();
+        vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
 
-        vTaskDelayUntil(&xLastWakeTime, 100 / portTICK_PERIOD_MS);
-
-        //processSLat_romenia();
+        processSLat();
         //processSCenter();
     }
 }
@@ -141,13 +136,13 @@ void SensorService::auto_calibrate(int mux)
     for(int voltas=1; voltas <= 6; voltas++)
     {
         rpm->ResetCount(); // Reseta a contagem para comecar outra volta
-        while((get_Vel->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
+        while((get_Speed->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
         {
             rpm->ReadBoth(); // atualiza a leitura dos encoders
             /*
-            int32_t enc = get_Vel->EncMedia->getData();
-            int32_t enc_es = get_Vel->EncLeft->getData();
-            int32_t enc_di = get_Vel->EncRight->getData();
+            int32_t enc = get_Speed->EncMedia->getData();
+            int32_t enc_es = get_Speed->EncLeft->getData();
+            int32_t enc_di = get_Speed->EncRight->getData();
             ESP_LOGI(GetName().c_str(), "EncEsq = %d, EncDir = %d, EncMedia = %d", enc_es, enc_di, enc);
             */
 
@@ -157,12 +152,12 @@ void SensorService::auto_calibrate(int mux)
             if(voltas%2 == 0)
             {
                 // Chama a funcao do servico dos Motores para o robô andar reto
-                control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 0);
+                control_motor->WalkStraight(get_Speed->vel_calibrate->getData(), 0);
             }
             else
             {
                 // Chama a mesma funcao para o robô andar para o lado contraio
-                control_motor->WalkStraight(get_Vel->vel_calibrate->getData(), 1);
+                control_motor->WalkStraight(get_Speed->vel_calibrate->getData(), 1);
             }
 
             // Escolhe qual sensor esta sendo calibrado:
@@ -193,16 +188,8 @@ void SensorService::SaveAngle(float new_angle)
 
     std::vector<float> SChannelsAngle(AngleArray, AngleArray + sQuantReading);
     get_frontArray->setChannels(SChannelsAngle);
-    Sensor_resume();
+    //Sensor_resume();
     ////ESP_LOGI(GetName().c_str(), "Array salvo.");
-}
-
-void SensorService::SaveArray(uint16_t *array, int array_len, dataUint16 *get_array)
-{
-    std::vector<uint16_t> SChannelsVec(array, array + array_len); // construtor de vector(array) com os valores dos sensores laterais
-
-    // armazenando da leitura bruta do sensor lateral no objeto Braia
-    get_array->setChannels(SChannelsVec);
 }
 
 void SensorService::AngleError()
@@ -242,7 +229,6 @@ void SensorService::processSCenter()
     bool is_white = get_Status->LineColorBlack->getData();
     uint16_t center_values[2];
     MUX.read_from_body(center_values, sBody, 4, 5, is_white);
-    //SaveArray(center_values, 2, get_centerArray);
     std::vector<uint16_t> SChannelsVec(center_values, center_values + 2);
     get_centerArray->setChannels(SChannelsVec);
 
@@ -261,8 +247,8 @@ void SensorService::processSCenter()
     {
         get_Status->RobotCenter->setData(CAR_TO_THE_RIGHT);
     }
-    uint16_t status = get_Status->RobotCenter->getData();
-    ESP_LOGI(GetName().c_str(), "Estado RobotCenter = %d", status);
+    //uint16_t status = get_Status->RobotCenter->getData();
+    //ESP_LOGI(GetName().c_str(), "Estado RobotCenter = %d", status);
 }
 
 int SensorService::lower_value(uint16_t s_1, uint16_t s_2){
@@ -279,16 +265,15 @@ void SensorService::processSLat()
     bool is_white = get_Status->LineColorBlack->getData();
     uint16_t values[4];
     MUX.read_from_body(values, sBody, 0, 3, is_white);
-    //SaveArray(values, 4, get_centerArray); 
     std::vector<uint16_t> SChannelsVec(values, values + 4);
-    get_latArray->setChannels(SChannelsVec);
+    get_latMarks->setChannels(SChannelsVec);
 
-    uint16_t slesq_1 = get_latArray->getChannel(0);
-    uint16_t slesq_2 = get_latArray->getChannel(1);
-    uint16_t sldir_1 = get_latArray->getChannel(2);
-    uint16_t sldir_2 = get_latArray->getChannel(3);
+    uint16_t slesq_1 = get_latMarks->getChannel(0);
+    uint16_t slesq_2 = get_latMarks->getChannel(1);
+    uint16_t sldir_1 = get_latMarks->getChannel(2);
+    uint16_t sldir_2 = get_latMarks->getChannel(3);
 
-    //ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
+    ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
     //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
     
     nLatReads++; 
@@ -306,12 +291,31 @@ void SensorService::processSLat()
 
     if (nLatReads >= MarksToMean)  //MarksToMean definido na dashboard
     {
-        int meanSensDir = (sumSensDir/nLatReads); // leitura média do sensor direito
-        int meanSensEsq = (sumSensEsq/nLatReads); // leitura média do sensor esquerdo
+        uint16_t meanSensDir = (sumSensDir/nLatReads);
+        uint16_t meanSensEsq = (sumSensEsq/nLatReads);
+        
+        // Salvando Parâmetros
+        get_Marks->MeanSensorRight->setData(meanSensDir);
+        get_Marks->MeanSensorLeft->setData(meanSensEsq);
+        
+        //ESP_LOGI(GetName().c_str(), "Esquerdo: %d, Direito: %d", meanSensEsq, meanSensDir);
 
-        if (meanSensEsq < 300 || meanSensDir < 300)
+        
+        
+        if (meanSensEsq < 500 || meanSensDir < 500)
         { // leitura de faixas nos sensores laterais
-            if ((meanSensEsq < 300) && (meanSensDir > 600)) 
+            if ((meanSensEsq < 500) && (meanSensDir < 500)) 
+            {// quando ler ambos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
+                if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 
+                    || (get_Marks->latEsqPass->getData() && !get_Marks->latDirPass->getData()))
+                {
+                    // Desligando as LEDs esquerda e direita
+                    LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_BLACK, LED_EFFECT_SET, 1);
+                }
+                latState(true, true);
+                //ESP_LOGI(GetName().c_str(), "Marcação esquerda e direita");
+            }
+            else if ((meanSensEsq < 500))
             {// lendo sLat esq. branco e dir. preto
                 if (!(get_Marks->latEsqPass->getData()))
                 {
@@ -320,17 +324,16 @@ void SensorService::processSLat()
                         get_Marks->leftPassedInc();
                     }
                     latState(false, true);
-                    ESP_LOGI(GetName().c_str(), "Marcação esquerda");
+                    //ESP_LOGI(GetName().c_str(), "Marcação esquerda");
+                    
                     // LED esquerda vermelha e direita apagada
-                    LEDposition[0] = LED_POSITION_LEFT;
-                    LEDposition[1] = LED_POSITION_NONE;
-                    LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
-                    LEDposition[0] = LED_POSITION_RIGHT;
-                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+                    LED->set_LED(LED_POSITION_LEFT, COLOR_RED, LED_EFFECT_SET, 1);
+                    LED->set_LED(LED_POSITION_RIGHT, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
             }
-            else if ((meanSensDir < 300) && (meanSensEsq > 600))
-            { // lendo sldir. branco e sLat esq. preto
+            else if ((meanSensDir < 500))
+            {
+                // lendo sldir. branco e sLat esq. preto
                 if (!(get_Marks->latDirPass->getData()))
                 {
                     if(get_Status->robotState->getData() != CAR_STOPPED)
@@ -339,41 +342,20 @@ void SensorService::processSLat()
 
                     }
                     latState(true, false);
-                    ESP_LOGI(GetName().c_str(), "Marcação direita");
+                    //ESP_LOGI(GetName().c_str(), "Marcação direita");
 
                     // LED esquerda apagada e direita vermelha
-                    LEDposition[0] = LED_POSITION_RIGHT;
-                    LEDposition[1] = LED_POSITION_NONE;
-                    LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
-                    LEDposition[0] = LED_POSITION_LEFT;
-                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+                    LED->set_LED(LED_POSITION_RIGHT, COLOR_RED, LED_EFFECT_SET, 1);
+                    LED->set_LED(LED_POSITION_LEFT, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
-            }
-
-            else if ((meanSensEsq < 300) && (meanSensDir < 300)) 
-            {// quando ler ambos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
-                if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 
-                    || (get_Marks->latEsqPass->getData() && !get_Marks->latDirPass->getData()))
-                {
-                    // Desligando as LEDs esquerda e direita
-                    LEDposition[1] = LED_POSITION_RIGHT;
-                    LEDposition[0] = LED_POSITION_LEFT;
-                    LEDposition[2] = LED_POSITION_NONE;
-                    LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
-                }
-                latState(true, true);
-                ESP_LOGI(GetName().c_str(), "Marcação esquerda e direita");
             }
         }
         else
         {
             if (get_Marks->latDirPass->getData() || get_Marks->latEsqPass->getData())
             {
-                 // Desligando as LEDs esquerda e direita
-                LEDposition[1] = LED_POSITION_RIGHT;
-                LEDposition[0] = LED_POSITION_LEFT;
-                LEDposition[2] = LED_POSITION_NONE;
-                LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+                // Desligando as LEDs esquerda e direita
+                LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_BLACK, LED_EFFECT_SET, 1);
             }
             latState(false, false);
         }
@@ -388,14 +370,13 @@ void SensorService::processSLat_romenia()
     bool is_white = get_Status->LineColorBlack->getData();
     uint16_t values[4];
     MUX.read_from_body(values, sBody, 0, 3, is_white);
-    //SaveArray(values, 4, get_centerArray); 
     std::vector<uint16_t> SChannelsVec(values, values + 4);
-    get_latArray->setChannels(SChannelsVec);
+    get_latMarks->setChannels(SChannelsVec);
 
-    uint16_t slesq_1 = get_latArray->getChannel(0);
-    uint16_t slesq_2 = get_latArray->getChannel(1);
-    uint16_t sldir_1 = get_latArray->getChannel(2);
-    uint16_t sldir_2 = get_latArray->getChannel(3);
+    uint16_t slesq_1 = get_latMarks->getChannel(0);
+    uint16_t slesq_2 = get_latMarks->getChannel(1);
+    uint16_t sldir_1 = get_latMarks->getChannel(2);
+    uint16_t sldir_2 = get_latMarks->getChannel(3);
 
     //ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
     //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
@@ -427,24 +408,17 @@ void SensorService::processSLat_romenia()
                     get_Marks->rightPassedInc();
                 }
                 latState(true, false);
-                ESP_LOGI(GetName().c_str(), "Marcação direita");
+                //ESP_LOGI(GetName().c_str(), "Marcação direita");
 
-                // LED esquerda apagada e direita vermelha
-                LEDposition[1] = LED_POSITION_RIGHT;
-                LEDposition[0] = LED_POSITION_LEFT;
-                LEDposition[2] = LED_POSITION_NONE;
-                LED->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+                LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_RED, LED_EFFECT_SET, 1);
             }
         }
         else
         {
             if (get_Marks->latDirPass->getData() || get_Marks->latEsqPass->getData())
             {
-                 // Desligando as LEDs esquerda e direita
-                LEDposition[1] = LED_POSITION_RIGHT;
-                LEDposition[0] = LED_POSITION_LEFT;
-                LEDposition[2] = LED_POSITION_NONE;
-                LED->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+                // Desligando as LEDs esquerda e direita
+                LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_BLACK, LED_EFFECT_SET, 1);
             }
             latState(false, false);
         }

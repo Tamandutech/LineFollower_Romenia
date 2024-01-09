@@ -117,10 +117,10 @@ void app_main()
     //imuService = IMUService::getInstance("IMUService", 4096, 5);
     //ESP_LOGI(IMUService::getInstance()->GetName().c_str(), "IMUService");
     
-    statusService = StatusService::getInstance("StatusService", 10000, 8, APP_CPU_NUM);
+    statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
     
-    rpmService = RPMService::getInstance("RPMService", 4096, 9);
+    //rpmService = RPMService::getInstance("RPMService", 4096, 9); // tirar
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "RPMService");
     
     motorService = MotorService::getInstance("MotorService", 4096, 5);
@@ -138,7 +138,7 @@ void app_main()
     //mappingService->Start();
     //imuService->Start();
     statusService->Start();
-    rpmService->Start();
+    //rpmService->Start();
     motorService->Start();
     sensorService->Start();
     controlService->Start();
@@ -163,6 +163,6 @@ void app_main()
       //ESP_LOGD("Main", "controlService: %d", eTaskGetState(controlService->GetHandle()));
       //ESP_LOGD("main", "ledsService: %d", eTaskGetState(ledsService->GetHandle()));
 
-      vTaskDelay(30 / portTICK_PERIOD_MS);
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

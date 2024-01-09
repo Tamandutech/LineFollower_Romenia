@@ -34,6 +34,11 @@ dataSLatMarks::dataSLatMarks(std::string name)
     
     MarkstoMean = new DataAbstract<uint16_t>("MarkstoMean", name, 6);
     dataManager->registerParamData(MarkstoMean);
+
+    MeanSensorLeft = new DataAbstract<uint16_t>("MeanSensor_Left", name, 0);
+    dataManager->registerRuntimeData(MeanSensorLeft);
+    MeanSensorRight = new DataAbstract<uint16_t>("MeanSensor_Right", name, 0);
+    dataManager->registerRuntimeData(MeanSensorRight);
     
     thresholdLongLine = new DataAbstract<uint16_t>("thresholdLongLine", name, 1500);
     dataManager->registerParamData(thresholdLongLine);

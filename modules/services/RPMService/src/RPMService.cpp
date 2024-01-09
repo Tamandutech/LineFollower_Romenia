@@ -17,7 +17,7 @@ RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priori
     uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
     uint16_t gear = get_Spec->GearRatio->getData(); // idem
     uint16_t MPR = rev*gear;
-    ESP_LOGI(GetName().c_str(), "MPR = %d", MPR);
+    //ESP_LOGI(GetName().c_str(), "MPR = %d", MPR);
 
     get_Spec->MPR->setData(MPR);
 
@@ -26,17 +26,7 @@ RPMService::RPMService(std::string name, uint32_t stackDepth, UBaseType_t priori
 
 void RPMService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início RPMService");
-    // Loop do servico, em desenvolvimento
-    
-    // Variavel necerraria para funcionaliade do vTaskDelayUtil, guarda a contagem de pulsos da CPU
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-
-    // Loop
-    for (;;)
-    {
-        this->Suspend();
-    }
+    this->Suspend();
 }
 
 void RPMService::ReadBoth()
@@ -60,5 +50,4 @@ void RPMService::SaveEncData(int32_t pulseRight, int32_t pulseLeft)
     get_Vel->EncRight->setData(pulseRight);
     get_Vel->EncLeft->setData(pulseLeft);
     get_Vel->EncMedia->setData( abs((pulseRight+pulseLeft)/2) );
-    //this->Resume();
 }

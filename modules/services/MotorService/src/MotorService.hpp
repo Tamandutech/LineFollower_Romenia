@@ -52,8 +52,8 @@ private:
 
     // Atalhos do RobotData:
     Robot *robot;
-    dataStatus *status;
-
+    dataMotor *get_Speed;
+    // Atalhos para serviços:
     ESP32MotorControl motors;
     LEDsService *LED;
 

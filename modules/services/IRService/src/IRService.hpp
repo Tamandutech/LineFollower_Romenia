@@ -27,8 +27,7 @@ private:
 
     // Atalhos:
     Robot *robot;
-    dataStatus *status;
-    LEDsService *LED;
+    dataStatus *get_Status;
 
     rmt_channel_t rx_channel = RMT_CHANNEL_2;
 

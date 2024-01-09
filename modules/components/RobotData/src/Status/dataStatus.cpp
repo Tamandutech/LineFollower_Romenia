@@ -34,8 +34,6 @@ dataStatus::dataStatus(CarState initialState, std::string name)
     dataManager->registerParamData(TunningMode);
     OpenLoopControl = new DataAbstract<bool>("OpenLoopControl", name, false);
     dataManager->registerParamData(OpenLoopControl);
-    RPMControl = new DataAbstract<bool>("RPMControl", name, false);
-    dataManager->registerParamData(RPMControl);
     HardDeleteMap = new DataAbstract<bool>("HardDeleteMap", name, true);
     dataManager->registerParamData(HardDeleteMap);
     FirstMark = new DataAbstract<bool>("FirstMark", name, false);

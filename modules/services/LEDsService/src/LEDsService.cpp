@@ -86,6 +86,28 @@ void LEDsService::config_LED(led_position_t position[NUM_LEDS], led_color_t colo
     queueCommand(command); // adiciona na fila
 }
 
+void LEDsService::set_LED(led_position_t position, led_color_t color, led_effect_t effect, float brigh){
+    led_command_t command;
+    if(position >= 0){
+        if(position <= 2){
+            command.led[0] = position;
+            command.led[1] = LED_POSITION_NONE;
+            command.led[2] = LED_POSITION_NONE;
+        }
+        else if(position == LED_POSITION_BOTH_SIDES){
+            command.led[0] = LED_POSITION_LEFT;
+            command.led[1] = LED_POSITION_RIGHT;
+            command.led[2] = LED_POSITION_NONE;
+        }
+
+        command.color = color;
+        command.effect = effect;
+        command.brightness = brigh;
+        
+        queueCommand(command); // adiciona na fila
+    }
+}
+
 esp_err_t LEDsService::queueCommand(led_command_t command)
 {// Manda o pacote de dados 'led_command_t' para a fila pela porta portMAX_DELAY
     //ESP_LOGI(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
