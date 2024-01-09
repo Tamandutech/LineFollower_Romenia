@@ -12,7 +12,6 @@
 #include <stdlib.h>
 // Bibliotecas de servicos
 #include "MotorService.hpp"
-#include "RPMService.hpp"
 #include "SensorService.hpp"
 
 
