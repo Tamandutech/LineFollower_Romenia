@@ -11,7 +11,7 @@
 // Bibliotecas do C++
 #include <stdlib.h>
 // Bibliotecas de servicos
-#include "MotorService.hpp"
+#include "DriveMotors.h"
 #include "SensorService.hpp"
 
 
@@ -33,11 +33,11 @@ private:
     dataPID *get_PID;
     dataStatus *get_Status;
     dataFloat *get_Angle;
-    MotorService *control_motor;
+    //MotorService *control_motor;
     SensorService *from_sensor;
-    RPMService *rpm;
 
     DriveEncoder encs;
+    DriveMotors motors;
 
     int8_t speedMin = 0;
     int8_t speedMax = 0;

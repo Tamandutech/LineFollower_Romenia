@@ -1,8 +1,3 @@
-/*
----------------- BLOCO DE NOTAS ------------------
- - Tirar os // dos ESP_LOGs quando arrumar o VSCode
- - Inicializar os brushless no serviço MotorService
-*/
 
 // Servicos
 #include "RobotData.h"
@@ -48,7 +43,7 @@ ControlService *controlService;
 IMUService *imuService;
 LEDsService *ledsService;
 MappingService *mappingService;
-MotorService *motorService;
+//MotorService *motorService;
 RPMService *rpmService;
 SensorService *sensorService;
 StatusService *statusService;
@@ -123,7 +118,7 @@ void app_main()
     //rpmService = RPMService::getInstance("RPMService", 4096, 9); // tirar
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "RPMService");
     
-    motorService = MotorService::getInstance("MotorService", 4096, 5);
+    //motorService = MotorService::getInstance("MotorService", 4096, 5);
     //ESP_LOGI(MotorService::getInstance()->GetName().c_str(), "MotorService");
     
     sensorService = SensorService::getInstance("SensorService", 8192, 9);
@@ -139,7 +134,7 @@ void app_main()
     //imuService->Start();
     statusService->Start();
     //rpmService->Start();
-    motorService->Start();
+    //motorService->Start();
     sensorService->Start();
     controlService->Start();
     irService->Start();

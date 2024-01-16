@@ -12,8 +12,6 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     this->get_centerArray = robot->getFotoSensors(SENSOR_CENTER);
     this->get_frontArray = robot->getFrontSensors();
     // Atalhos de servicos:
-    this->control_motor = MotorService::getInstance();
-    this->rpm = RPMService::getInstance();
     this->LED = LEDsService::getInstance();
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
@@ -123,7 +121,7 @@ void SensorService::auto_calibrate(int mux)
     MPR_Mot = get_Spec->MPR->getData();
 
     // Zera contagem dos encoders
-    //rpm->ResetCount();
+    //encs.ResetCount();
     uint16_t limit_enc;
     if(mux == 0){
         limit_enc = MPR_Mot/3;
@@ -135,10 +133,10 @@ void SensorService::auto_calibrate(int mux)
     // Calibracao dos sensores laterais -> mux == 1
     for(int voltas=1; voltas <= 6; voltas++)
     {
-        rpm->ResetCount(); // Reseta a contagem para comecar outra volta
+        encs.ResetCount(); // Reseta a contagem para comecar outra volta
         while((get_Speed->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
         {
-            rpm->ReadBoth(); // atualiza a leitura dos encoders
+            encs.ReadBoth(); // atualiza a leitura dos encoders
             /*
             int32_t enc = get_Speed->EncMedia->getData();
             int32_t enc_es = get_Speed->EncLeft->getData();
@@ -152,12 +150,12 @@ void SensorService::auto_calibrate(int mux)
             if(voltas%2 == 0)
             {
                 // Chama a funcao do servico dos Motores para o robô andar reto
-                control_motor->WalkStraight(get_Speed->vel_calibrate->getData(), 0);
+                motors.WalkStraight(get_Speed->vel_calibrate->getData(), 0);
             }
             else
             {
                 // Chama a mesma funcao para o robô andar para o lado contraio
-                control_motor->WalkStraight(get_Speed->vel_calibrate->getData(), 1);
+                motors.WalkStraight(get_Speed->vel_calibrate->getData(), 1);
             }
 
             // Escolhe qual sensor esta sendo calibrado:
@@ -168,13 +166,13 @@ void SensorService::auto_calibrate(int mux)
                 MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
             }
             //vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-            rpm->ReadBoth();
+            encs.ReadBoth();
         }
-        control_motor->StopMotors();
+        motors.StopMotors();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
-    control_motor->StopMotors();
-    rpm->ResetCount();
+    motors.StopMotors();
+    encs.ResetCount();
     vTaskDelay(10 / portTICK_PERIOD_MS);
 }
 
@@ -273,7 +271,7 @@ void SensorService::processSLat()
     uint16_t sldir_1 = get_latMarks->getChannel(2);
     uint16_t sldir_2 = get_latMarks->getChannel(3);
 
-    ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
+    //ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
     //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
     
     nLatReads++; 

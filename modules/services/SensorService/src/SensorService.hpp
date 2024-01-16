@@ -8,13 +8,14 @@
 // Bibliotecas de componentes/dados
 #include "QTRSensors.h"
 #include "QTRwithMUX.h" // biblioteca própria
+#include "DriveEncoder.h" // drive próprio
 #include "RobotData.h"
 // Bibliotecas do C++
 #include "bitset"// para transformar um número decimal para binário
 #include "cmath" // para criar funcoes trigonometricas
 // Bibliotecas de servicos
-#include "MotorService.hpp"
-#include "RPMService.hpp"
+//#include "MotorService.hpp"
+#include "DriveMotors.h"
 #include "LEDsService.hpp"
 
 
@@ -46,14 +47,14 @@ private:
     dataUint16 *get_centerArray;
     dataFloat *get_frontArray;
     // Atalhos de servico
-    MotorService *control_motor;
-    RPMService *rpm;
     LEDsService *LED;
     
     // Objetos usados no serviço:
     QTRSensors sArray[sQuant]; // sensores frontais
     QTRSensors sBody[6]; // sensores laterais e do centro
     QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
+    DriveEncoder encs;
+    DriveMotors motors;
 
 
     // Variaveis do servico

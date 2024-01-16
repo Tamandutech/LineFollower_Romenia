@@ -1,5 +1,5 @@
 idf_component_register(
-    REQUIRES "Service" "MotorService" "RPMService" "SensorService" "DriveEncoder"
+    REQUIRES "Service" "SensorService" "DriveEncoder" "DriveMotors"
     SRCS "src/ControlService.cpp" 
     INCLUDE_DIRS "src"
 )

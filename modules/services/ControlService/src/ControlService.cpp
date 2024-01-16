@@ -10,9 +10,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->get_Status = robot->getStatus();
     this->get_Angle = robot->getFrontSensors();
     // Atalhos de servicos:
-    this->control_motor = MotorService::getInstance();
     this->from_sensor = SensorService::getInstance();
-    //this->rpm = RPMService::getInstance();
 
     esp_log_level_set(name.c_str(), ESP_LOG_ERROR);
 
@@ -24,6 +22,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     get_Spec->MPR->setData(MPR);
 
     encs.ConfigEncoders();
+    motors.ConfigMotors();
 };
 
 void ControlService::Run()
@@ -40,11 +39,12 @@ void ControlService::Run()
         //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
         //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
         if(get_Status->robotState->getData() != CAR_STOPPED){
+            int speed = get_Speed->Brushless_TargetSpeed->getData();
             if(brushless_started){
                 ControlePID();
-                control_motor->ControlBrushless();
+                motors.ControlBrushless(speed);
             }else{
-                brushless_started = control_motor->StartBrushless();
+                brushless_started = motors.StartBrushless(speed);
             }
             
         }else{
@@ -71,7 +71,7 @@ void ControlService::ControlePID(){
     get_PID->erroquad->setData((erro*erro));
 
     if(state == CAR_STOPPED){
-        control_motor->StopMotors();
+        motors.StopMotors();
     }else{
         float Kp = get_PID->Kp(line_state)->getData();
         float Kd = get_PID->Kd(line_state)->getData();
@@ -117,8 +117,8 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
 }
 
 void ControlService::StopCar(){
-    control_motor->StopMotors();
-    control_motor->StopBrushless();
+    motors.StopMotors();
+    motors.StopBrushless();
     //rpm->ResetCount();
     encs.ResetCount();
 }
@@ -126,7 +126,7 @@ void ControlService::StopCar(){
 void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel){
     get_Speed->PWM_right->setData(right_wheel);
     get_Speed->PWM_left->setData(left_wheel);
-    control_motor->ControlMotors(left_wheel, right_wheel);
+    motors.ControlMotors(left_wheel, right_wheel);
 }
 
 void ControlService::SaveRPM(){
