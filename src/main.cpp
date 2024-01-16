@@ -6,7 +6,6 @@
 #include "IMUService.hpp"
 #include "LEDsService.hpp"
 #include "MappingService.hpp"
-#include "MotorService.hpp"
 #include "RPMService.hpp"
 #include "SensorService.hpp"
 #include "StatusService.hpp"
@@ -43,7 +42,6 @@ ControlService *controlService;
 IMUService *imuService;
 LEDsService *ledsService;
 MappingService *mappingService;
-//MotorService *motorService;
 RPMService *rpmService;
 SensorService *sensorService;
 StatusService *statusService;
@@ -115,12 +113,6 @@ void app_main()
     statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
     
-    //rpmService = RPMService::getInstance("RPMService", 4096, 9); // tirar
-    //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "RPMService");
-    
-    //motorService = MotorService::getInstance("MotorService", 4096, 5);
-    //ESP_LOGI(MotorService::getInstance()->GetName().c_str(), "MotorService");
-    
     sensorService = SensorService::getInstance("SensorService", 8192, 9);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
     
@@ -133,8 +125,6 @@ void app_main()
     //mappingService->Start();
     //imuService->Start();
     statusService->Start();
-    //rpmService->Start();
-    //motorService->Start();
     sensorService->Start();
     controlService->Start();
     irService->Start();
