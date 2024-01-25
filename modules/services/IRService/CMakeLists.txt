@@ -1,5 +1,5 @@
 idf_component_register(
-    REQUIRES "Service" "IRRemote_EspIDFLib" "LEDsService"
+    REQUIRES "Service" "LEDsService"
     SRCS "src/IRService.cpp" 
     INCLUDE_DIRS "src"
 )

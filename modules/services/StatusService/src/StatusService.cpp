@@ -92,7 +92,7 @@ void StatusService::Run()
     } while (num != CAR_IN_LINE); // enquanto o botão não é precionado
     
     // Acendendo a luz vermelha na LED da frente:
-    LED->set_LED(LED_POSITION_FRONT, COLOR_BLACK, LED_EFFECT_SET, 1);
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 
 
     vTaskDelay(1500 / portTICK_PERIOD_MS);
@@ -104,7 +104,7 @@ void StatusService::Run()
         //ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
 
         // Mudando a led frontal para amarelo:
-        LED->set_LED(LED_POSITION_FRONT, COLOR_YELLOW, LED_EFFECT_SET, 1);
+        LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
     }
     //ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -117,7 +117,7 @@ void StatusService::Run()
             //ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
             
             // Mudando a led frontal para amarelo:
-            LED->set_LED(LED_POSITION_FRONT, COLOR_YELLOW, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
 
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             // Começa mapeamento
@@ -150,7 +150,7 @@ void StatusService::Run()
         mediaEncFinal = 0;
         
         // Muda a LED frontal para branco com brilho 50%
-        LED->set_LED(LED_POSITION_FRONT, COLOR_WHITE, LED_EFFECT_SET, 0.5);
+        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
     }
     get_Status->FirstMark->setData(false); // Indica que nao passou pela primeira marcaçao
 
@@ -174,7 +174,7 @@ void StatusService::Run()
             get_Speed->vel_mapped->setData(trackSpeed);
             
             // LED frontal branca com brilho 50%
-            LED->set_LED(LED_POSITION_FRONT, COLOR_WHITE, LED_EFFECT_SET, 0.5);
+            LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
         }
         if(get_latMarks->rightMarks->getData() >= 1 && !firstmark)
         {// Se passar pela linha de largada e nao tiver essa informacao salva
@@ -188,7 +188,7 @@ void StatusService::Run()
 
             //ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
             // LED frontal branca com brilho 50%
-            LED->set_LED(LED_POSITION_FRONT, COLOR_YELLOW, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
         }
         else if ((lastState != get_Status->robotState->getData() || lastTrack != (TrackState)get_Status->TrackStatus->getData() || lastTransition != get_Status->Transition->getData()) && !lastMappingState && get_Status->robotState->getData() != CAR_STOPPED && get_Status->robotState->getData() != CAR_TUNING)
         {// Caso tenha mudado o trecho em que o robô se encontra
@@ -202,19 +202,19 @@ void StatusService::Run()
                 switch (TrackLen)
                 {
                     case SHORT_LINE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_GREEN, LED_EFFECT_SET, 0.05);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.05);
                         break;
                     case MEDIUM_LINE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_GREEN, LED_EFFECT_SET, 0.3);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.3);
                         break;
                     case LONG_LINE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_GREEN, LED_EFFECT_SET, 1);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
                         break;
                     case SPECIAL_TRACK:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_PURPLE, LED_EFFECT_SET, 0.05);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
                         break;
                     default:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_WHITE, LED_EFFECT_SET, 1);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
                         break;
                 }
             }
@@ -224,29 +224,29 @@ void StatusService::Run()
                 switch (TrackLen)
                 {
                     case SHORT_CURVE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_RED, LED_EFFECT_SET, 0.05);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 0.05);
                         break;
                     case MEDIUM_CURVE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_YELLOW, LED_EFFECT_SET, 0.3);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 0.3);
                         break;
                     case LONG_CURVE:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_PINK, LED_EFFECT_SET, 1);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
                         break;
                     case ZIGZAG:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_PURPLE, LED_EFFECT_SET, 1);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
                         break;
                     case SPECIAL_TRACK:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_PURPLE, LED_EFFECT_SET, 0.05);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
                         break;
                     default:
-                        LED->set_LED(LED_POSITION_FRONT, COLOR_WHITE, LED_EFFECT_SET, 1);
+                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
                         break;
                 }
             }
             else if(lastTransition)
             {
                 gpio_set_level((gpio_num_t)buzzer_pin,1);
-                LED->set_LED(LED_POSITION_FRONT, COLOR_BLUE, LED_EFFECT_SET, 0.5);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 0.5);
             }
         }
 
@@ -259,7 +259,7 @@ void StatusService::Run()
             get_Status->robotState->setData(CAR_STOPPED);
             vTaskDelay(0);
             DataManager::getInstance()->saveAllParamDataChanged();
-            LED->set_LED(LED_POSITION_FRONT, COLOR_BLACK, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
         }
         if (!get_Status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && get_Status->encreading->getData() && firstmark && (!get_Status->TunningMode->getData() || !started_in_Tuning))
         {// Se estiver lendo o mapeamento, e já tiver passado pela linha de largada
@@ -282,7 +282,7 @@ void StatusService::Run()
 
                     get_Status->robotState->setData(CAR_STOPPED);
                     DataManager::getInstance()->saveAllParamDataChanged();
-                    LED->set_LED(LED_POSITION_FRONT, COLOR_BLACK, LED_EFFECT_SET, 1);
+                    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
                 }
             }
             if ((mediaEncActual - initialmediaEnc) < mediaEncFinal)

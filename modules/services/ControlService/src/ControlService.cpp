@@ -27,7 +27,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
 
 void ControlService::Run()
 {// Loop do servico   
-    //ESP_LOGI(GetName().c_str(), "Início ControlService");
+    ESP_LOGI(GetName().c_str(), "Início ControlService");
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     TickType_t xLastWakeTime = xTaskGetTickCount();
     vel_base = 0;

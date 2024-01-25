@@ -48,7 +48,7 @@ void IMUService::updateIMU()
 	imu.Get_X_Axes(acc);
 	imu.Get_G_Axes(gyr);
 
-	ESP_LOGI(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
+	//ESP_LOGI(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
 	saveData();
 }
 

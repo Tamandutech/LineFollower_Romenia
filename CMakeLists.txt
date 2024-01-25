@@ -5,4 +5,4 @@ list(
     "modules/components"
     "modules/services"
 )
-project(LineFollower_ROMENIA)
+project(LineFollower_VESPA)

@@ -5,11 +5,8 @@ MappingService::MappingService(std::string name, uint32_t stackDepth, UBaseType_
     this->robot = Robot::getInstance();
     get_Spec = robot->getSpecification();
 
-#ifndef ESP32_QEMU
-    gpio_pad_select_gpio(0);
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     gpio_set_pull_mode(GPIO_NUM_0, GPIO_PULLUP_ONLY);
-#endif
 
     get_Speed = robot->getMotorData();
     get_latMarks = robot->getSLatMarks();
@@ -65,7 +62,7 @@ esp_err_t MappingService::stopNewMapping()
     //ESP_LOGI(GetName().c_str(), "Parada do novo mapeamento finalizada");
     
     // Desligando a LED:
-    LED->set_LED(LED_POSITION_FRONT, COLOR_BLACK, LED_EFFECT_SET, 1);
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
     return ESP_OK;
 }
 
@@ -224,19 +221,19 @@ void MappingService::AtualizarLEDs(){
     if(tempActualMark.MapStatus == CAR_IN_CURVE) 
     {
         if(get_latMarks->latEsqPass->getData()){ 
-            LED->set_LED(LED_POSITION_LEFT, COLOR_RED, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
         }
         else if(get_latMarks->latDirPass->getData()){ 
-            LED->set_LED(LED_POSITION_RIGHT, COLOR_RED, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
         }
     }
     else if(tempActualMark.MapStatus == CAR_IN_LINE)
     {
         if(get_latMarks->latEsqPass->getData()){ 
-            LED->set_LED(LED_POSITION_LEFT, COLOR_GREEN, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
         }
         else if(get_latMarks->latDirPass->getData()){ 
-            LED->set_LED(LED_POSITION_RIGHT, COLOR_GREEN, LED_EFFECT_SET, 1);
+            LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
         }
     }
 }

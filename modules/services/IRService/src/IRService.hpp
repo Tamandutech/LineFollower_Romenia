@@ -8,12 +8,12 @@
 // Bibliotecas de componentes/dados
 #include <stdio.h>
 #include <string.h>
-#include "ir_tools.h"
-#include "driver/rmt.h"
+#include "driver/rmt_rx.h"
 #include "RobotData.h"
 #include "LEDsService.hpp"
 
 using namespace cpp_freertos;
+
 
 class IRService : public Thread, public Singleton<IRService>
 {
@@ -28,15 +28,15 @@ private:
     // Atalhos:
     Robot *robot;
     dataStatus *get_Status;
-
-    rmt_channel_t rx_channel = RMT_CHANNEL_2;
+    LEDsService *LED;
 
     uint32_t addr = 0;
     uint32_t cmd = 0;
     size_t length = 0;
     bool repeat = false;
-    RingbufHandle_t rb = NULL;
-    rmt_item32_t *items = NULL;
+    rmt_symbol_word_t *items = NULL;
+
+    static bool example_rmt_rx_done_callback(rmt_channel_handle_t channel, const rmt_rx_done_event_data_t *edata, void *user_data);
     
 };
 

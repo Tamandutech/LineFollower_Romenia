@@ -7,6 +7,15 @@ Robot::Robot(std::string name)
 {
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
+
+    ESP_LOGD(name.c_str(), "Iniciando o ADC 1");
+    adc_oneshot_unit_handle_t adc_handle;
+    adc_oneshot_unit_init_cfg_t init_config = {
+        .unit_id = ADC_UNIT_1,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config, &adc_handle));
+    this->_adcHandle = adc_handle;
+
     //ESP_LOGD(name.c_str(), "Criando objeto: %s (%p)", name.c_str(), this);
     storage = storage->getInstance();
 
@@ -105,4 +114,9 @@ dataInt32 *Robot::getFromIMU(CarIMU acc_or_gyr)
     {
         return this->IMUgyr;
     }
+}
+
+adc_oneshot_unit_handle_t Robot::getADC_handle()
+{
+    return this->_adcHandle;
 }

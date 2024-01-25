@@ -14,22 +14,22 @@ void DriveMotors::ConfigMotors()
 
     InitPWM((gpio_num_t)brushless_dir, PWM_A_PIN);
     InitPWM((gpio_num_t)brushless_esq, PWM_B_PIN);
-    //ESP_LOGI("SensorService", "Iniciando Calibracao");
+    ESP_LOGI("SensorService", "Iniciando Calibracao");
     calibrate();
-    //ESP_LOGI("SensorService", "Fim Calibracao");
+    ESP_LOGI("SensorService", "Fim Calibracao");
 }
 
 void DriveMotors::calibrate(){
     AnalogWrite(PWM_A_PIN, MAX_THROTTLE);
     AnalogWrite(PWM_B_PIN, MAX_THROTTLE);
     
-    LED->set_LED(LED_POSITION_FRONT, COLOR_BLUE, LED_EFFECT_SET, 1);
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 1);
     vTaskDelay(5200 / portTICK_PERIOD_MS);
     
     AnalogWrite(PWM_A_PIN, MIN_THROTTLE);
     AnalogWrite(PWM_B_PIN, MIN_THROTTLE);
 
-    LED->set_LED(LED_POSITION_FRONT, COLOR_PINK, LED_EFFECT_SET, 1);
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
     
     vTaskDelay(5200 / portTICK_PERIOD_MS);
     
@@ -40,7 +40,7 @@ void DriveMotors::calibrate(){
 void DriveMotors::ControlMotors(float velesq, float veldir){
     velesq = constrain(velesq, -100, 100);
     veldir = constrain(veldir, -100, 100);
-    //ESP_LOGI("SensorService", "Velocidades: %.2f %.2f", velesq, veldir);
+    ESP_LOGI("SensorService", "Velocidades: %.2f %.2f", velesq, veldir);
     control.motorSpeed(0, velesq);
     control.motorSpeed(1, veldir);
 }

@@ -6,7 +6,6 @@
 #include "IMUService.hpp"
 #include "LEDsService.hpp"
 #include "MappingService.hpp"
-#include "RPMService.hpp"
 #include "SensorService.hpp"
 #include "StatusService.hpp"
 #include "BLEServerService.hpp"
@@ -42,7 +41,6 @@ ControlService *controlService;
 IMUService *imuService;
 LEDsService *ledsService;
 MappingService *mappingService;
-RPMService *rpmService;
 SensorService *sensorService;
 StatusService *statusService;
 BLEServerService *bleServerService;
@@ -68,10 +66,7 @@ void app_main()
     ledsService = LEDsService::getInstance("LEDsService", 4096, 9);
     ledsService->Start();
 
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
-    LEDposition[0] = LED_POSITION_FRONT;
-    LEDposition[1] = LED_POSITION_NONE;
-    ledsService->config_LED(LEDposition, COLOR_RED, LED_EFFECT_SET, 1);
+    ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 1);
 
     //ESP_LOGI("Main", "Configurando LOGs...");
     esp_log_level_set("*", ESP_LOG_ERROR);
@@ -94,7 +89,7 @@ void app_main()
     console_config.max_cmdline_length = 256;
     ESP_ERROR_CHECK(better_console_init(&console_config));
     ESP_LOGD("Main", "Registrando Comandos...");
-    register_system();
+    register_system(robot->getADC_handle());
     register_cmd_param();
     register_cmd_datamanager();
     register_cmd_runtime();
@@ -130,11 +125,11 @@ void app_main()
     irService->Start();
 
     ESP_LOGI("Main", "Ligando LEDs");
-    ledsService->config_LED(LEDposition, COLOR_PURPLE, LED_EFFECT_SET, 1);
+    ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     ESP_LOGI("Main", "Apagando LEDs");
-    ledsService->config_LED(LEDposition, COLOR_BLACK, LED_EFFECT_SET, 1);
+    ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 
     
 

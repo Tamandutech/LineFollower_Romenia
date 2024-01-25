@@ -34,9 +34,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
     {
         uint16_t sensor_value;
         selectMuxPin(std::bitset<4>(i)); // Passa o valor i em formato 4 bits para selecionar o sensor
-        //vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
-        //ets_delay_us(1); // função que pausa o código por N microsegundos
-        //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
+        
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         if (white_line == WHITE) { sensor_value = 1000 - sensor_value; } // inverte as leituras
         //teste_value[i] = sensor_value;

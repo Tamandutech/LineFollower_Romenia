@@ -8,8 +8,11 @@
 #include <atomic>
 #include <mutex>
 
+#include "esp_adc/adc_oneshot.h"
+
 #include "dataEnums.h"
 #include "IOs.hpp"
+
 #include "dataMotor.h"
 #include "dataSpec.h"
 #include "dataPID.h"
@@ -18,6 +21,9 @@
 #include "dataUint16.h"
 #include "dataInt32.h"
 #include "VectorFloat/dataFloat.h"
+
+#include "DataStorage.hpp"
+#include "DataManager.hpp"
 
 #include "esp_log.h"
 
@@ -51,6 +57,8 @@ public:
     dataInt32 *getFromIMU(CarIMU acc_or_gyr);
     dataFloat *getFrontSensors();
 
+    adc_oneshot_unit_handle_t getADC_handle();
+
     std::string GetName();
 
 private:
@@ -58,6 +66,8 @@ private:
 
     static std::atomic<Robot *> instance;
     static std::mutex instanceMutex;
+
+    adc_oneshot_unit_handle_t _adcHandle;
 
     // Objetos de cada tipo:
     dataMotor *MotorVel;

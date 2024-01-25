@@ -3,7 +3,7 @@ idf_component_register(
         "Service" "bt" "esp-nimble-cpp" "BetterConsole" "json"
 
     SRCS 
-        "src/BLEServerService.cpp"  
+        "src/BLEServerService.cpp"
     
     INCLUDE_DIRS 
         "src"

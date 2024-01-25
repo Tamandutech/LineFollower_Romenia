@@ -6,7 +6,7 @@
 template <class T>
 DataAbstract<T>::DataAbstract(std::string name, std::string parentObjectName) : IDataAbstract(name, parentObjectName)
 {
-    //ESP_LOGD(name.c_str(), "Criando *dado do tipo %s, variavel inicializada com: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(T())).c_str());
+    ESP_LOGD(name.c_str(), "Criando *dado do tipo %s, variavel inicializada com: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(T())).c_str());
 
     this->dataStorage = dataStorage->getInstance();
     this->dataManager = dataManager->getInstance();
@@ -20,7 +20,7 @@ DataAbstract<T>::DataAbstract(std::string name, std::string parentObjectName) : 
 template <class T>
 DataAbstract<T>::DataAbstract(std::string name, std::string parentObjectName, T value) : IDataAbstract(name, parentObjectName)
 {
-    //ESP_LOGD(name.c_str(), "Criando *dado do tipo %s, com valor inicial definido: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(value)).c_str());
+    ESP_LOGD(name.c_str(), "Criando *dado do tipo %s, com valor inicial definido: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(value)).c_str());
 
     this->dataStorage = dataStorage->getInstance();
     this->dataManager = dataManager->getInstance();
@@ -34,7 +34,7 @@ DataAbstract<T>::DataAbstract(std::string name, std::string parentObjectName, T 
 template <class T>
 DataAbstract<T>::~DataAbstract()
 {
-    //ESP_LOGD(this->name.c_str(), "Destruindo dado do tipo %s", demangle(typeid(*this).name()).c_str());
+    ESP_LOGD(this->name.c_str(), "Destruindo dado do tipo %s", demangle(typeid(*this).name()).c_str());
     delete this->data;
 }
 
@@ -100,7 +100,7 @@ void DataAbstract<T>::saveData()
 {
     T temp = this->data->load(std::memory_order_acquire);
     dataStorage->save_data(this->name, (char *)&temp, sizeof(T));
-    //ESP_LOGD(this->name.c_str(), "Salvando dado do tipo %s, valor: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(temp)).c_str());
+    ESP_LOGD(this->name.c_str(), "Salvando dado do tipo %s, valor: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(temp)).c_str());
 }
 
 template <class T>
@@ -109,7 +109,7 @@ void DataAbstract<T>::loadData()
     T temp = T();
     if (ESP_OK == dataStorage->load_data(this->name, (char *)&temp, sizeof(T)))
     {
-        //ESP_LOGD(this->name.c_str(), "Carregando dado do tipo %s, valor: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(temp)).c_str());
+        ESP_LOGD(this->name.c_str(), "Carregando dado do tipo %s, valor: %s", demangle(typeid(*this).name()).c_str(), std::string(std::to_string(temp)).c_str());
         this->data->store(temp, std::memory_order_release);
     }
 }

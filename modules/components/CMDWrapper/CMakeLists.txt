@@ -8,7 +8,7 @@ idf_component_register(
     REQUIRES
         "BetterConsole" 
         "spi_flash"
-        "esp_adc_cal"
+        "esp_adc"
         "SensorService"
         "StatusService"
 
