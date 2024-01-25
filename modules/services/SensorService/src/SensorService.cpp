@@ -250,7 +250,7 @@ void SensorService::processSCenter()
 }
 
 int SensorService::lower_value(uint16_t s_1, uint16_t s_2){
-    if((s_1 < s_2)){
+    if((s_1 > s_2)){
         return s_1;
     }
     else{
@@ -272,7 +272,7 @@ void SensorService::processSLat()
     uint16_t sldir_2 = get_latMarks->getChannel(3);
 
     //ESP_LOGI("SensorService", "Esquerda: %d %d; Direita: %d %d", values[0], values[1], values[2], values[3]);
-    //ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
+    ESP_LOGI(GetName().c_str(), "Esquerda: %d %d; Direita: %d %d", slesq_1, slesq_2, sldir_1, sldir_2);
     
     nLatReads++; 
     sumSensEsq += lower_value(slesq_1, slesq_2);
@@ -300,20 +300,20 @@ void SensorService::processSLat()
 
         
         
-        if (meanSensEsq < 500 || meanSensDir < 500)
+        if (meanSensEsq > 600 || meanSensDir > 600)
         { // leitura de faixas nos sensores laterais
-            if ((meanSensEsq < 500) && (meanSensDir < 500)) 
+            if ((meanSensEsq > 600) && (meanSensDir > 600)) 
             {// quando ler ambos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
                 if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 
                     || (get_Marks->latEsqPass->getData() && !get_Marks->latDirPass->getData()))
                 {
                     // Desligando as LEDs esquerda e direita
-                    LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_BLACK, LED_EFFECT_SET, 1);
+                    LED->set_LED(LED_POSITION_BOTH_SIDES, COLOR_BROWN, LED_EFFECT_SET, 1);
                 }
                 latState(true, true);
                 //ESP_LOGI(GetName().c_str(), "Marcação esquerda e direita");
             }
-            else if ((meanSensEsq < 500))
+            else if ((meanSensEsq > 600))
             {// lendo sLat esq. branco e dir. preto
                 if (!(get_Marks->latEsqPass->getData()))
                 {
@@ -329,7 +329,7 @@ void SensorService::processSLat()
                     LED->set_LED(LED_POSITION_RIGHT, COLOR_BLACK, LED_EFFECT_SET, 1);
                 }
             }
-            else if ((meanSensDir < 500))
+            else if ((meanSensDir > 600))
             {
                 // lendo sldir. branco e sLat esq. preto
                 if (!(get_Marks->latDirPass->getData()))

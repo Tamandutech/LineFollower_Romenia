@@ -41,8 +41,8 @@ void ControlService::Run()
         if(get_Status->robotState->getData() != CAR_STOPPED){
             int speed = get_Speed->Brushless_TargetSpeed->getData();
             if(brushless_started){
-                ControlePID();
-                motors.ControlBrushless(speed);
+                //ControlePID();
+                //motors.ControlBrushless(speed);
             }else{
                 brushless_started = motors.StartBrushless(speed);
             }
@@ -123,7 +123,7 @@ void ControlService::StopCar(){
     encs.ResetCount();
 }
 
-void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel){
+void ControlService::NewSpeed(int16_t right_wheel, int16_t left_wheel){
     get_Speed->PWM_right->setData(right_wheel);
     get_Speed->PWM_left->setData(left_wheel);
     motors.ControlMotors(left_wheel, right_wheel);

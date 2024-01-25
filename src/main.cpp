@@ -101,10 +101,10 @@ void app_main()
 
     //ESP_LOGI("Main", "Configurando Serviços...");
 
-    bleServerService = BLEServerService::getInstance("BLEServerService", 4096, 7);
+    bleServerService = BLEServerService::getInstance("BLEServerService", 4096, 7, PRO_CPU_NUM);
     bleServerService->Start();
     
-    mappingService = MappingService::getInstance("MappingService", 8192, 8);
+    mappingService = MappingService::getInstance("MappingService", 8192, 8, PRO_CPU_NUM);
     //ESP_LOGI(MappingService::getInstance()->GetName().c_str(), "Mapeamento");
     
     //imuService = IMUService::getInstance("IMUService", 4096, 5);
@@ -113,13 +113,13 @@ void app_main()
     statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
     
-    sensorService = SensorService::getInstance("SensorService", 8192, 9);
+    sensorService = SensorService::getInstance("SensorService", 8192, 9, PRO_CPU_NUM);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
     //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
 
-    irService = IRService::getInstance("IRService", 4096, 9);
+    irService = IRService::getInstance("IRService", 4096, 9, PRO_CPU_NUM);
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");
 
     //mappingService->Start();
