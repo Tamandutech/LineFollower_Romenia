@@ -84,6 +84,8 @@ public:
     void Run() override;
 
 private:
+    std::string tag;
+    
     rmt_channel_handle_t led_chan = NULL;
     rmt_encoder_handle_t led_encoder = NULL;
     rmt_transmit_config_t tx_config;

@@ -3,6 +3,7 @@
 
 #include "thread.hpp"
 #include "singleton.hpp"
+#include "esp_timer.h"
 #include "RobotData.h"
 #include "dataEnums.h"
 #include "driver/gpio.h"
@@ -62,6 +63,7 @@ private:
     bool in_transition = false;
     int16_t offset_transition = 0;
     int mark_in_transition = 0;
+    int64_t lastTime = 0;
 
     CarState trackType;
     TrackState trackLen;

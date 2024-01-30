@@ -8,15 +8,13 @@
 // Bibliotecas de componentes/dados
 #include "QTRSensors.h"
 #include "QTRwithMUX.h" // biblioteca própria
-#include "DriveEncoder.h" // drive próprio
 #include "RobotData.h"
 // Bibliotecas do C++
 #include "bitset"// para transformar um número decimal para binário
 #include "cmath" // para criar funcoes trigonometricas
 // Bibliotecas de servicos
-//#include "MotorService.hpp"
-#include "DriveMotors.h"
 #include "LEDsService.hpp"
+#include "MotorService.hpp"
 
 
 
@@ -33,6 +31,8 @@ public:
     void Sensor_resume();
     void manual_calibrate(int mux);
     void auto_calibrate(int mux);
+    void processSLat();
+
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
 
 private:
@@ -48,13 +48,12 @@ private:
     dataFloat *get_frontArray;
     // Atalhos de servico
     LEDsService *LED;
+    MotorService *motors;
     
     // Objetos usados no serviço:
     QTRSensors sArray[sQuant]; // sensores frontais
     QTRSensors sBody[6]; // sensores laterais e do centro
     QTRwithMUX MUX; // objeto para acessar as funcoes do QTRwithMUX
-    DriveEncoder encs;
-    DriveMotors motors;
 
 
     // Variaveis do servico
@@ -71,11 +70,9 @@ private:
 
     void SaveAngle(float new_angle);
     int lower_value(uint16_t s_1, uint16_t s_2);
-    void processSLat();
     void processSCenter();
     void latState(bool rightPass, bool leftPass);
     void processSLat_romenia();
-
 };
 
 #endif

@@ -11,8 +11,9 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->get_Angle = robot->getFrontSensors();
     // Atalhos de servicos:
     this->from_sensor = SensorService::getInstance();
+    this->motors = MotorService::getInstance();
 
-    esp_log_level_set(name.c_str(), ESP_LOG_ERROR);
+    esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
     // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
     uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
@@ -20,14 +21,11 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     uint16_t MPR = rev*gear;
 
     get_Spec->MPR->setData(MPR);
-
-    encs.ConfigEncoders();
-    motors.ConfigMotors();
 };
 
 void ControlService::Run()
 {// Loop do servico   
-    ESP_LOGI(GetName().c_str(), "Início ControlService");
+    //ESP_LOGI(GetName().c_str(), "Início ControlService");
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     TickType_t xLastWakeTime = xTaskGetTickCount();
     vel_base = 0;
@@ -36,19 +34,24 @@ void ControlService::Run()
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, deltaTimeMS_inst / portTICK_PERIOD_MS);
+        lastTime = esp_timer_get_time();
         //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
         //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
+        from_sensor->processSLat();
         if(get_Status->robotState->getData() != CAR_STOPPED){
             int speed = get_Speed->Brushless_TargetSpeed->getData();
             if(brushless_started){
                 ControlePID();
-                motors.ControlBrushless(speed);
+                motors->ControlBrushless(speed);
+                uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
+                ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
             }else{
-                brushless_started = motors.StartBrushless(speed);
+                brushless_started = motors->StartBrushless(speed);
+                lastTime = esp_timer_get_time();
             }
             
-        }else{
-            StopCar();
+        }else if(brushless_started){
+            motors->stop_car();
         }
         
     }
@@ -71,7 +74,8 @@ void ControlService::ControlePID(){
     get_PID->erroquad->setData((erro*erro));
 
     if(state == CAR_STOPPED){
-        motors.StopMotors();
+        ESP_LOGI(GetName().c_str(), "Parando motores");
+        motors->StopMotors();
     }else{
         float Kp = get_PID->Kp(line_state)->getData();
         float Kd = get_PID->Kd(line_state)->getData();
@@ -116,24 +120,17 @@ float ControlService::CalculatePD(float K_p, float K_d, float errof){
     return PID_now;
 }
 
-void ControlService::StopCar(){
-    motors.StopMotors();
-    motors.StopBrushless();
-    //rpm->ResetCount();
-    encs.ResetCount();
-}
-
 void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel){
     get_Speed->PWM_right->setData(right_wheel);
     get_Speed->PWM_left->setData(left_wheel);
-    motors.ControlMotors(left_wheel, right_wheel);
+    //ESP_LOGI(GetName().c_str(), "Chamando MotorService");
+    motors->ControlMotors(left_wheel, right_wheel);
 }
 
 void ControlService::SaveRPM(){
     uint16_t MPR_Mot = get_Spec->MPR->getData();
     
-    //rpm->ReadBoth();
-    encs.ReadBoth();
+    motors->read_both();
     int32_t enc_right = get_Speed->EncRight->getData();
     int32_t enc_left = get_Speed->EncLeft->getData();
 

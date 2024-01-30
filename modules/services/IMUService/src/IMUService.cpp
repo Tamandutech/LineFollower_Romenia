@@ -4,8 +4,8 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 {
     // Atalhos de dados:
     this->robot = Robot::getInstance();
-	this->get_arrayAcc = robot->getFromIMU(ACCELERATION);
-	this->get_arrayGyr = robot->getFromIMU(GYROSCOPE);
+	/* this->get_arrayAcc = robot->getFromIMU(ACCELERATION);
+	this->get_arrayGyr = robot->getFromIMU(GYROSCOPE); */
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
@@ -27,7 +27,7 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 
 void IMUService::Run()
 {
-    ESP_LOGI("IMU_Sensor", "Inicio.");
+    //ESP_LOGI("IMU_Sensor", "Inicio.");
     // Loop do servico
     //TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -45,8 +45,8 @@ void IMUService::Run()
 
 void IMUService::updateIMU() 
 {// Le os valores atuais da IMU
-	imu.Get_X_Axes(acc);
-	imu.Get_G_Axes(gyr);
+	/* imu.Get_X_Axes(acc);
+	imu.Get_G_Axes(gyr); */
 
 	//ESP_LOGI(GetName().c_str(), "acel=%d %d %d gyro=%d %d %d", acc[0], acc[1], acc[2], gyr[0], gyr[1], gyr[2]);
 	saveData();

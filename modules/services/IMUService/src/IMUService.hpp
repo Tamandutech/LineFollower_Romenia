@@ -32,7 +32,7 @@ private:
     int32_t acc[3];
 	int32_t gyr[3];
 
-    LSM6DSR imu = LSM6DSR(I2C_ADDR);
+    //LSM6DSR imu = LSM6DSR(I2C_ADDR);
 
     void updateIMU();
     void saveData();

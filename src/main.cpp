@@ -6,6 +6,7 @@
 #include "IMUService.hpp"
 #include "LEDsService.hpp"
 #include "MappingService.hpp"
+#include "MotorService.hpp"
 #include "SensorService.hpp"
 #include "StatusService.hpp"
 #include "BLEServerService.hpp"
@@ -41,6 +42,7 @@ ControlService *controlService;
 IMUService *imuService;
 LEDsService *ledsService;
 MappingService *mappingService;
+MotorService *motorService;
 SensorService *sensorService;
 StatusService *statusService;
 BLEServerService *bleServerService;
@@ -88,7 +90,7 @@ void app_main()
     console_config.max_cmdline_args = 8;
     console_config.max_cmdline_length = 256;
     ESP_ERROR_CHECK(better_console_init(&console_config));
-    ESP_LOGD("Main", "Registrando Comandos...");
+    //ESP_LOGD("Main", "Registrando Comandos...");
     register_system(robot->getADC_handle());
     register_cmd_param();
     register_cmd_datamanager();
@@ -96,19 +98,22 @@ void app_main()
 
     //ESP_LOGI("Main", "Configurando Serviços...");
 
-    bleServerService = BLEServerService::getInstance("BLEServerService", 4096, 7);
+    bleServerService = BLEServerService::getInstance("BLEServerService", 4096, 7, PRO_CPU_NUM);
     bleServerService->Start();
     
     mappingService = MappingService::getInstance("MappingService", 8192, 8);
     //ESP_LOGI(MappingService::getInstance()->GetName().c_str(), "Mapeamento");
     
-    //imuService = IMUService::getInstance("IMUService", 4096, 5);
+    //imuService = IMUService::getInstance("IMUService", 4096, 5, PRO_CPU_NUM);
     //ESP_LOGI(IMUService::getInstance()->GetName().c_str(), "IMUService");
     
     statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
+
+    motorService = MotorService::getInstance("MotorsService", 4096, 8);
+    //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "MotorsService");
     
-    sensorService = SensorService::getInstance("SensorService", 8192, 9);
+    sensorService = SensorService::getInstance("SensorService", 8192, 9, PRO_CPU_NUM);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
@@ -119,16 +124,17 @@ void app_main()
 
     //mappingService->Start();
     //imuService->Start();
+    motorService->Start();
     statusService->Start();
     sensorService->Start();
     controlService->Start();
     irService->Start();
 
-    ESP_LOGI("Main", "Ligando LEDs");
+    //ESP_LOGI("Main", "Ligando LEDs");
     ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    ESP_LOGI("Main", "Apagando LEDs");
+    //ESP_LOGI("Main", "Apagando LEDs");
     ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 
     

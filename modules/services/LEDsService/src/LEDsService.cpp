@@ -5,23 +5,23 @@ led_command_t LEDsService::ledCommand;
 
 LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid) : Thread(name, stackDepth, priority, coreid)
 {
-    
-    ESP_LOGD(GetName().c_str(), "Constructor Start");
+    tag = name;
+    //ESP_LOGD(GetName().c_str(), "Constructor Start");
 
     queueLedCommands = xQueueCreate(10, sizeof(ledCommand));
 
     gpio_set_direction((gpio_num_t)buzzer_pin, GPIO_MODE_OUTPUT);
 
-    ESP_LOGD(GetName().c_str(), "GPIO: %d", RMT_LED_STRIP_GPIO_NUM);
+    //ESP_LOGD(GetName().c_str(), "GPIO: %d", RMT_LED_STRIP_GPIO_NUM);
     led_strip_init();
     memset(led_strip_pixels, 0, sizeof(led_strip_pixels));
 
-    ESP_LOGD(GetName().c_str(), "Constructor END");
+    //ESP_LOGD(GetName().c_str(), "Constructor END");
 }
 
 void LEDsService::Run()
 {
-    ESP_LOGD(GetName().c_str(), "Run");
+    //ESP_LOGD(GetName().c_str(), "Run");
 
     for (;;)
     {
@@ -62,13 +62,13 @@ void LEDsService::LedComandSend(led_position_t led,  led_color_t color, float br
 
 esp_err_t LEDsService::queueCommand(led_command_t command)
 {
-    ESP_LOGD(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
+    //ESP_LOGD(GetName().c_str(), "queueCommand: command.effect = %d", command.effect);
     return xQueueSend(queueLedCommands, &command, portMAX_DELAY);
 }
 
 void LEDsService::led_effect_set()
 {
-    ESP_LOGD(GetName().c_str(), "led_effect_set");
+    //ESP_LOGD(GetName().c_str(), "led_effect_set");
     led_color_set(ledCommand.color, ledCommand.brightness, ledCommand.led);
     led_strip_refresh();
 }
@@ -87,7 +87,7 @@ void LEDsService::led_color_set(led_color_t color, float brightness, led_positio
     led_strip_pixels[pos * 3 + 1] = B;
     led_strip_pixels[pos * 3 + 2] = R;
 
-    ESP_LOGD(GetName().c_str(), "led_effect_set: ledCommand.led = %d, R = %d, G = %d, B = %d", pos, R, G, B);
+    //ESP_LOGD(GetName().c_str(), "led_effect_set: ledCommand.led = %d, R = %d, G = %d, B = %d", pos, R, G, B);
 }
 
 void LEDsService::led_RGB_get(led_color_t color, uint8_t * R, uint8_t * G, uint8_t * B)

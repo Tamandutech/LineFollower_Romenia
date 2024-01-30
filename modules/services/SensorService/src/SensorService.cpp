@@ -30,14 +30,14 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     {
         sArray[i].setTypeAnalogESP(ADC_handle);
         sArray[i].setSensorPins((const adc_channel_t[]){ADC_CHANNEL_7}, 1);
-        sArray[i].setSamplesPerSensor(5);
+        sArray[i].setSamplesPerSensor(4);
     }
     // Inicializacao dos sensores laterais
     for(int i=0; i < 6; i++)
     {
         sBody[i].setTypeAnalogESP(ADC_handle);
         sBody[i].setSensorPins((const adc_channel_t[]){ADC_CHANNEL_5}, 1);
-        sBody[i].setSamplesPerSensor(5);
+        sBody[i].setSamplesPerSensor(4);
     }
     
     // Setando todas as leituras anteriores como 0 (centralizado na reta)
@@ -73,6 +73,7 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     
     ESP_LOGI(GetName().c_str(), "Fim da calibração.");
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
+
 }
 
 void SensorService::Run()
@@ -86,7 +87,7 @@ void SensorService::Run()
     {
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
 
-        processSLat();
+        //processSLat();
         //processSCenter();
     }
 }
@@ -130,10 +131,10 @@ void SensorService::auto_calibrate(int mux)
     // Calibracao dos sensores laterais -> mux == 1
     for(int voltas=1; voltas <= 6; voltas++)
     {
-        encs.ResetCount(); // Reseta a contagem para comecar outra volta
+        motors->enc_reset_count(); // Reseta a contagem para comecar outra volta
         while((get_Speed->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
         {
-            encs.ReadBoth(); // atualiza a leitura dos encoders
+            motors->enc_reset_count(); // atualiza a leitura dos encoders
             /*
             int32_t enc = get_Speed->EncMedia->getData();
             int32_t enc_es = get_Speed->EncLeft->getData();
@@ -147,12 +148,12 @@ void SensorService::auto_calibrate(int mux)
             if(voltas%2 == 0)
             {
                 // Chama a funcao do servico dos Motores para o robô andar reto
-                motors.WalkStraight(get_Speed->vel_calibrate->getData(), 0);
+                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 0);
             }
             else
             {
                 // Chama a mesma funcao para o robô andar para o lado contraio
-                motors.WalkStraight(get_Speed->vel_calibrate->getData(), 1);
+                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 1);
             }
 
             // Escolhe qual sensor esta sendo calibrado:
@@ -163,13 +164,12 @@ void SensorService::auto_calibrate(int mux)
                 MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
             }
             //vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-            encs.ReadBoth();
+            motors->read_both();
         }
-        motors.StopMotors();
+        motors->StopMotors();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
-    motors.StopMotors();
-    encs.ResetCount();
+    motors->stop_car();
     vTaskDelay(10 / portTICK_PERIOD_MS);
 }
 

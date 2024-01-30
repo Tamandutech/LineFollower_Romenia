@@ -158,8 +158,9 @@ void StatusService::Run()
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, 30 / portTICK_PERIOD_MS);
+        lastTime = esp_timer_get_time();
+
         // Carregando status atual
-        ////ESP_LOGI(GetName().c_str(), "Abulabuleh3333333333333333");
         get_Status->stateMutex.lock();
         TrackLen = (TrackState)get_Status->TrackStatus->getData();
         pulsesBeforeCurve = get_latMarks->PulsesBeforeCurve->getData();
@@ -363,7 +364,9 @@ void StatusService::Run()
         }
 
         get_Status->stateMutex.unlock();
-
+        
+        uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
+        //ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
     }
 }
 

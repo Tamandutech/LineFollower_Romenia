@@ -7,12 +7,14 @@
 #include "Injector/singleton.hpp"
 // Bibliotecas de componentes/dados
 #include "RobotData.h"
-#include "DriveEncoder.h"
 // Bibliotecas do C++
 #include <stdlib.h>
 // Bibliotecas de servicos
-#include "DriveMotors.h"
 #include "SensorService.hpp"
+#include "IMUService.hpp"
+#include "MotorService.hpp"
+#include "DriveEncoder.h"
+#include "DriveMotors.h"
 
 
 using namespace cpp_freertos;
@@ -33,11 +35,9 @@ private:
     dataPID *get_PID;
     dataStatus *get_Status;
     dataFloat *get_Angle;
-    //MotorService *control_motor;
+    
     SensorService *from_sensor;
-
-    DriveEncoder encs;
-    DriveMotors motors;
+    MotorService *motors;
 
     int8_t speedMin = 0;
     int8_t speedMax = 0;
@@ -50,6 +50,7 @@ private:
     uint16_t deltaTimeMS_inst = 10;
     TickType_t lastTicksRevsCalc = 0;
     int count =0;
+    int64_t lastTime = 0;
 
 
     bool brushless_started = false;

@@ -23,6 +23,7 @@ private:
     SemaphoreHandle_t xSemaphore;
     bool start_mux = false;
     uint16_t lastPosition;
+    //int count = 0;
 
 };
 

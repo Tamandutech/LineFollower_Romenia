@@ -31,7 +31,7 @@ void IRService::Run()
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
         
         if (rx_signal_received()) {
-            switch_robot_off();
+            //switch_robot_off();
             start_rx_receive();
         }
     }
@@ -85,6 +85,8 @@ BaseType_t IRService::rx_signal_received(){
 }
 
 void IRService::switch_robot_off(){
+    ESP_LOGI(GetName().c_str(), "Signal received, stopping robot");
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
     get_Status->ControlOff->setData(true);
 }
+
