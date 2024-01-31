@@ -155,6 +155,7 @@ void MappingService::MappingWithMarks()
             else if(tempDeltaDist < get_latMarks->thresholdLongCurve->getData()) tempActualMark.MapTrackStatus = MEDIUM_CURVE;
             else tempActualMark.MapTrackStatus = LONG_CURVE;
         }
+        if(tempPreviousMark.MapStatus == CAR_IN_LINE && tempActualMark.MapStatus == CAR_IN_LINE) get_latMarks->marks->clearData(get_latMarks->marks->getSize() - 1);
         get_latMarks->marks->newData(tempActualMark);
 
         AtualizarLEDs();
@@ -176,19 +177,6 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
 
         int32_t delta_right = (tempActualMark.MapEncRight - tempPreviousMark.MapEncRight);
         int32_t delta_left = (tempActualMark.MapEncLeft - tempPreviousMark.MapEncLeft);
-
-        /* if(delta_right != delta_left) tempActualMark.MapRadius = std::abs(((float)get_Spec->RobotDiameter->getData()/2)*((float)(delta_right+delta_left)/(float)(delta_right-delta_left)));
-        else tempActualMark.MapRadius = 0;
-
-        float speed = std::sqrt(tempActualMark.MapRadius * 9806.65 * get_Spec->Friction_Coef->getData()); // em mm/s
-        speed = (speed*60)/((float)get_Spec->WheelDiameter->getData()*M_PI); // conversão RPM
-        if(speed <= get_Spec->MaxRPM->getData()) tempActualMark.MapMaxSpeed = (speed/get_Spec->MaxRPM->getData())*100;
-        else tempActualMark.MapMaxSpeed = 100;
-
-        float offset_mm = (std::pow(tempActualMark.MapMaxSpeed, 2) - std::pow(tempPreviousMark.MapMaxSpeed, 2))/(2*get_Spec->Acceleration->getData());
-        offset_mm = std::abs(offset_mm);
-        float offset_enc = (offset_mm * (float)get_Spec->MPR->getData())/((float)get_Spec->WheelDiameter->getData() * M_PI);
-        tempActualMark.MapOffset = (int16_t)offset_enc; */
         
         // variação de encoder em pulsos
         tempDeltaPulses = std::abs(delta_right - delta_left);

@@ -299,6 +299,7 @@ void SensorService::processSLat()
         
         if (meanSensEsq < 500 || meanSensDir < 500)
         { // leitura de faixas nos sensores laterais
+            ESP_LOGI(GetName().c_str(), "Esquerdo: %d, Direito: %d", meanSensEsq, meanSensDir);
             if ((meanSensEsq < 500) && (meanSensDir < 500)) 
             {// quando ler ambos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
                 if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 

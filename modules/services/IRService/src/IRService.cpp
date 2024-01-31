@@ -31,7 +31,10 @@ void IRService::Run()
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_PERIOD_MS);
         
         if (rx_signal_received()) {
-            //switch_robot_off();
+            uint16_t command = nec.parse_nec_frame(rx_data.received_symbols, rx_data.num_symbols);
+            
+            if(command == STOP_COMMAND) switch_robot_off();
+            
             start_rx_receive();
         }
     }

@@ -90,12 +90,12 @@ void MotorService::ControlBrushless(int speed){
 
 void MotorService::StopMotors()
 {
-    ESP_LOGI(GetName().c_str(), "Desligando motores");
+    //ESP_LOGI(GetName().c_str(), "Desligando motores");
     control.motorsStop();
 }
 
 void MotorService::WalkStraight(float vel, bool frente){
-    ESP_LOGI(GetName().c_str(), "Andando reto");
+    //ESP_LOGI(GetName().c_str(), "Andando reto");
     if(frente)
     {
         //ESP_LOGI(GetName().c_str(), "Andando para frente");

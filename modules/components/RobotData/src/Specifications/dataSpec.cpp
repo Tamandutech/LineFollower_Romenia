@@ -11,7 +11,7 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
      * Variaveis que contempla relacao de Revoluções e redução dos
      * motores, entrada é ((Qtd de pulsos para uma volta) * (Reducao do motor))
      * */
-    GearRatio = new DataAbstract<uint16_t>("GearRatio", name, 5);  // verificar depois se é o motor 5:1
+    GearRatio = new DataAbstract<uint16_t>("GearRatio", name, 10);  // verificar depois se é o motor 10:1
     dataManager->registerParamData(GearRatio);
 
     Revolution = new DataAbstract<uint16_t>("Revolution", name, 12);

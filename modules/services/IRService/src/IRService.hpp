@@ -9,11 +9,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "driver/rmt_rx.h"
+#include "ir_nec_transceiver.h"
 
 #include "RobotData.h"
 #include "LEDsService.hpp"
 
 using namespace cpp_freertos;
+
+#define STOP_COMMAND 60690
 
 
 class IRService : public Thread, public Singleton<IRService>
@@ -30,6 +33,8 @@ private:
     Robot *robot;
     dataStatus *get_Status;
     LEDsService *LED;
+
+    ir_nec_transceiver nec;
 
     uint32_t addr = 0;
     uint32_t cmd = 0;

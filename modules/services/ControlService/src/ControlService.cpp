@@ -34,7 +34,7 @@ void ControlService::Run()
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, deltaTimeMS_inst / portTICK_PERIOD_MS);
-        lastTime = esp_timer_get_time();
+        //lastTime = esp_timer_get_time();
         //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
         //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
         from_sensor->processSLat();
@@ -43,8 +43,8 @@ void ControlService::Run()
             if(brushless_started){
                 ControlePID();
                 motors->ControlBrushless(speed);
-                uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
-                ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
+                //uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
+                //ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
             }else{
                 brushless_started = motors->StartBrushless(speed);
                 lastTime = esp_timer_get_time();
