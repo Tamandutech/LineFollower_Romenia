@@ -63,6 +63,12 @@
         "rmt.h": "c",
         "esp_check.h": "c",
         "freertos.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "bit": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     }
 }

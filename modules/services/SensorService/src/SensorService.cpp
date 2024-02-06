@@ -60,25 +60,25 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
 
-    ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
+    //ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     manual_calibrate(0);
     
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
-    ESP_LOGI(GetName().c_str(), "Delay...");
+    //ESP_LOGI(GetName().c_str(), "Delay...");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     
-    ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
+    //ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_LIME, 1);
     manual_calibrate(1);
     
-    ESP_LOGI(GetName().c_str(), "Fim da calibração.");
+    //ESP_LOGI(GetName().c_str(), "Fim da calibração.");
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 
 }
 
 void SensorService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início SensorService");
+    //ESP_LOGI(GetName().c_str(), "Início SensorService");
     // Loop do servico
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -109,68 +109,6 @@ void SensorService::manual_calibrate(int mux)
         }
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
-}
-
-void SensorService::auto_calibrate(int mux)
-{// Calibracao automatica
-    
-    ESP_LOGI(GetName().c_str(), "Início Calibração");
-    
-    MPR_Mot = get_Spec->MPR->getData();
-
-    // Zera contagem dos encoders
-    //encs.ResetCount();
-    uint16_t limit_enc;
-    if(mux == 0){
-        limit_enc = MPR_Mot/3;
-    }else{
-        limit_enc = MPR_Mot/4;
-    }
-
-    // Calibração dos sensores frontais -> mux == 0
-    // Calibracao dos sensores laterais -> mux == 1
-    for(int voltas=1; voltas <= 6; voltas++)
-    {
-        motors->enc_reset_count(); // Reseta a contagem para comecar outra volta
-        while((get_Speed->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
-        {
-            motors->enc_reset_count(); // atualiza a leitura dos encoders
-            /*
-            int32_t enc = get_Speed->EncMedia->getData();
-            int32_t enc_es = get_Speed->EncLeft->getData();
-            int32_t enc_di = get_Speed->EncRight->getData();
-            ESP_LOGI(GetName().c_str(), "EncEsq = %d, EncDir = %d, EncMedia = %d", enc_es, enc_di, enc);
-            */
-
-            // Anda para uma direcao por 1/4 da calibracao
-            // Anda pra direcao contraria por 2/4
-            // Volta a posicao original, andando o último 1/4 do tempo
-            if(voltas%2 == 0)
-            {
-                // Chama a funcao do servico dos Motores para o robô andar reto
-                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 0);
-            }
-            else
-            {
-                // Chama a mesma funcao para o robô andar para o lado contraio
-                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 1);
-            }
-
-            // Escolhe qual sensor esta sendo calibrado:
-            if(mux == 0){
-                MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
-            }
-            else{
-                MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
-            }
-            //vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
-            motors->read_both();
-        }
-        motors->StopMotors();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    motors->stop_car();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
 }
 
 void SensorService::SaveAngle(float new_angle)
@@ -275,7 +213,7 @@ void SensorService::processSLat()
     sumSensEsq += lower_value(slesq_1, slesq_2);
     sumSensDir += lower_value(sldir_1, sldir_2);
 
-    if(get_Status->robotIsMapping->getData())
+    if(get_Status->robotState->getData() == CAR_MAPPING)
     {
         MarksToMean = get_Marks->MarkstoMean->getData();
     }
@@ -299,7 +237,7 @@ void SensorService::processSLat()
         
         if (meanSensEsq < 500 || meanSensDir < 500)
         { // leitura de faixas nos sensores laterais
-            ESP_LOGI(GetName().c_str(), "Esquerdo: %d, Direito: %d", meanSensEsq, meanSensDir);
+            //ESP_LOGI(GetName().c_str(), "Esquerdo: %d, Direito: %d", meanSensEsq, meanSensDir);
             if ((meanSensEsq < 500) && (meanSensDir < 500)) 
             {// quando ler ambos, contar nova marcação apenas se ambos os sensores lerem preto antes de lerem a nova marcação 
                 if ((get_Marks->latDirPass->getData() && !get_Marks->latEsqPass->getData()) 
@@ -319,13 +257,14 @@ void SensorService::processSLat()
                     if(get_Status->robotState->getData() != CAR_STOPPED)
                     {
                         get_Marks->leftPassedInc();
+                        //ESP_LOGI(GetName().c_str(), "Marcação esquerda");
                     }
                     latState(false, true);
                     //ESP_LOGI(GetName().c_str(), "Marcação esquerda");
                     
                     // LED esquerda vermelha e direita apagada
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
+                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
                 }
             }
             else if ((meanSensDir < 500))
@@ -342,8 +281,8 @@ void SensorService::processSLat()
                     //ESP_LOGI(GetName().c_str(), "Marcação direita");
 
                     // LED esquerda apagada e direita vermelha
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
+                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
                 }
             }
         }
@@ -383,7 +322,7 @@ void SensorService::processSLat_romenia()
     sumSensEsq += lower_value(slesq_1, slesq_2);
     sumSensDir += lower_value(sldir_1, sldir_2);
 
-    if(get_Status->robotIsMapping->getData())
+    if(get_Status->robotState->getData() == CAR_MAPPING)
     {
         MarksToMean = get_Marks->MarkstoMean->getData();
     }
@@ -433,3 +372,65 @@ void SensorService::latState(bool rightPass, bool leftPass)
     get_Marks->latDirPass->setData(rightPass);
     get_Marks->latEsqPass->setData(leftPass);
 }
+
+/* void SensorService::auto_calibrate(int mux)
+{// Calibracao automatica
+    
+    //ESP_LOGI(GetName().c_str(), "Início Calibração");
+    
+    MPR_Mot = get_Spec->MPR->getData();
+
+    // Zera contagem dos encoders
+    //encs.ResetCount();
+    uint16_t limit_enc;
+    if(mux == 0){
+        limit_enc = MPR_Mot/3;
+    }else{
+        limit_enc = MPR_Mot/4;
+    }
+
+    // Calibração dos sensores frontais -> mux == 0
+    // Calibracao dos sensores laterais -> mux == 1
+    for(int voltas=1; voltas <= 6; voltas++)
+    {
+        motors->enc_reset_count(); // Reseta a contagem para comecar outra volta
+        while((get_Speed->EncMedia->getData()) < limit_enc) // enquanto o robô não andou um giro da roda
+        {
+            motors->enc_reset_count(); // atualiza a leitura dos encoders
+            
+            int32_t enc = get_Speed->EncMedia->getData();
+            int32_t enc_es = get_Speed->EncLeft->getData();
+            int32_t enc_di = get_Speed->EncRight->getData();
+            ESP_LOGI(GetName().c_str(), "EncEsq = %d, EncDir = %d, EncMedia = %d", enc_es, enc_di, enc);
+            
+
+            // Anda para uma direcao por 1/4 da calibracao
+            // Anda pra direcao contraria por 2/4
+            // Volta a posicao original, andando o último 1/4 do tempo
+            if(voltas%2 == 0)
+            {
+                // Chama a funcao do servico dos Motores para o robô andar reto
+                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 0);
+            }
+            else
+            {
+                // Chama a mesma funcao para o robô andar para o lado contraio
+                motors->WalkStraight(get_Speed->vel_calibrate->getData(), 1);
+            }
+
+            // Escolhe qual sensor esta sendo calibrado:
+            if(mux == 0){
+                MUX.calibrate_all(sArray, sQuant); // Funcao que calibra os 16 sensores 1 vez cada
+            }
+            else{
+                MUX.calibrate_all(sBody, 6); // Funcao que calibra os 16 sensores 1 vez cada
+            }
+            //vTaskDelay(10 / portTICK_PERIOD_MS); // Delay de 10 milisegundos
+            motors->read_both();
+        }
+        motors->StopMotors();
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+    motors->stop_car();
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+} */

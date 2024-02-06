@@ -13,12 +13,11 @@
 class dataStatus
 {
 public:
-    dataStatus(CarState initialState, std::string name = "dataStatus");
+    dataStatus(std::string name = "dataStatus");
 
     DataAbstract<uint8_t> *robotState; // Armazena o estado geral do robô.
     DataAbstract<uint8_t> *TrackStatus; // status (velocidade) do trecho da pista em que o robô se encontra
 
-    DataAbstract<bool> *robotIsMapping; // Atributo que indica se o robô está mapeando a pista (TRUE se sim)
     DataAbstract<bool> *robotPaused;
 
     DataAbstract<bool> *encreading; //Atributo que indica se o robô está lendo o mapeamento (TRUE se sim)
@@ -39,8 +38,6 @@ public:
     DataAbstract<bool> *Transition; // Verifica se o robô está numa transição de curva para reta e vice-versa
     DataAbstract<bool> *TuningMapped; // Ativar tuningMode com o mapeamento da pista
     DataAbstract<bool> *MappingTuningParam; // Usa os parâmetros de Tunning mesmo quando está mapeado
-
-    static std::mutex stateMutex;
 
 private:
     std::string name;

@@ -99,7 +99,7 @@ void LEDsService::led_RGB_get(led_color_t color, uint8_t * R, uint8_t * G, uint8
 
 void LEDsService::led_strip_init()
 {
-    ESP_LOGI(GetName().c_str(), "Create RMT TX channel");
+    //ESP_LOGI(GetName().c_str(), "Create RMT TX channel");
     rmt_tx_channel_config_t tx_chan_config = {
         .gpio_num = RMT_LED_STRIP_GPIO_NUM,
         .clk_src = RMT_CLK_SRC_DEFAULT, // select source clock
@@ -109,17 +109,17 @@ void LEDsService::led_strip_init()
     };
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &led_chan));
 
-    ESP_LOGI(GetName().c_str(), "Install led strip encoder");
+    //ESP_LOGI(GetName().c_str(), "Install led strip encoder");
 
     led_strip_encoder_config_t encoder_config = {
         .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
     };
     ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, &led_encoder));
 
-    ESP_LOGI(GetName().c_str(), "Enable RMT TX channel");
+    //ESP_LOGI(GetName().c_str(), "Enable RMT TX channel");
     ESP_ERROR_CHECK(rmt_enable(led_chan));
 
-    ESP_LOGI(GetName().c_str(), "Start LED rainbow chase");
+    //ESP_LOGI(GetName().c_str(), "Start LED rainbow chase");
     tx_config = {
         .loop_count = 0, // no transfer loop
     };

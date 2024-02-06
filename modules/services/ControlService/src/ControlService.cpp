@@ -60,12 +60,10 @@ void ControlService::Run()
 void ControlService::ControlePID(){
     //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
     CarState state = (CarState) get_Status->robotState->getData();
-    TrackState line_state;
+    TrackSegment line_state = (TrackSegment) get_Status->TrackStatus->getData();
 
     if(get_Status->MappingTuningParam->getData()){
-        line_state = (TrackState) TUNNING;
-    }else{
-        line_state = (TrackState) get_Status->TrackStatus->getData();
+        state = (CarState) CAR_TUNING;
     }
 
     from_sensor->AngleError();
@@ -74,19 +72,21 @@ void ControlService::ControlePID(){
     get_PID->erroquad->setData((erro*erro));
 
     if(state == CAR_STOPPED){
-        ESP_LOGI(GetName().c_str(), "Parando motores");
+        //ESP_LOGI(GetName().c_str(), "Parando motores");
         motors->StopMotors();
     }else{
-        float Kp = get_PID->Kp(line_state)->getData();
-        float Kd = get_PID->Kd(line_state)->getData();
+        PID_Consts PD = get_PID->PD_values(line_state, state);
+        
+        float Kp = PD.Kp;
+        float Kd = PD.Kd;
 
         float PID = CalculatePD(Kp, Kd, erro);
         get_PID->output->setData(PID);
         
-        if(line_state == TUNNING){
-            vel_base = get_Speed->Setpoint(TUNNING)->getData();
-        }else{
+        if(get_Status->VelCalculated->getData()){
             vel_base = get_Speed->vel_mapped->getData();
+        }else{
+            vel_base = get_Speed->getSpeed(line_state, state)->getData();
         }
         
         get_PID->setpoint->setData(vel_base);

@@ -1,18 +1,11 @@
 #include "StatusService.hpp"
 
-QueueHandle_t StatusService::gpio_evt_queue; // variavel de fila
+SemaphoreHandle_t StatusService::SemaphoreButton;
 
-void IRAM_ATTR StatusService::gpio_isr_handler(void *arg) // se precionar o botão
+void IRAM_ATTR StatusService::start_robot_with_boot_button(void *arg)
 {
-    // Salva o estado do robo em uma fila
-    // carstate soh diferencia entre curva e reta
-    uint32_t gpio_num = (uint32_t)arg;
-    uint8_t carstate = CAR_IN_CURVE;
-    if (gpio_num == GPIO_NUM_0)
-    {
-        carstate = CAR_IN_LINE;
-    }
-    xQueueSendFromISR(gpio_evt_queue, &carstate, NULL); // ( xQueue, pvItemToQueue, pxHigherPriorityTaskWoken )
+    BaseType_t high_task_awoken = pdFALSE;
+    xSemaphoreGiveFromISR(SemaphoreButton, &high_task_awoken);
 }
 
 // Construtor do servico
@@ -30,50 +23,55 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
 
     esp_log_level_set(name.c_str(), ESP_LOG_INFO); // enable dos prints desse serviço
 
+    get_Status->robotState->setData(CAR_STOPPED);
+    get_Status->RealTrackStatus->setData(DEFAULT_TRACK);
+    get_Status->TrackStatus->setData(DEFAULT_TRACK);
+    get_Speed->vel_mapped->setData(get_Speed->getSpeed(DEFAULT_TRACK, CAR_ENC_READING_BEFORE_FIRSTMARK)->getData());
+
+    lastPaused = get_Status->robotPaused->getData();
+    lastState = get_Status->robotState->getData();
+    lastTrack = (TrackSegment)get_Status->TrackStatus->getData();
+
+    SemaphoreButton = xSemaphoreCreateBinary();
+    config_extern_interrupt_to_read_button(GPIO_NUM_0);
+
     if(!(get_Status->TunningMode->getData())) // Se o robo nao estiver em modo de teste
     {
-        get_latMarks->marks->loadData(); // carrega as marcações laterais salvas
-
-        if (get_latMarks->marks->getSize() <= 0) // Se o robo não tem mapeamento salvo
-        {
-            // Muda o status para iniciar o mapeamento
-            mappingStatus(false, true); // (bool is_reading, bool is_mapping)
-        }
-        else
-        {// Se tem mapeamento salvo
-            // Muda o status para ler o mapeamento
-            mappingStatus(true, false); // (bool is_reading, bool is_mapping)
-            numMarks = get_latMarks->marks->getSize();
-            mediaEncFinal = get_latMarks->marks->getData(numMarks - 1).MapEncMedia;
-        }
+        define_if_will_start_mapping();
     }
 
-    // Status inicial do robo (parado)
-    get_Status->robotState->setData(CAR_STOPPED);
-
-    stateChanged = true;
-    lastMappingState = false;
-    // Carregando o final da pista
-    lastState = get_Status->robotState->getData();
-    lastTrack = (TrackState) get_Status->TrackStatus->getData();
-
-    firstmark = false; // Não passou pela linha de partida
-
-    gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
-
-    gpio_config_t io_conf = {};
-    io_conf.intr_type = GPIO_INTR_NEGEDGE;
-    io_conf.pin_bit_mask = (1ULL << GPIO_NUM_0);
-    io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    gpio_config(&io_conf);
-
-    gpio_install_isr_service(0);
-
-    gpio_isr_handler_add(GPIO_NUM_0, gpio_isr_handler, (void *)GPIO_NUM_0);
-
     actualize_friction();
+}
+
+void StatusService::config_extern_interrupt_to_read_button(gpio_num_t interruptPort)
+{
+    gpio_config_t interruptConfig = {};
+    interruptConfig.intr_type = GPIO_INTR_NEGEDGE;
+    interruptConfig.pin_bit_mask = (1ULL << interruptPort);
+    interruptConfig.mode = GPIO_MODE_INPUT;
+    interruptConfig.pull_up_en = GPIO_PULLUP_ENABLE;
+    interruptConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
+
+    gpio_config(&interruptConfig);
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(interruptPort, start_robot_with_boot_button, NULL);
+}
+
+void StatusService::define_if_will_start_mapping(){
+    get_latMarks->marks->loadData();
+    initialRobotState = CAR_MAPPING;
+
+    if (get_latMarks->marks->getSize() > 0)
+        start_following_defined_map();
+}
+
+void StatusService::start_following_defined_map(){
+    get_Status->TrackStatus->setData(SHORT_LINE);
+    get_Status->RealTrackStatus->setData(SHORT_LINE);
+
+    initialRobotState = CAR_ENC_READING_BEFORE_FIRSTMARK;
+    numMarks = get_latMarks->marks->getSize();
+    mediaEncFinal = get_latMarks->marks->getData(numMarks - 1).MapEncMedia;
 }
 
 // Main do servico
@@ -82,309 +80,267 @@ void StatusService::Run()
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
-    //ESP_LOGI(GetName().c_str(), "Aguardando pressionamento do botão.");
-    uint8_t num;
-    do
-    {// Aguarda o precionar do botao
-        xQueueReceive(gpio_evt_queue, &num, portMAX_DELAY);
-        //ESP_LOGI(GetName().c_str(), "Aguardando inicialização");
-        if(get_Status->robotState->getData() != CAR_STOPPED) break;
-    } while (num != CAR_IN_LINE); // enquanto o botão não é precionado
+    wait_press_boot_button_to_start();
     
-    // Acendendo a luz vermelha na LED da frente:
-    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
-
-
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 1);
     vTaskDelay(1500 / portTICK_PERIOD_MS);
-    // Deletar o mapeamento caso o botão de boot seja mantido pressionado e exista mapeamento na flash
+    
     if(!gpio_get_level(GPIO_NUM_0) && get_latMarks->marks->getSize() > 0 && !get_Status->TunningMode->getData() && get_Status->HardDeleteMap->getData())
     {
-        DataStorage::getInstance()->delete_data("Marcacoes_sLatMarks.marks");
-        mappingStatus(false, true); // (bool is_reading, bool is_mapping)
-        //ESP_LOGI(GetName().c_str(), "Mapeamento Deletado");
-
-        // Mudando a led frontal para amarelo:
-        LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+        delete_mapping_if_boot_button_is_pressed();
     }
     //ESP_LOGI(GetName().c_str(), "Iniciando delay de 1500ms");
     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    
 
-    if(!get_Status->TunningMode->getData())
-    { // Se nao estiver em modo de teste
-        if(get_Status->robotIsMapping->getData())
-        { // Se nao houver mapeamento salvo
-            //ESP_LOGI(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
-            
-            // Mudando a led frontal para amarelo:
-            LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+    if (initialRobotState == CAR_MAPPING && !get_Status->TunningMode->getData())
+        start_mapping_the_track();
 
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            // Começa mapeamento
-            get_Status->RealTrackStatus->setData(UNDEFINED);
-            get_Status->TrackStatus->setData(UNDEFINED);
-            get_Speed->vel_mapped->setData(get_Speed->Setpoint(UNDEFINED)->getData());
-            mappingService->startNewMapping();
-        }
-        else
-        {// Se nao estiver mapeando, muda o status para linha curta (mais lento)
-            get_Status->TrackStatus->setData(SHORT_LINE);
-            get_Status->RealTrackStatus->setData(SHORT_LINE);
-            get_Speed->vel_mapped->setData(get_Speed->Setpoint(SHORT_LINE)->getData());
-        }
+    started_in_Tuning = false;
+    if (get_Status->TunningMode->getData())
+        set_tuning_mode();
 
-        get_Status->robotState->setData(CAR_IN_LINE); // Carro sai do estado parado
-        started_in_Tuning = false;
-    }
-    else
-    {// Se estiver em modo de teste
-        started_in_Tuning = true;
-        get_Status->robotState->setData(CAR_TUNING);
-        get_Status->TrackStatus->setData(TUNNING);
-        get_Status->RealTrackStatus->setData(TUNNING);
-        trackSpeed = get_Speed->Setpoint(TUNNING)->getData();
-        get_Speed->vel_mapped->setData(trackSpeed);
-        mappingStatus(false, false); // (bool is_reading, bool is_mapping)
-        get_latMarks->marks->clearAllData();
-        numMarks = 0;
-        mediaEncFinal = 0;
-        
-        // Muda a LED frontal para branco com brilho 50%
-        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
-    }
+    get_Status->robotState->setData(initialRobotState);
     get_Status->FirstMark->setData(false); // Indica que nao passou pela primeira marcaçao
 
     //Loop
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, 30 / portTICK_PERIOD_MS);
-        lastTime = esp_timer_get_time();
+        //lastTime = esp_timer_get_time();
 
         // Carregando status atual
-        get_Status->stateMutex.lock();
-        TrackLen = (TrackState)get_Status->TrackStatus->getData();
+        TrackLen = (TrackSegment)get_Status->TrackStatus->getData();
         pulsesBeforeCurve = get_latMarks->PulsesBeforeCurve->getData();
         pulsesAfterCurve = get_latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) get_Status->robotState->getData();
-        if(started_in_Tuning && get_Status->TunningMode->getData() && get_Status->robotState->getData() != CAR_TUNING && get_Status->robotState->getData() != CAR_STOPPED &&  !get_Status->encreading->getData() && !get_Status->robotIsMapping->getData()) 
-        {// Se iniciar em modo de teste
-            get_Status->robotState->setData(CAR_TUNING);
-            get_Status->TrackStatus->setData(TUNNING);
-            get_Status->RealTrackStatus->setData(TUNNING);
-            trackSpeed = get_Speed->Setpoint(TUNNING)->getData();
-            get_Speed->vel_mapped->setData(trackSpeed);
-            
-            // LED frontal branca com brilho 50%
-            LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
-        }
-        if(get_latMarks->rightMarks->getData() >= 1 && !firstmark)
-        {// Se passar pela linha de largada e nao tiver essa informacao salva
-            firstmark = true;
-            get_Status->FirstMark->setData(true);
-            initialmediaEnc = (get_Speed->EncRight->getData() + get_Speed->EncLeft->getData()) / 2;
-        }
-        if (lastMappingState != get_Status->robotIsMapping->getData() && get_Status->robotIsMapping->getData())
-        {// Caso esteja mapeando
-            lastMappingState = get_Status->robotIsMapping->getData();
 
-            //ESP_LOGI(GetName().c_str(), "Alterando velocidades para modo mapeamento.");
-            // LED frontal branca com brilho 50%
-            LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+        if (get_Status->robotPaused->getData())
+            lastPaused = true;
+
+        if(check_if_passed_first_mark())
+            reset_enconder_value();
+        
+        if(track_segment_changed()){
+            set_LEDs();
         }
-        else if ((lastState != get_Status->robotState->getData() || lastTrack != (TrackState)get_Status->TrackStatus->getData() || lastTransition != get_Status->Transition->getData()) && !lastMappingState && get_Status->robotState->getData() != CAR_STOPPED && get_Status->robotState->getData() != CAR_TUNING)
-        {// Caso tenha mudado o trecho em que o robô se encontra
-            lastState = get_Status->robotState->getData();
-            lastTrack =  (TrackState)get_Status->TrackStatus->getData();
-            lastTransition = get_Status->Transition->getData();
-            gpio_set_level((gpio_num_t)buzzer_pin, 0);
-            if (lastState == CAR_IN_LINE && !lastTransition)
-            {
-                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
-                switch (TrackLen)
-                {
-                    case SHORT_LINE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.05);
-                        break;
-                    case MEDIUM_LINE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.3);
-                        break;
-                    case LONG_LINE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
-                        break;
-                    case SPECIAL_TRACK:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
-                        break;
-                    default:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
-                        break;
-                }
-            }
-            else if(lastState == CAR_IN_CURVE && !lastTransition)
-            {
-                //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
-                switch (TrackLen)
-                {
-                    case SHORT_CURVE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 0.05);
-                        break;
-                    case MEDIUM_CURVE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 0.3);
-                        break;
-                    case LONG_CURVE:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
-                        break;
-                    case ZIGZAG:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
-                        break;
-                    case SPECIAL_TRACK:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
-                        break;
-                    default:
-                        LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
-                        break;
-                }
-            }
-            else if(lastTransition)
-            {
-                gpio_set_level((gpio_num_t)buzzer_pin,1);
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 0.5);
-            }
+        if(get_Status->ControlOff->getData() && actualCarState != CAR_STOPPED){
+            mappingService->createNewMark();
+            robot->getStatus()->robotState->setData(CAR_STOPPED);
+            DataManager::getInstance()->saveAllParamDataChanged();
+            LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
         }
 
         mediaEncActual = (get_Speed->EncRight->getData() + get_Speed->EncLeft->getData()) / 2; // calcula media dos encoders
-        if(((!get_Status->robotIsMapping->getData() && !get_Status->encreading->getData() && !get_Status->TunningMode->getData()) || get_Status->ControlOff->getData()) && actualCarState != CAR_STOPPED)
-        {// Muda o status do carro para parado, caso esteja no momento certo
-            get_Status->robotIsMapping->setData(false);
-            get_Status->encreading->setData(false);
-            get_Status->TunningMode->setData(false);
-            get_Status->robotState->setData(CAR_STOPPED);
-            vTaskDelay(0);
-            DataManager::getInstance()->saveAllParamDataChanged();
-            LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
-        }
-        if (!get_Status->robotIsMapping->getData() && actualCarState != CAR_STOPPED && get_Status->encreading->getData() && firstmark && (!get_Status->TunningMode->getData() || !started_in_Tuning))
-        {// Se estiver lendo o mapeamento, e já tiver passado pela linha de largada
-            if ((mediaEncActual - initialmediaEnc) >= mediaEncFinal)
-            {// 
-                if(get_Status->TuningMapped->getData())
-                {
-                    get_Status->FirstMark->setData(false);
-                    firstmark = false;
-                    initialmediaEnc = 0;
-                    get_Status->robotState->setData(CAR_IN_LINE);
-                    get_Status->TrackStatus->setData(SHORT_LINE);
-                    get_Status->RealTrackStatus->setData(SHORT_LINE);
-                    get_latMarks->rightMarks->setData(0);
-                }
-                else
-                {
-                    //ESP_LOGI(GetName().c_str(), "Parando o robô");
-                    get_Status->encreading->setData(false);
+        
+        if (actualCarState == CAR_TUNING && !get_Status ->TunningMode->getData())
+            stop_tunning_mode();
 
-                    get_Status->robotState->setData(CAR_STOPPED);
-                    DataManager::getInstance()->saveAllParamDataChanged();
-                    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
-                }
+        if (actualCarState == CAR_ENC_READING && (!get_Status->TunningMode->getData() || !started_in_Tuning))
+        {
+            if ((mediaEncActual - initialmediaEnc) >= mediaEncFinal)
+            {
+                //ESP_LOGD(GetName().c_str(), "Parando o robô");
+
+                robot->getStatus()->robotState->setData(CAR_STOPPED);
+                DataManager::getInstance()->saveAllParamDataChanged();
+                LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
             }
             if ((mediaEncActual - initialmediaEnc) < mediaEncFinal)
             {
-                // define o status do carrinho
+                // define o status do carrinho se o mapeamento não estiver ocorrendo
                 int mark = 0;
                 for (mark = 0; mark < numMarks - 1; mark++)
                 {
                     // Verifica a contagem do encoder e atribui o estado ao robô
                     int32_t Manualmedia = get_latMarks->marks->getData(mark).MapEncMedia;        // Média dos encoders na chave mark
                     int32_t ManualmediaNxt = get_latMarks->marks->getData(mark + 1).MapEncMedia; // Média dos encoders na chave mark + 1
+
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
-                        loadTrackMapped(mark+1, mark+1);
-                        get_Status->RealTrackStatus->setData(trackLen);
+                        load_track_mapped(mark+1);
+
                         bool transition = false;
-                        if(mark_in_transition != mark){
-                            in_transition = false;
-                        }
-                        int16_t offset = 0;
-                        int16_t offsetnxt = 0;
+
+                        int16_t offset = get_latMarks->marks->getData(mark).MapOffset;
+                        int16_t offsetnxt = get_latMarks->marks->getData(mark + 1).MapOffset;
                         // Verifica se o robô precisa reduzir a velocidade, entrando no modo curva
-                        if((CarState)get_latMarks->marks->getData(mark).MapStatus == CAR_IN_CURVE && (CarState)get_latMarks->marks->getData(mark + 1).MapStatus == CAR_IN_LINE)
+                        if (!mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark).MapTrackStatus) && mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus))
                         {
                             offset += pulsesAfterCurve;
                         }
-                        if(offset > 0)
+                        if (offset > 0)
                         {
-                            if((Manualmedia + offset) < ManualmediaNxt && (mediaEncActual - initialmediaEnc) < (Manualmedia + offset)) 
+                            if ((mediaEncActual - initialmediaEnc) < (Manualmedia + offset))
                             {
                                 transition = true;
-                                loadTrackMapped(mark+1, mark+1);
-                            }
-                            else if((Manualmedia + offset) >= ManualmediaNxt)
-                            {
-                                transition = true;
-                                loadTrackMapped(mark+1, mark+1);
+                                load_track_mapped(mark);
                             }
                         }
-                        if(mark + 2 < numMarks)
+                        if (mark + 2 < numMarks)
                         {
-                            if((CarState)get_latMarks->marks->getData(mark+1).MapStatus == CAR_IN_LINE && (CarState)get_latMarks->marks->getData(mark + 2).MapStatus == CAR_IN_CURVE){
-                                /* 
-                                offsetnxt = -calculate_offset(mark+1) - pulsesBeforeCurve;
-                                */
-                                offsetnxt = - pulsesBeforeCurve;
-                            }
-                            if(offsetnxt < 0)
+
+                            if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && !mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && offsetnxt == 0)
                             {
-                                if((ManualmediaNxt + offsetnxt) > Manualmedia && (mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt)) 
+                                offsetnxt = -calculate_offset(mark+1) - pulsesBeforeCurve;
+                            }
+                            if (offsetnxt < 0)
+                            {
+                                if ((mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt))
                                 {
                                     transition = true;
-                                    in_transition = true;
-                                    mark_in_transition = mark;
-                                    offset_transition = offsetnxt;
-                                    loadTrackMapped(mark+2, mark+2);
-                                }
-                                else if((ManualmediaNxt + offsetnxt) <= Manualmedia) 
-                                {
-                                    transition = true;
-                                    in_transition = true;
-                                    mark_in_transition = mark;
-                                    offset_transition = offsetnxt;
-                                    loadTrackMapped(mark+2, mark+2);
+                                    load_track_mapped(mark+2);
                                 }
                             }
                         }
                         // Atualiza estado do robô
                         get_Status->Transition->setData(transition);
-                        get_Status->robotState->setData(trackType);
                         get_Status->TrackStatus->setData(trackLen);
-                        get_Speed->vel_mapped->setData(trackSpeed);
                         break;
                     }
                 }
             }
-        
         }
 
-        get_Status->stateMutex.unlock();
-        
-        uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
+        //uint32_t time = (uint32_t) (esp_timer_get_time() - lastTime);
         //ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
     }
 }
 
-void StatusService::mappingStatus(bool is_reading, bool is_mapping)
-{// Muda as variáveis de estado ligadas ao mapeamento.
-    get_Status->encreading->setData(is_reading);
-    get_Status->robotIsMapping->setData(is_mapping);
+void StatusService::wait_press_boot_button_to_start()
+{
+    //ESP_LOGD(GetName().c_str(), "Aguardando pressionamento do botão.");
+    xSemaphoreTake(SemaphoreButton, portMAX_DELAY);
 }
 
-void StatusService::loadTrackMapped(int section, int section_speed)
-{// Carrega as variaveis de um trecho da pista, salvas no mapeamento.
-    trackType = (CarState)get_latMarks->marks->getData(section).MapStatus;
-    trackLen = (TrackState)get_latMarks->marks->getData(section).MapTrackStatus;
-    trackSpeed = calculate_speed(section_speed);
-    //ESP_LOGI(GetName().c_str(), "Para marcação %d Raio = %.2f e Velocidade = %.2f", section);
+void StatusService::delete_mapping_if_boot_button_is_pressed()
+{
+    DataStorage::getInstance()->delete_data("sLatMarks.marks");
+    initialRobotState = CAR_MAPPING;
+    //ESP_LOGD(GetName().c_str(), "Mapeamento Deletado");
+    LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
 }
 
-float StatusService::calculate_speed(int section){
+void StatusService::start_mapping_the_track(){
+    //ESP_LOGD(GetName().c_str(), "Mapeamento inexistente, iniciando robô em modo mapemaneto.");
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // Começa mapeamento
+    get_Status->RealTrackStatus->setData(DEFAULT_TRACK);
+    get_Status->TrackStatus->setData(DEFAULT_TRACK);
+    get_Speed->vel_mapped->setData(get_Speed->getSpeed(DEFAULT_TRACK, CAR_MAPPING)->getData());
+    mappingService->startNewMapping();
+}
+
+void StatusService::set_tuning_mode(){
+    started_in_Tuning = true;
+    initialRobotState = CAR_TUNING;
+    get_latMarks->marks->clearAllData();
+    get_Speed->vel_mapped->setData(get_Speed->getSpeed(DEFAULT_TRACK, CAR_TUNING)->getData());
+    numMarks = 0;
+    mediaEncFinal = 0;
+    LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
+}
+
+bool StatusService::check_if_passed_first_mark()
+{
+    return get_latMarks->rightMarks->getData() >= 1 && actualCarState == CAR_ENC_READING_BEFORE_FIRSTMARK;
+}
+
+void StatusService::reset_enconder_value()
+{
+    actualCarState = CAR_ENC_READING;
+    get_Status->robotState->setData(actualCarState);
+    initialmediaEnc = (get_Speed->EncRight->getData() + get_Speed->EncLeft->getData()) / 2;
+}
+
+bool StatusService::track_segment_changed()
+{
+    return lastTrack != (TrackSegment)get_Status->TrackStatus->getData() 
+        || lastTransition != get_Status->Transition->getData();
+}
+
+void StatusService::set_LEDs()
+{
+    lastTrack =  (TrackSegment)get_Status->TrackStatus->getData();
+    lastTransition = get_Status->Transition->getData();
+    gpio_set_level((gpio_num_t)buzzer_pin, 0);
+    if (mappingService->track_is_a_line(lastTrack) && !lastTransition)
+    {
+        //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
+        switch (TrackLen)
+        {
+            case SHORT_LINE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.05);
+                break;
+            case MEDIUM_LINE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.3);
+                break;
+            case LONG_LINE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                break;
+            case XLONG_LINE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                break;
+            case SPECIAL_TRACK:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
+                break;
+            default:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
+                break;
+        }
+    }
+    else if(!lastTransition)
+    {
+        //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inCurve.");
+        switch (TrackLen)
+        {
+            case SHORT_CURVE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 0.05);
+                break;
+            case MEDIUM_CURVE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 0.3);
+                break;
+            case LONG_CURVE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+                break;
+            case XLONG_CURVE:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+                break;
+            case ZIGZAG_TRACK:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
+                break;
+            case SPECIAL_TRACK:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
+                break;
+            default:
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
+                break;
+        }
+    }
+    else if(lastTransition)
+    {
+        gpio_set_level((gpio_num_t)buzzer_pin,1);
+        LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 0.5);
+    }
+}
+
+void StatusService::stop_tunning_mode(){
+    robot->getStatus()->robotState->setData(CAR_STOPPED);
+    vTaskDelay(0);
+    DataManager::getInstance()->saveAllParamDataChanged();
+    LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
+}
+
+void StatusService::load_track_mapped(int mark)
+{
+    trackLen = (TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus;
+    get_Status->RealTrackStatus->setData(trackLen);
+
+    trackSpeed = get_Speed->getSpeed(trackLen, CAR_ENC_READING)->getData();
+    get_Speed->vel_mapped->setData(trackSpeed);
+}
+
+/* float StatusService::calculate_speed(int section){
     float vel;
     if(get_Status->VelCalculated->getData()){
         int32_t delta_right = (get_latMarks->marks->getData(section).MapEncRight - get_latMarks->marks->getData(section-1).MapEncRight);
@@ -417,20 +373,25 @@ float StatusService::calculate_speed(int section){
             else vel = 100;
         }
     }else{
-        TrackState line_state = (TrackState)get_latMarks->marks->getData(section).MapTrackStatus;
+        TrackSegment line_state = (TrackSegment)get_latMarks->marks->getData(section).MapTrackStatus;
         vel = get_Speed->Setpoint(line_state)->getData();
     }
     
     return vel;
-}
+} */
 
 int16_t StatusService::calculate_offset(int section){
     float actual_speed;
     float next_speed;
-    
-    actual_speed = (float)get_Speed->RPMCar_media->getData();
-    next_speed = calculate_speed(section+1);
 
+    TrackSegment actual_track = (TrackSegment)get_latMarks->marks->getData(section).MapTrackStatus;
+    TrackSegment next_track = (TrackSegment)get_latMarks->marks->getData(section+1).MapTrackStatus;
+    
+    //actual_speed = (float)get_Speed->RPMCar_media->getData();
+    actual_speed = get_Speed->getSpeed(actual_track, CAR_ENC_READING)->getData();
+    next_speed = get_Speed->getSpeed(next_track, CAR_ENC_READING)->getData();
+
+    actual_speed = (actual_speed*get_Spec->MaxRPM->getData())/100;
     actual_speed = convert_RPM_to_speed(actual_speed);
     next_speed = (next_speed*get_Spec->MaxRPM->getData())/100;
     next_speed = convert_RPM_to_speed(next_speed);

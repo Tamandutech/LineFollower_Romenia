@@ -46,30 +46,39 @@ dataMotor::dataMotor(std::string name)
     dataManager->registerRuntimeData(vel_mapped);
 
     //Setpoints para os tipos de trechos
-    Long_Line = new DataAbstract<float>("PWM_Long_line", name, 80);
+    Initial_Speed = new DataAbstract<float>("PWM_initial_speed", name, 1100);
+    dataManager->registerParamData(Initial_Speed);
+
+    XLong_Line = new DataAbstract<float>("PWM_XLong_line", name, 1000);
+    dataManager->registerParamData(XLong_Line);
+    Long_Line = new DataAbstract<float>("PWM_Long_line", name, 1000);
     dataManager->registerParamData(Long_Line);
-    Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 80);
+    Medium_Line = new DataAbstract<float>("PWM_Medium_line", name, 1000);
     dataManager->registerParamData(Medium_Line);
-    Short_Line = new DataAbstract<float>("PWM_Short_line", name, 80);
+    Short_Line = new DataAbstract<float>("PWM_Short_line", name, 1000);
     dataManager->registerParamData(Short_Line);
-    Long_Curve = new DataAbstract<float>("PWM_Long_curve", name, 80);
+
+    XLong_Curve = new DataAbstract<float>("PWM_XLong_curve", name, 1000);
+    dataManager->registerParamData(XLong_Curve);
+    Long_Curve = new DataAbstract<float>("PWM_Long_curve", name, 1000);
     dataManager->registerParamData(Long_Curve);
-    Medium_Curve = new DataAbstract<float>("PWM_Medium_curve", name, 80);
+    Medium_Curve = new DataAbstract<float>("PWM_Medium_curve", name, 1000);
     dataManager->registerParamData(Medium_Curve);
-    Short_Curve = new DataAbstract<float>("PWM_Short_curve", name, 80);
+    Short_Curve = new DataAbstract<float>("PWM_Short_curve", name, 1000);
     dataManager->registerParamData(Short_Curve);
-    Zigzag = new DataAbstract<float>("PWM_ZigZag", name, 80);
-    dataManager->registerParamData(Zigzag);
-    Special_Track = new DataAbstract<float>("PWM_SpecialTrack", name, 80);
+
+    Zig_zag = new DataAbstract<float>("PWM_Zig_Zag", name, 1000);
+    dataManager->registerParamData(Zig_zag);
+    Special_Track = new DataAbstract<float>("PWM_Special_Track", name, 1000);
     dataManager->registerParamData(Special_Track);
-    Default_Track = new DataAbstract<float>("PWM_Default_Track", name, 80);
-    dataManager->registerParamData(Default_Track);
-    Tunning = new DataAbstract<float>("PWM_Tunning", name, 500);
-    dataManager->registerParamData(Tunning);
+    Default_speed = new DataAbstract<float>("PWM_Default_Speed", name, 1000);
+    dataManager->registerParamData(Default_speed);
+    Tunning_speed = new DataAbstract<float>("PWM_Tunning_speed", name, 1000);
+    dataManager->registerParamData(Tunning_speed);
     
 }
 
-DataAbstract<float> *dataMotor::Setpoint(TrackState state)
+DataAbstract<float> *dataMotor::Track_Setpoint(TrackSegment state)
 {// Retorna o valor do setpoint para cada tipo de trecho de pista
     switch(state)
     {
@@ -91,17 +100,43 @@ DataAbstract<float> *dataMotor::Setpoint(TrackState state)
         case SHORT_CURVE:
             return Short_Curve;
             break;
-        case ZIGZAG:
-            return Zigzag;
+        case ZIGZAG_TRACK:
+            return Zig_zag;
             break;
-        case TUNNING:
-            return Tunning;
+        case SPECIAL_TRACK:
+            return Special_Track;
+            break;
+        case XLONG_LINE:
+            return XLong_Line;
+            break;
+        case XLONG_CURVE:
+            return XLong_Curve;
             break;
         default:
-            return Default_Track;
+            return Default_speed;
             break;
     }
 
     //ESP_LOGE(tag, "Estado do Robô ou Objeto PID inválido para esse método: %s:%d para obter o Kp do PID, retornando valor null.", name.c_str(),state);
     return nullptr;
+}
+
+DataAbstract<float> *dataMotor::getSpeed(TrackSegment trackSegment, CarState state)
+{
+    DataAbstract<float> *speedTarget = Default_speed;
+
+    switch (state)
+    {
+    case CAR_ENC_READING:
+        speedTarget = Track_Setpoint(trackSegment);
+        break;
+    case CAR_ENC_READING_BEFORE_FIRSTMARK:
+        speedTarget = Initial_Speed;
+        break;
+    case CAR_TUNING:
+        speedTarget = Tunning_speed;
+    default:
+        break;
+    }
+    return speedTarget;
 }

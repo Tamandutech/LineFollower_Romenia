@@ -8,7 +8,7 @@ Robot::Robot(std::string name)
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
 
-    ESP_LOGD(name.c_str(), "Iniciando o ADC 1");
+    //ESP_LOGD(name.c_str(), "Iniciando o ADC 1");
     adc_oneshot_unit_handle_t adc_handle;
     adc_oneshot_unit_init_cfg_t init_config = {
         .unit_id = ADC_UNIT_1,
@@ -31,7 +31,7 @@ Robot::Robot(std::string name)
     //ESP_LOGD(name.c_str(), "velocidade (%p)", this->RobotSpec);
     this->PID = new dataPID("Valores_PID");
     //ESP_LOGD(name.c_str(), "velocidade (%p)", this->PID);
-    this->RobotStatus = new dataStatus(CAR_IN_LINE, "Estados_RobotStatus"); // inicialmente se encontra numa linha
+    this->RobotStatus = new dataStatus("Estados_RobotStatus"); // inicialmente se encontra numa linha
     //ESP_LOGD(name.c_str(), "RobotStatus (%p)", this->RobotStatus);
     this->sLatMarks = new dataSLatMarks("Marcacoes_sLatMarks");
     //ESP_LOGD(name.c_str(), "sLatMarks (%p)", this->sLatMarks);

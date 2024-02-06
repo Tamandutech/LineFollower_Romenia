@@ -166,20 +166,17 @@ static std::string start(int argc, char **argv)
     auto status = Robot::getInstance()->getStatus();
     auto latMarks = Robot::getInstance()->getSLatMarks();
     SensorService::getInstance()->Suspend();
-    SensorService::getInstance()->auto_calibrate(0);
+    SensorService::getInstance()->manual_calibrate(0);
     SensorService::getInstance()->Resume();
     if (latMarks->marks->getSize() <= 0)
     {
-        status->encreading->setData(false);
-        status->robotIsMapping->setData(true);
+        status->robotState->setData(CAR_MAPPING);
     }
     else
     {
-        status->robotIsMapping->setData(false);
-        status->encreading->setData(true);
+        status->robotState->setData(CAR_ENC_READING);
     }
-    auto carstate = status->robotState->getData();
-    xQueueSend(StatusService::getInstance()->gpio_evt_queue, &carstate, portMAX_DELAY);
+    xSemaphoreGive(StatusService::getInstance()->SemaphoreButton);
     return ("O robô começará a se mover");
 }
 
@@ -202,18 +199,15 @@ static std::string resume(int argc, char **argv)
     {
         if (latMarks->marks->getSize() <= 0)
         {
-            status->encreading->setData(false);
-            status->robotIsMapping->setData(true);
+            status->robotState->setData(CAR_MAPPING);
         }
         else
         {
-            status->robotIsMapping->setData(false);
-            status->encreading->setData(true);
+            status->robotState->setData(CAR_ENC_READING);
         }
     }
     status->robotState->setData(lastState);
-    auto carstate = CAR_IN_LINE;
-    xQueueSend(StatusService::getInstance()->gpio_evt_queue, &carstate, portMAX_DELAY);
+    xSemaphoreGive(StatusService::getInstance()->SemaphoreButton);
     status->robotPaused->setData(false);
 
     return ("O robô voltará a andar");
@@ -259,7 +253,7 @@ static void register_pause(void)
 static std::string calibrate(int argc, char **argv)
 {
     SensorService::getInstance()->Suspend();
-    SensorService::getInstance()->auto_calibrate(0);
+    SensorService::getInstance()->manual_calibrate(0);
     SensorService::getInstance()->Resume();
     return ("O robô será calibrado");
 }

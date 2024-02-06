@@ -109,12 +109,12 @@ void app_main()
     
     statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
-
-    motorService = MotorService::getInstance("MotorsService", 4096, 8);
-    //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "MotorsService");
     
     sensorService = SensorService::getInstance("SensorService", 8192, 9, PRO_CPU_NUM);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
+
+    motorService = MotorService::getInstance("MotorsService", 4096, 8);
+    //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "MotorsService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
     //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");

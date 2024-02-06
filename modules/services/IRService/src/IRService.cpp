@@ -13,7 +13,7 @@ IRService::IRService(std::string name, uint32_t stackDepth, UBaseType_t priority
 
 void IRService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início IRService");
+    //ESP_LOGI(GetName().c_str(), "Início IRService");
     
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
@@ -21,7 +21,7 @@ void IRService::Run()
     register_rx_callback();
     config_rx_receive();
 
-    ESP_LOGI(GetName().c_str(), "enable RMT RX channel");
+    //ESP_LOGI(GetName().c_str(), "enable RMT RX channel");
     ESP_ERROR_CHECK(rmt_enable(rx_channel));
     
     start_rx_receive();
@@ -41,7 +41,7 @@ void IRService::Run()
 }
 
 void IRService::create_rx_channel(){
-    ESP_LOGI(GetName().c_str(), "create RMT RX channel");
+    //ESP_LOGI(GetName().c_str(), "create RMT RX channel");
     rmt_rx_channel_config_t rx_chan_config = {
         .gpio_num = GPIO_NUM_15,          // GPIO number
         .clk_src = RMT_CLK_SRC_DEFAULT,   // select source clock
@@ -52,7 +52,7 @@ void IRService::create_rx_channel(){
 }
 
 void IRService::register_rx_callback(){
-    ESP_LOGI(GetName().c_str(), "register RX done callback");
+    //ESP_LOGI(GetName().c_str(), "register RX done callback");
     receive_queue = xQueueCreate(1, sizeof(rmt_rx_done_event_data_t));
     assert(receive_queue);
     rmt_rx_event_callbacks_t cbs = {
@@ -88,8 +88,7 @@ BaseType_t IRService::rx_signal_received(){
 }
 
 void IRService::switch_robot_off(){
-    ESP_LOGI(GetName().c_str(), "Signal received, stopping robot");
-    LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+    //ESP_LOGI(GetName().c_str(), "Signal received, stopping robot");
     get_Status->ControlOff->setData(true);
 }
 

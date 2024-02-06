@@ -11,6 +11,12 @@
 
 #include "esp_log.h"
 
+struct PID_Consts
+{
+    float Kp;
+    float Kd;
+};
+
 class dataPID
 {
 public:
@@ -22,8 +28,9 @@ public:
     DataAbstract<float> *output;
 
     // Funções que retornam as constantes do PID definidas para um trecho da pista
-    DataAbstract<float> *Kp(TrackState state);
-    DataAbstract<float> *Kd(TrackState state);
+    DataAbstract<float> *getKP(TrackSegment track);
+    DataAbstract<float> *getKD(TrackSegment track);
+    PID_Consts PD_values(TrackSegment track, CarState state);
 
 private:
     std::string name;

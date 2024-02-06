@@ -22,10 +22,11 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
 void MotorService::Run()
 {
-    ESP_LOGI(GetName().c_str(), "Início MotorService");
+    //ESP_LOGI(GetName().c_str(), "Início MotorService");
     // Variavel necerraria para funcionalidade do vTaskDelayUtil, guarda a conGetName().c_str()em de pulsos da CPU
     // TickType_t xLastWakeTime = xTaskGetTickCount();
     //TestMotors();
+    
     // Loop
     for (;;)
     {
@@ -43,9 +44,9 @@ void MotorService::ConfigBrushless(){
     InitPWM((gpio_num_t)brushless_dir, PWM_A);
     InitPWM((gpio_num_t)brushless_esq, PWM_B);
 
-    ESP_LOGI(GetName().c_str(), "Calibracao Brushless...");
-    //calibrate();
-    ESP_LOGI(GetName().c_str(), "Fim Calibracao Brushless");
+    //ESP_LOGI(GetName().c_str(), "Calibracao Brushless...");
+    calibrateBrushless();
+    //ESP_LOGI(GetName().c_str(), "Fim Calibracao Brushless");
 }
 
 void MotorService::TestMotors(){
@@ -55,7 +56,7 @@ void MotorService::TestMotors(){
     control.motorsStop();
 }
 
-void MotorService::calibrate(){
+void MotorService::calibrateBrushless(){
     AnalogWrite(PWM_A, MAX_THROTTLE);
     AnalogWrite(PWM_B, MAX_THROTTLE);
     
@@ -68,6 +69,8 @@ void MotorService::calibrate(){
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
     
     vTaskDelay(5200 / portTICK_PERIOD_MS);
+
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
     
     Brushless_ActualPwm = MIN_THROTTLE;
     

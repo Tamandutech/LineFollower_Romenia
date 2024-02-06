@@ -35,6 +35,9 @@ public:
 
     esp_err_t createNewMark();
 
+    bool track_is_a_line(uint8_t track);
+    bool track_is_a_curve(uint8_t track);
+
 private:
     std::string name;
 
@@ -50,7 +53,6 @@ private:
     // Variáveis
 
     struct MapData tempActualMark;
-    struct MapData tempPreviousMark;
 
     // atributos de filtro
     uint16_t leftMarksToStop;
@@ -68,10 +70,14 @@ private:
     uint32_t tempDeltaPulses = 0;
     uint32_t tempMilimiterInPulses = 0;
     uint32_t tempDeltaDist = 0;
+    int32_t EncLeft = 0, EncRight = 0;
+    int32_t lastEncLeft = 0, lastEncRight = 0, lastEncMedia = 0;
+    uint8_t lastTrack = 0;
 
     void MappingWithMarks();
     void MappingWithoutMarks(TickType_t *xLastWakeTime);
     void AtualizarLEDs();
+    bool finished_mapping();
 };
 
 #endif

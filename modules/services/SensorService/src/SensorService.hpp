@@ -30,7 +30,7 @@ public:
 
     void Sensor_resume();
     void manual_calibrate(int mux);
-    void auto_calibrate(int mux);
+    //void auto_calibrate(int mux);
     void processSLat();
 
     float AngleArray[sQuantReading]; // array que salva as N ultimas leituras do sensor
@@ -48,7 +48,7 @@ private:
     dataFloat *get_frontArray;
     // Atalhos de servico
     LEDsService *LED;
-    MotorService *motors;
+    //MotorService *motors;
     
     // Objetos usados no serviço:
     QTRSensors sArray[sQuant]; // sensores frontais

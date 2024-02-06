@@ -60,7 +60,7 @@ private:
     void AnalogWrite(ledc_channel_t channel, int pwm);
     void InitPWM(gpio_num_t pin, ledc_channel_t channel);
     void rampThrottle(int start, int stop, int step, int time);
-    void calibrate();
+    void calibrateBrushless();
 };
 
 #endif

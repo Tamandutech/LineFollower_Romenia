@@ -15,7 +15,7 @@ class dataMotor
 public:
     dataMotor(std::string name = "dataMotor");
 
-    DataAbstract<float> *Setpoint(TrackState state);
+    DataAbstract<float> *getSpeed(TrackSegment trackSegment, CarState state);
 
     // Contagem atual dos encoders
     DataAbstract<int32_t> *EncRight;
@@ -47,18 +47,26 @@ private:
     std::string name;
     const char *tag = "RobotData";
 
+    DataAbstract<float> *Track_Setpoint(TrackSegment state);
+
     //Setpoints para os tipos de trecho 
+    DataAbstract<float> *Initial_Speed; // Velocidade inicial em rpm
     //privados pois a função Setpoint(TrackState state) que permite acesso a essas variáveis
     DataAbstract<float> *Long_Line;
     DataAbstract<float> *Medium_Line;
     DataAbstract<float> *Short_Line;
+    DataAbstract<float> *XLong_Line;
+    DataAbstract<float> *XLong_Curve; 
     DataAbstract<float> *Long_Curve;
     DataAbstract<float> *Medium_Curve;
     DataAbstract<float> *Short_Curve;
-    DataAbstract<float> *Zigzag;
+    DataAbstract<float> *Zig_zag;
     DataAbstract<float> *Special_Track;
-    DataAbstract<float> *Default_Track;
-    DataAbstract<float> *Tunning;
+
+    // Velocidade para o modo Tunning
+    DataAbstract<float> *Tunning_speed;
+    // Velocidade padrão do robô
+    DataAbstract<float> *Default_speed;
 
     DataManager *dataManager;
 };
