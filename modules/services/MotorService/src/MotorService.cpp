@@ -11,7 +11,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    control.attachMotors(DRIVER_AIN2, DRIVER_AIN1, DRIVER_PWMA, DRIVER_BIN1, DRIVER_BIN2, DRIVER_PWMB);
+    control.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN2, DRIVER_BIN1, DRIVER_PWMB);
 
     ConfigBrushless();
 
@@ -164,9 +164,9 @@ void MotorService::AnalogWrite(ledc_channel_t channel, int pwm){
 void MotorService::InitPWM(gpio_num_t pin, ledc_channel_t channel){
     ledc_timer_config_t ledc_timer;
     ledc_timer.speed_mode      = LEDC_MODE;
-    ledc_timer.duty_resolution = LEDC_DUTY_RES;
-    ledc_timer.timer_num       = LEDC_TIMER_2;
-    ledc_timer.freq_hz         = LEDC_FREQUENCY; // Frequência de 5Khz
+    ledc_timer.duty_resolution = BRUSHLESS_RESOLUTION;
+    ledc_timer.timer_num       = BRUSHLESS_TIMER;
+    ledc_timer.freq_hz         = BRUSHLESS_FREQUENCY; // Frequência de 5Khz
     ledc_timer.clk_cfg         = LEDC_AUTO_CLK; // Configuração da fonte de clock
     ledc_timer_config(&ledc_timer);
 
@@ -176,7 +176,7 @@ void MotorService::InitPWM(gpio_num_t pin, ledc_channel_t channel){
     ledc_channel.speed_mode     = LEDC_MODE;
     ledc_channel.channel        = channel;
     ledc_channel.intr_type      = LEDC_INTR_DISABLE;
-    ledc_channel.timer_sel      = LEDC_TIMER_2;
+    ledc_channel.timer_sel      = BRUSHLESS_TIMER;
     ledc_channel.duty           = 0; 
     ledc_channel.hpoint         = 0; // Ponto de início do duty cycle
     ledc_channel_config(&ledc_channel);

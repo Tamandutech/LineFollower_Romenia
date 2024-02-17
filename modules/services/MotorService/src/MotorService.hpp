@@ -22,6 +22,9 @@ using namespace cpp_freertos;
 #define THROTTLE_SPEED          100
 #define PWM_A                   LEDC_CHANNEL_2
 #define PWM_B                   LEDC_CHANNEL_3
+#define BRUSHLESS_TIMER         LEDC_TIMER_2
+#define BRUSHLESS_RESOLUTION    LEDC_TIMER_12_BIT
+#define BRUSHLESS_FREQUENCY     50
 
 
 class MotorService : public Thread, public Singleton<MotorService>
