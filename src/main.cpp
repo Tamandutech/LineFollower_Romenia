@@ -117,7 +117,7 @@ void app_main()
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "MotorsService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
-    //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
+    ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
 
     irService = IRService::getInstance("IRService", 4096, 9);
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");

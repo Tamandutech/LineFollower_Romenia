@@ -27,9 +27,22 @@ dataMotor::dataMotor(std::string name)
     PWM_left = new DataAbstract<int16_t>("PWM_left", name, 0);
     dataManager->registerRuntimeData(PWM_left);
 
+    TargetSpeed = new DataAbstract<int16_t>("TargetSpeed", name, 0);
+    dataManager->registerRuntimeData(TargetSpeed);
+
     Brushless_TargetSpeed = new DataAbstract<int16_t>("Brushless_TargetSpeed", name, 205);
     dataManager->registerParamData(Brushless_TargetSpeed);
 
+    PositionError = new DataAbstract<int16_t>("PositionError", name, 0);
+
+    MotorMaxSpeed = new DataAbstract<float>("MotorMaxSpeed", name, 3000);
+    dataManager->registerParamData(MotorMaxSpeed);
+
+    SpeedErrorTreshold = new DataAbstract<int16_t>("SpeedErrorTreshold", name, 14);
+    dataManager->registerParamData(SpeedErrorTreshold);
+
+    SafePositionError = new DataAbstract<int16_t>("SafePositionError", name, 3500);
+    dataManager->registerParamData(SafePositionError);
 
     // Vel. máximo e mínimo
     max = new DataAbstract<int8_t>("max", name, 100);

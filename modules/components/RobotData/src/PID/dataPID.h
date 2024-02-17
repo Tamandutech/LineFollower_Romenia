@@ -27,6 +27,9 @@ public:
     DataAbstract<float> *erroquad;
     DataAbstract<float> *output;
 
+    DataAbstract<float> *Kp_Acceleration;
+    DataAbstract<float> *Kp_Deceleration; 
+
     // Funções que retornam as constantes do PID definidas para um trecho da pista
     DataAbstract<float> *getKP(TrackSegment track);
     DataAbstract<float> *getKD(TrackSegment track);

@@ -17,6 +17,11 @@ dataPID::dataPID(std::string name)
     erroquad = new DataAbstract<float>("erroquad", name, 0);
     dataManager->registerRuntimeData(erroquad);
 
+    Kp_Acceleration = new DataAbstract<float>("Kp_Acceleration", name, 4);
+    dataManager->registerParamData(Kp_Acceleration);
+    Kp_Deceleration = new DataAbstract<float>("Kp_Deceleration", name, 4);
+    dataManager->registerParamData(Kp_Deceleration);
+
     Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 5.43);
     dataManager->registerParamData(Kp_Long_Line);
     Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 5.8);

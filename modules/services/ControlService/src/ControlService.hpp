@@ -47,11 +47,13 @@ private:
     float lastPulseRight = 0;
     float lastPulseLeft = 0;
     uint16_t deltaTimeMS_inst = 10;
+    int64_t lastTimeWheelsSpeedMeasured = 0;
     TickType_t lastTicksRevsCalc = 0;
     int count =0;
+    int iloop = 0;
     int64_t lastTime = 0;
 
-
+    bool AccelerationStep = false, DesaccelerationStep = false;
     bool brushless_started = false;
 
     void ControlePID();
@@ -59,6 +61,11 @@ private:
     void StopCar();
     void NewSpeed(int16_t left_wheel, int16_t right_wheel);
     void SaveRPM();
+    int16_t CalculateRobotLinearSpeed();
+    void setAccelerationDirection(float SpeedError);
+    void EnableAccelerationControlIfNeeded(float linearSpeed, float SpeedError, int16_t PositionError);
+    void DisableAccelerationWhenEnded(float SpeedError, int16_t PositionError);
+    float AccelerationControl(int16_t RobotLinearSpeed, int16_t PositionError, double kpAccelerationControl);
 };
 
 #endif

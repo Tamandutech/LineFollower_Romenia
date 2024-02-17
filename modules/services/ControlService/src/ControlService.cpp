@@ -90,17 +90,28 @@ void ControlService::ControlePID(){
         }
         
         get_PID->setpoint->setData(vel_base);
+        get_Speed->TargetSpeed->setData(vel_base);
 
         SaveRPM();
+        float RobotLinearSpeed = CalculateRobotLinearSpeed();
+        int16_t PositionError = get_Speed->PositionError->getData();
+        double kpAcceleration = get_PID->Kp_Acceleration->getData();
+        AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
+        if(AccelerationStep || DesaccelerationStep)
+        {   
+            if(DesaccelerationStep)
+                kpAcceleration = get_PID->Kp_Deceleration->getData();
+            vel_base = AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
+        }
 
         float max_angle = get_Spec->MaxAngle_Center->getData();
         bool OpenLoopControl = get_Status->OpenLoopControl->getData();
         float limite = get_Spec->Malha_Aberta->getData();
-        if(abs(erro) >= (max_angle-limite) && OpenLoopControl)
+        if(abs(PositionError) >= 6500 && OpenLoopControl)
         {
             int8_t min = get_Speed->min->getData();
             int8_t max = get_Speed->max->getData();
-            if(erro >= 0){
+            if(PositionError >= 0){
                 NewSpeed(min, max);
             }else{
                 NewSpeed(max, min);
@@ -110,6 +121,12 @@ void ControlService::ControlePID(){
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
+        if(iloop > 50)
+        {
+            //ESP_LOGI(GetName().c_str(), "TargetSpeed = %d, RobotSpeed = %.2f, PwmBase = %.2f", get_Speed->TargetSpeed->getData(), RobotLinearSpeed, vel_base);
+            iloop = 0;
+        }
+        iloop++;
     }
 }
 
@@ -126,20 +143,69 @@ void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel){
     //ESP_LOGI(GetName().c_str(), "Chamando MotorService");
     motors->ControlMotors(left_wheel, right_wheel);
 }
-
 void ControlService::SaveRPM(){
+
+    int64_t deltaTimeUs = (esp_timer_get_time() - lastTimeWheelsSpeedMeasured);
+    lastTimeWheelsSpeedMeasured = esp_timer_get_time();
+
     uint16_t MPR_Mot = get_Spec->MPR->getData();
     
     motors->read_both();
     int32_t enc_right = get_Speed->EncRight->getData();
     int32_t enc_left = get_Speed->EncLeft->getData();
 
-    float RPM_Right = (((enc_right - lastPulseRight) / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
-    float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeMS_inst / (float)60000) );
+    float RPM_Right = (((enc_right - lastPulseRight) / (float)MPR_Mot) / ((float)deltaTimeUs / (float)60000000) );
+    float RPM_Left  = (((enc_left  - lastPulseLeft)  / (float)MPR_Mot) / ((float)deltaTimeUs / (float)60000000) );
     lastPulseRight = enc_right;
     lastPulseLeft = enc_left;
 
     get_Speed->RPMRight_inst->setData(RPM_Right);
     get_Speed->RPMLeft_inst->setData(RPM_Left);
     get_Speed->RPMCar_media->setData((RPM_Left+RPM_Right)/2);
+}
+int16_t ControlService::CalculateRobotLinearSpeed(){
+    float MaxMotorSpeed = get_Speed->MotorMaxSpeed->getData();
+    int16_t RightWheelSpeed =  get_Speed->RPMRight_inst->getData();
+    int16_t LeftWheelSpeed = get_Speed->RPMLeft_inst->getData();
+    return  100.0 * ((RightWheelSpeed + LeftWheelSpeed) / (2.0 * MaxMotorSpeed));
+}
+
+void ControlService::setAccelerationDirection(float SpeedError)
+{
+    if(!AccelerationStep && !DesaccelerationStep)
+    {
+        if(SpeedError > 0)
+            AccelerationStep = true;
+        else
+            DesaccelerationStep = true;
+    }
+}
+void ControlService::EnableAccelerationControlIfNeeded(float linearSpeed, float SpeedError, int16_t PositionError)
+{
+    int16_t SpeedErrorTreshold = get_Speed->SpeedErrorTreshold->getData();
+    int16_t SafePositionError = get_Speed->SafePositionError->getData();
+    if(abs(SpeedError) > SpeedErrorTreshold && abs(PositionError) < SafePositionError)
+        setAccelerationDirection(SpeedError);
+}
+void ControlService::DisableAccelerationWhenEnded(float SpeedError, int16_t PositionError)
+{
+    int16_t SafePositionError = get_Speed->SafePositionError->getData();
+    if((AccelerationStep && SpeedError < 0) || abs(PositionError) >= SafePositionError)
+        AccelerationStep = false;
+
+    else if(DesaccelerationStep && SpeedError > 0)
+        DesaccelerationStep = false;
+}
+
+float ControlService::AccelerationControl(int16_t RobotLinearSpeed, int16_t PositionError, double kpAccelerationControl)
+{
+    float LinearSpeed = get_Speed->TargetSpeed->getData();
+    float SpeedError = LinearSpeed - RobotLinearSpeed;
+    float newLinearSpeed = LinearSpeed + kpAccelerationControl*SpeedError;
+
+    EnableAccelerationControlIfNeeded(LinearSpeed, SpeedError, PositionError);
+    DisableAccelerationWhenEnded(SpeedError, PositionError);
+
+    return newLinearSpeed;
+
 }

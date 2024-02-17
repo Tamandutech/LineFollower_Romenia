@@ -157,8 +157,9 @@ void StatusService::Run()
 
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
+                        trackLen = (TrackSegment)get_latMarks->marks->getData(mark+1).MapTrackStatus;
+                        get_Status->RealTrackStatus->setData(trackLen);
                         load_track_mapped(mark+1);
-
                         bool transition = false;
 
                         int16_t offset = get_latMarks->marks->getData(mark).MapOffset;
@@ -333,9 +334,7 @@ void StatusService::stop_tunning_mode(){
 
 void StatusService::load_track_mapped(int mark)
 {
-    trackLen = (TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus;
-    get_Status->RealTrackStatus->setData(trackLen);
-
+    trackLen = (TrackSegment)get_latMarks->marks->getData(mark).MapTrackStatus;
     trackSpeed = get_Speed->getSpeed(trackLen, CAR_ENC_READING)->getData();
     get_Speed->vel_mapped->setData(trackSpeed);
 }

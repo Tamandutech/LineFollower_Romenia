@@ -144,6 +144,7 @@ void SensorService::AngleError()
     // position vai de 0 ate (sQuant - 1)*1000, sendo sQuant a quantidade de sensores
     // Para 16 sensores, vai de 0 a 15000
     position = position - (sQuant - 1)*500; // subtrai a metade do valor máximo, posicao central fica em 0
+    get_Speed->PositionError->setData(position);
 
     float angle_radius = position*max_angle/((sQuant - 1)*500); // converte a posicao para angulo, regra de 3s
     

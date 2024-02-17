@@ -9,7 +9,7 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
     
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    /*
+    
 	i2c_config_t conf;
 	conf.mode = I2C_MODE_MASTER;
 	conf.sda_io_num = (gpio_num_t)IMU_SDA;
@@ -22,7 +22,7 @@ IMUService::IMUService(std::string name, uint32_t stackDepth, UBaseType_t priori
 
 	imu.begin();
 	imu.Enable_X();
-	imu.Enable_G();*/
+	imu.Enable_G();
 }
 
 void IMUService::Run()

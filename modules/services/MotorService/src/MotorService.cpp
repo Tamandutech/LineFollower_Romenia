@@ -11,7 +11,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
-    control.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN2, DRIVER_BIN1, DRIVER_PWMB);
+    control.attachMotors(DRIVER_AIN2, DRIVER_AIN1, DRIVER_PWMA, DRIVER_BIN1, DRIVER_BIN2, DRIVER_PWMB);
 
     ConfigBrushless();
 

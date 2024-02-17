@@ -17,6 +17,10 @@ public:
 
     DataAbstract<float> *getSpeed(TrackSegment trackSegment, CarState state);
 
+    DataAbstract<float> *MotorMaxSpeed;
+    DataAbstract<int16_t> *PositionError;
+    DataAbstract<int16_t> *SpeedErrorTreshold;
+    DataAbstract<int16_t> *SafePositionError;
     // Contagem atual dos encoders
     DataAbstract<int32_t> *EncRight;
     DataAbstract<int32_t> *EncLeft;
@@ -30,6 +34,8 @@ public:
     // PWM mandado ao motor
     DataAbstract<int16_t> *PWM_right;
     DataAbstract<int16_t> *PWM_left;
+
+    DataAbstract<int16_t> *TargetSpeed;
 
     DataAbstract<int16_t> *Brushless_TargetSpeed;
 
