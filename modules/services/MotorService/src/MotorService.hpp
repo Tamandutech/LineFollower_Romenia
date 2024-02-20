@@ -20,9 +20,10 @@ using namespace cpp_freertos;
 #define MIN_THROTTLE            205
 #define MAX_THROTTLE            409
 #define THROTTLE_SPEED          100
-#define PWM_A                   LEDC_CHANNEL_2
-#define PWM_B                   LEDC_CHANNEL_3
-#define BRUSHLESS_TIMER         LEDC_TIMER_2
+#define PWM_BRUSHLESS_A         LEDC_CHANNEL_0
+#define PWM_BRUSHLESS_B         LEDC_CHANNEL_1
+#define BRUSHLESS_PWM_MODE      LEDC_HIGH_SPEED_MODE
+#define BRUSHLESS_TIMER         LEDC_TIMER_0
 #define BRUSHLESS_RESOLUTION    LEDC_TIMER_12_BIT
 #define BRUSHLESS_FREQUENCY     50
 
@@ -61,7 +62,7 @@ private:
     
     // Bibliotecas para controlar os motores:
     void AnalogWrite(ledc_channel_t channel, int pwm);
-    void InitPWM(gpio_num_t pin, ledc_channel_t channel);
+    void InitBrushlessPWM(gpio_num_t pin, ledc_channel_t channel);
     void rampThrottle(int start, int stop, int step, int time);
     void calibrateBrushless();
 };

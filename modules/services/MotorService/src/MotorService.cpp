@@ -11,14 +11,10 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
 
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
+    ConfigBrushless(); // deve ser chamado antes da configuração dos motores de locomoção, pois ambos usam o LEDC e a configuração dos motores pode interferir na calibração dos brushless
     control.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN2, DRIVER_BIN1, DRIVER_PWMB);
-
-    ConfigBrushless();
-
     encs.ConfigEncoders();
 }
-
-
 
 void MotorService::Run()
 {
@@ -33,16 +29,12 @@ void MotorService::Run()
         vTaskDelay(0);
         this->Suspend();
         
-        int16_t right_wheel = get_Speed->PWM_right->getData();
-        int16_t left_wheel = get_Speed->PWM_left->getData();
-
-        ControlMotors(left_wheel, right_wheel);
     }
 }
 
 void MotorService::ConfigBrushless(){
-    InitPWM((gpio_num_t)brushless_dir, PWM_A);
-    InitPWM((gpio_num_t)brushless_esq, PWM_B);
+    InitBrushlessPWM((gpio_num_t)brushless_dir, PWM_BRUSHLESS_A);
+    InitBrushlessPWM((gpio_num_t)brushless_esq, PWM_BRUSHLESS_B);
 
     //ESP_LOGI(GetName().c_str(), "Calibracao Brushless...");
     calibrateBrushless();
@@ -57,14 +49,14 @@ void MotorService::TestMotors(){
 }
 
 void MotorService::calibrateBrushless(){
-    AnalogWrite(PWM_A, MAX_THROTTLE);
-    AnalogWrite(PWM_B, MAX_THROTTLE);
+    AnalogWrite(PWM_BRUSHLESS_A, MAX_THROTTLE);
+    AnalogWrite(PWM_BRUSHLESS_B, MAX_THROTTLE);
     
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 1);
     vTaskDelay(5200 / portTICK_PERIOD_MS);
     
-    AnalogWrite(PWM_A, MIN_THROTTLE);
-    AnalogWrite(PWM_B, MIN_THROTTLE);
+    AnalogWrite(PWM_BRUSHLESS_A, MIN_THROTTLE);
+    AnalogWrite(PWM_BRUSHLESS_B, MIN_THROTTLE);
 
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
     
@@ -134,13 +126,13 @@ void MotorService::rampThrottle(int start, int stop, int step, int time)
 
     for (int i = start; step > 0 ? i < stop : i > stop; i += step)
     {
-        AnalogWrite(PWM_A, (i));
-        AnalogWrite(PWM_B, (i));
+        AnalogWrite(PWM_BRUSHLESS_A, (i));
+        AnalogWrite(PWM_BRUSHLESS_B, (i));
         //ESP_LOGI(GetName().c_str(), "Brushless: %d", i);
         vTaskDelay(time / portTICK_PERIOD_MS);
     }
-    AnalogWrite(PWM_A, (stop));
-    AnalogWrite(PWM_B, (stop));
+    AnalogWrite(PWM_BRUSHLESS_A, (stop));
+    AnalogWrite(PWM_BRUSHLESS_B, (stop));
 }
 
 void MotorService::stop_car(){
@@ -158,12 +150,12 @@ void MotorService::read_both(){
 }
 
 void MotorService::AnalogWrite(ledc_channel_t channel, int pwm){
-    ledc_set_duty_and_update(LEDC_MODE,channel,pwm,0); // Atribui um novo duty para o PWM
+    ledc_set_duty_and_update(BRUSHLESS_PWM_MODE,channel,pwm,0); // Atribui um novo duty para o PWM
 }
 
-void MotorService::InitPWM(gpio_num_t pin, ledc_channel_t channel){
+void MotorService::InitBrushlessPWM(gpio_num_t pin, ledc_channel_t channel){
     ledc_timer_config_t ledc_timer;
-    ledc_timer.speed_mode      = LEDC_MODE;
+    ledc_timer.speed_mode      = BRUSHLESS_PWM_MODE;
     ledc_timer.duty_resolution = BRUSHLESS_RESOLUTION;
     ledc_timer.timer_num       = BRUSHLESS_TIMER;
     ledc_timer.freq_hz         = BRUSHLESS_FREQUENCY; // Frequência de 5Khz
@@ -173,7 +165,7 @@ void MotorService::InitPWM(gpio_num_t pin, ledc_channel_t channel){
     // Prepara e aplica a configuração do canal do LEDC
     ledc_channel_config_t ledc_channel;
     ledc_channel.gpio_num       = pin;
-    ledc_channel.speed_mode     = LEDC_MODE;
+    ledc_channel.speed_mode     = BRUSHLESS_PWM_MODE;
     ledc_channel.channel        = channel;
     ledc_channel.intr_type      = LEDC_INTR_DISABLE;
     ledc_channel.timer_sel      = BRUSHLESS_TIMER;

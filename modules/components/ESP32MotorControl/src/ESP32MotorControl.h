@@ -39,8 +39,8 @@
 //////// Defines
 #define LEDC_TIMER              LEDC_TIMER_1 // Timer do LEDC utilizado
 #define LEDC_MODE               LEDC_HIGH_SPEED_MODE // Modo de velocidade do LEDC
-#define PWM_A_PIN               LEDC_CHANNEL_0 // Canal do LEDC utilizado
-#define PWM_B_PIN               LEDC_CHANNEL_1 // Canal do LEDC utilizado
+#define PWM_A_PIN               LEDC_CHANNEL_2 // Canal do LEDC utilizado
+#define PWM_B_PIN               LEDC_CHANNEL_3 // Canal do LEDC utilizado
 #define LEDC_DUTY_RES           LEDC_TIMER_13_BIT // Resolução do PWM
 #define LEDC_FREQUENCY          2000 // Frequência em Hertz do sinal PWM
 
@@ -92,7 +92,7 @@ private:
   // Methods
 
   bool isMotorValid(uint8_t motor);
-  void InitPWM(gpio_num_t pin, ledc_channel_t channel);
+  void InitMotorPWM(gpio_num_t pin, ledc_channel_t channel);
   void PwmWrite(ledc_channel_t channel, int pwm);
 };
 

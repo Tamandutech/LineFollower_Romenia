@@ -107,7 +107,6 @@ void StatusService::Run()
     {
         vTaskDelayUntil(&xLastWakeTime, 30 / portTICK_PERIOD_MS);
         //lastTime = esp_timer_get_time();
-
         // Carregando status atual
         TrackLen = (TrackSegment)get_Status->TrackStatus->getData();
         pulsesBeforeCurve = get_latMarks->PulsesBeforeCurve->getData();

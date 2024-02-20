@@ -13,7 +13,7 @@ void ESP32MotorControl::PwmWrite(ledc_channel_t channel, int pwm){
     ledc_set_duty_and_update(LEDC_MODE,channel,pwm,0); // Atribui um novo duty para o PWM
 }
 
-void ESP32MotorControl::InitPWM(gpio_num_t pin, ledc_channel_t channel){
+void ESP32MotorControl::InitMotorPWM(gpio_num_t pin, ledc_channel_t channel){
     ledc_timer_config_t ledc_timer;
     ledc_timer.speed_mode      = LEDC_MODE;
     ledc_timer.duty_resolution = LEDC_DUTY_RES;
@@ -61,13 +61,13 @@ void ESP32MotorControl::attachMotors(uint8_t _gpioAIN1, uint8_t _gpioAIN2,
   ESP_LOGD(TAG, "init PWM Motor 0");
 
   // Set MCPWM unit 0
-  InitPWM((gpio_num_t)_gpioPWMA, PWM_A_PIN);
+  InitMotorPWM((gpio_num_t)_gpioPWMA, PWM_A_PIN);
 
   this->mMotorAttached[0] = true;
   ESP_LOGD(TAG, "init PWM Motor 1");
 
   // Set MCPWM unit 1
-  InitPWM((gpio_num_t)_gpioPWMB, PWM_B_PIN);
+  InitMotorPWM((gpio_num_t)_gpioPWMB, PWM_B_PIN);
 
   this->mMotorAttached[1] = true;
 
