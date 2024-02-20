@@ -6,6 +6,7 @@
 #include "esp_log.h"
 #include "Injector/singleton.hpp"
 // Bibliotecas de componentes/dados
+#include "cmd_system.hpp"
 #include "QTRSensors.h"
 #include "QTRwithMUX.h" // biblioteca própria
 #include "RobotData.h"

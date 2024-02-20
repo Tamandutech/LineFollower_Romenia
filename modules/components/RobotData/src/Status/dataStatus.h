@@ -17,6 +17,7 @@ public:
 
     DataAbstract<uint8_t> *robotState; // Armazena o estado geral do robô.
     DataAbstract<uint8_t> *TrackStatus; // status (velocidade) do trecho da pista em que o robô se encontra
+    DataAbstract<int> *BatteryVoltage; // tensão da bateria
 
     DataAbstract<bool> *robotPaused;
 

@@ -13,6 +13,7 @@
 #include "esp_err.h"
 #include "esp_adc/adc_oneshot.h"
 
+void update_voltage();
 // Register all system functions
 void register_system(adc_oneshot_unit_handle_t adc_handle);
 

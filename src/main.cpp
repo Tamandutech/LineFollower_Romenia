@@ -68,8 +68,6 @@ void app_main()
     ledsService = LEDsService::getInstance("LEDsService", 4096, 9);
     ledsService->Start();
 
-    ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 1);
-
     //ESP_LOGI("Main", "Configurando LOGs...");
     esp_log_level_set("*", ESP_LOG_ERROR);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
@@ -110,16 +108,17 @@ void app_main()
     statusService = StatusService::getInstance("StatusService", 10000, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "StatusService");
     
+
     sensorService = SensorService::getInstance("SensorService", 8192, 9, PRO_CPU_NUM);
     //ESP_LOGI(SensorService::getInstance()->GetName().c_str(), "SensorService");
 
-    motorService = MotorService::getInstance("MotorsService", 4096, 8);
+    motorService = MotorService::getInstance("MotorsService", 4096, 8, PRO_CPU_NUM);
     //ESP_LOGI(StatusService::getInstance()->GetName().c_str(), "MotorsService");
     
     controlService = ControlService::getInstance("ControlService", 8192, 10, APP_CPU_NUM);
-    ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
+    //ESP_LOGI(ControlService::getInstance()->GetName().c_str(), "ControlService");
 
-    irService = IRService::getInstance("IRService", 4096, 9);
+    irService = IRService::getInstance("IRService", 4096, 9, PRO_CPU_NUM);
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");
 
     //mappingService->Start();
@@ -131,8 +130,6 @@ void app_main()
     irService->Start();
 
     //ESP_LOGI("Main", "Ligando LEDs");
-    ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI("Main", "Apagando LEDs");
     ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);

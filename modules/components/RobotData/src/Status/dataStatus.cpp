@@ -10,6 +10,7 @@ dataStatus::dataStatus(std::string name)
 
     // Obejetos do tipo uint8_t
     robotState = new DataAbstract<uint8_t>("robotState", name); // criado com o estado inicial
+    BatteryVoltage = new DataAbstract<int>("BatteryVoltage", name);
     ControlOff = new DataAbstract<bool>("Controloff", name, false);
     TrackStatus = new DataAbstract<uint8_t>("TrackStatus", name, SHORT_LINE);
     RobotCenter = new DataAbstract<uint8_t>("RobotCenter", name, CAR_CENTERED);

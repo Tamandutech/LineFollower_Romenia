@@ -56,21 +56,16 @@ SensorService::SensorService(std::string name, uint32_t stackDepth, UBaseType_t 
     angle_with_center = angle_with_center*180/M_PI; // de rad para graus
     get_Spec->MaxAngle_Center->setData(angle_with_center);
 
+    update_voltage();
+
     //Calibracao
     
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
-
     //ESP_LOGI(GetName().c_str(), "Início calibraçao frontal...");
     manual_calibrate(0);
-    
-    LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
-    //ESP_LOGI(GetName().c_str(), "Delay...");
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
-    
     //ESP_LOGI(GetName().c_str(), "Fim da calibração frontal...");
-    LED->LedComandSend(LED_POSITION_FRONT, COLOR_LIME, 1);
-    manual_calibrate(1);
-    
+    LED->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 1);
+    manual_calibrate(1); 
     //ESP_LOGI(GetName().c_str(), "Fim da calibração.");
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 
@@ -255,6 +250,9 @@ void SensorService::processSLat()
             {// lendo sLat esq. branco e dir. preto
                 if (!(get_Marks->latEsqPass->getData()))
                 {
+                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
+                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    
                     if(get_Status->robotState->getData() != CAR_STOPPED)
                     {
                         get_Marks->leftPassedInc();
@@ -263,9 +261,6 @@ void SensorService::processSLat()
                     latState(false, true);
                     //ESP_LOGI(GetName().c_str(), "Marcação esquerda");
                     
-                    // LED esquerda vermelha e direita apagada
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
                 }
             }
             else if ((meanSensDir < 500))
@@ -273,6 +268,10 @@ void SensorService::processSLat()
                 // lendo sldir. branco e sLat esq. preto
                 if (!(get_Marks->latDirPass->getData()))
                 {
+                    // LED esquerda apagada e direita vermelha
+                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
+                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+
                     if(get_Status->robotState->getData() != CAR_STOPPED)
                     {
                         get_Marks->rightPassedInc();
@@ -281,9 +280,6 @@ void SensorService::processSLat()
                     latState(true, false);
                     //ESP_LOGI(GetName().c_str(), "Marcação direita");
 
-                    // LED esquerda apagada e direita vermelha
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
                 }
             }
         }

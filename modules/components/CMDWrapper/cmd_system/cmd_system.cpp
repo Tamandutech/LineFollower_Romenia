@@ -44,6 +44,7 @@ CarState lastState = CAR_STOPPED;
 adc_oneshot_unit_handle_t ADChandle;
 adc_cali_handle_t adc1_cali_chan0_handle;
 
+
 static void register_free(void);
 static void register_heap(void);
 static void register_version(void);
@@ -134,20 +135,29 @@ static void register_version(void)
     ESP_ERROR_CHECK(better_console_cmd_register(&cmd));
 }
 
-static std::string bat_voltage(int argc, char **argv)
+void update_voltage()
 {
+    auto status = Robot::getInstance()->getStatus();
+    QTRwithMUX MUX;
+    MUX.selectMuxPin(std::bitset<4>(4));
     int calVoltage = 0;
     int adc_raw;
 
     esp_err_t err;
     do {
-        err = adc_oneshot_read(ADChandle, ADC_CHANNEL_0, &adc_raw);
+        err = adc_oneshot_read(ADChandle, ADC_CHANNEL_5, &adc_raw);
         ESP_ERROR_CHECK_WITHOUT_ABORT(err);
     } while (err == ESP_ERR_TIMEOUT);
     ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_chan0_handle, adc_raw, &calVoltage));
     
     calVoltage *= 3.7;
-    return (std::to_string(calVoltage) + "mV");
+    status->BatteryVoltage->setData(calVoltage);
+}
+static std::string bat_voltage(int argc, char **argv)
+{
+    auto status = Robot::getInstance()->getStatus();
+    int BatteryVoltage = status->BatteryVoltage->getData();
+    return (std::to_string(BatteryVoltage) + "mV");
 }
 
 static void register_bat_voltage(void)

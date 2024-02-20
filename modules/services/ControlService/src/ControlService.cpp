@@ -14,7 +14,6 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->motors = MotorService::getInstance();
 
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
-
     // Multiplica a quantidade de revolucoes pela reducao da roda, salvando na variavel MPR
     uint16_t rev = get_Spec->Revolution->getData(); // criada para facilitar a leitura
     uint16_t gear = get_Spec->GearRatio->getData(); // idem
@@ -34,10 +33,10 @@ void ControlService::Run()
     for (;;)
     {
         vTaskDelayUntil(&xLastWakeTime, deltaTimeMS_inst / portTICK_PERIOD_MS);
-        //lastTime = esp_timer_get_time();
         //ESP_LOGI(GetName().c_str(), "RPMService: %d", eTaskGetState(this->rpm->GetHandle()));
         //ESP_LOGI(GetName().c_str(), "StatusService: %d", eTaskGetState(StatusService::getInstance()->GetHandle()));
         from_sensor->processSLat();
+        update_voltage();
         if(get_Status->robotState->getData() != CAR_STOPPED){
             int speed = get_Speed->Brushless_TargetSpeed->getData();
             if(brushless_started){
@@ -47,7 +46,6 @@ void ControlService::Run()
                 //ESP_LOGI(GetName().c_str(), "Tempo: %lu", time);
             }else{
                 brushless_started = motors->StartBrushless(speed);
-                lastTime = esp_timer_get_time();
             }
             
         }else if(brushless_started){
@@ -119,7 +117,7 @@ void ControlService::ControlePID(){
         }else{
             NewSpeed((vel_base - PID), (vel_base + PID));
         }
-        //ESP_LOGI(GetName().c_str(), "RPM_Right = %.2f, RPM_Left = %.2f", RPM_Right, RPM_Left);
+        //ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d", get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
         if(iloop > 50)
         {
