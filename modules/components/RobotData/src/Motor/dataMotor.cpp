@@ -50,13 +50,20 @@ dataMotor::dataMotor(std::string name)
     min = new DataAbstract<int8_t>("min", name, 0);
     dataManager->registerParamData(min);
     
+    DecelerationOffsetGain = new DataAbstract<float>("DecelerationOffsetGain", name, 0.2);
+    dataManager->registerParamData(DecelerationOffsetGain);
+
     // Vel. base para calibracao
-    vel_calibrate = new DataAbstract<float>("Velocidade_Calibracao", name, 46); // inicia com valor 46
+    vel_calibrate = new DataAbstract<float>("Velocidade_Calibracao", name, 46);
     dataManager->registerParamData(vel_calibrate);
 
     // Variável para guardar a velocidade do trecho
     vel_mapped = new DataAbstract<float>("Velocidade_mapeada", name, 0);
     dataManager->registerRuntimeData(vel_mapped);
+
+    // Velocidade rotacional do robô
+    RotationalSpeed = new DataAbstract<float>("RotationalSpeed", name, 0);
+    dataManager->registerRuntimeData(RotationalSpeed);
 
     //Setpoints para os tipos de trechos
     Initial_Speed = new DataAbstract<float>("PWM_initial_speed", name, 1100);

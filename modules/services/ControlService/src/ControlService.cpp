@@ -95,7 +95,7 @@ void ControlService::ControlePID(){
         int16_t PositionError = get_Speed->PositionError->getData();
         double kpAcceleration = get_PID->Kp_Acceleration->getData();
         AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
-        if(AccelerationStep || DesaccelerationStep)
+        if((AccelerationStep || DesaccelerationStep) && line_state != SPECIAL_TRACK)
         {   
             if(DesaccelerationStep)
                 kpAcceleration = get_PID->Kp_Deceleration->getData();
@@ -105,7 +105,7 @@ void ControlService::ControlePID(){
         float max_angle = get_Spec->MaxAngle_Center->getData();
         bool OpenLoopControl = get_Status->OpenLoopControl->getData();
         float limite = get_Spec->Malha_Aberta->getData();
-        if(abs(PositionError) >= 6500 && OpenLoopControl)
+        if(abs(PositionError) >= 6500 && OpenLoopControl && line_state != SPECIAL_TRACK)
         {
             int8_t min = get_Speed->min->getData();
             int8_t max = get_Speed->max->getData();
@@ -115,6 +115,22 @@ void ControlService::ControlePID(){
                 NewSpeed(max, min);
             }
         }else{
+            if(line_state == SPECIAL_TRACK)
+            {
+                float kpRot = get_PID->Kp_Rotational->getData();
+                float kiRot = get_PID->Ki_Rotational->getData();
+                float kdRot = get_PID->Kd_Rotational->getData();
+                float speedRight = get_Speed->RPMRight_inst->getData();
+                float speedLeft = get_Speed->RPMLeft_inst->getData();
+                float RotationalSpeed = (speedRight - speedLeft)/ 2.0;
+                get_Speed->RotationalSpeed->setData(RotationalSpeed);
+                float erroRotation = -RotationalSpeed;
+                PID = kpRot * erroRotation + kiRot * somaIntegradorRotacional + kdRot * (erroRotation - erroAnteriorRotacional);
+                erroAnteriorRotacional = erroRotation;
+                somaIntegradorRotacional += erroRotation;
+            }
+            else
+                somaIntegradorRotacional = 0;
             NewSpeed((vel_base - PID), (vel_base + PID));
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d", get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());

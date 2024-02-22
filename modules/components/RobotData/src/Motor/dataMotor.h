@@ -31,6 +31,8 @@ public:
     DataAbstract<int16_t> *RPMLeft_inst;
     DataAbstract<int16_t> *RPMCar_media;
 
+    DataAbstract<float> *DecelerationOffsetGain; // variável para calcular a distância para desacelerar
+
     // PWM mandado ao motor
     DataAbstract<int16_t> *PWM_right;
     DataAbstract<int16_t> *PWM_left;
@@ -45,6 +47,8 @@ public:
 
     // Variável para guardar a velocidade do trecho
     DataAbstract<float> *vel_mapped;
+
+    DataAbstract<float> *RotationalSpeed; // Velocidade rotacional do robô em rpm
     
     // Vel. base para calibracao:
     DataAbstract<float> *vel_calibrate;
@@ -57,6 +61,7 @@ private:
 
     //Setpoints para os tipos de trecho 
     DataAbstract<float> *Initial_Speed; // Velocidade inicial em rpm
+
     //privados pois a função Setpoint(TrackState state) que permite acesso a essas variáveis
     DataAbstract<float> *Long_Line;
     DataAbstract<float> *Medium_Line;

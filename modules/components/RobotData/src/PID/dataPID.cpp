@@ -22,6 +22,14 @@ dataPID::dataPID(std::string name)
     Kp_Deceleration = new DataAbstract<float>("Kp_Deceleration", name, 4);
     dataManager->registerParamData(Kp_Deceleration);
 
+    Kp_Rotational = new DataAbstract<float>("Kp_Rotational", name, 4);
+    dataManager->registerParamData(Kp_Rotational);
+    Ki_Rotational = new DataAbstract<float>("Ki_Rotational", name, 4);
+    dataManager->registerParamData(Ki_Rotational);
+    Kd_Rotational = new DataAbstract<float>("Kd_Rotational", name, 4);
+    dataManager->registerParamData(Kd_Rotational);
+
+
     Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 5.43);
     dataManager->registerParamData(Kp_Long_Line);
     Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 5.8);

@@ -28,7 +28,11 @@ public:
     DataAbstract<float> *output;
 
     DataAbstract<float> *Kp_Acceleration;
-    DataAbstract<float> *Kp_Deceleration; 
+    DataAbstract<float> *Kp_Deceleration;
+
+    DataAbstract<float> *Kp_Rotational;
+    DataAbstract<float> *Ki_Rotational; 
+    DataAbstract<float> *Kd_Rotational; 
 
     // Funções que retornam as constantes do PID definidas para um trecho da pista
     DataAbstract<float> *getKP(TrackSegment track);
