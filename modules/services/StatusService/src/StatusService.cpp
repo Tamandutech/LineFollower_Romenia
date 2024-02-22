@@ -109,7 +109,6 @@ void StatusService::Run()
         //lastTime = esp_timer_get_time();
         // Carregando status atual
         TrackLen = (TrackSegment)get_Status->TrackStatus->getData();
-        pulsesBeforeCurve = get_latMarks->PulsesBeforeCurve->getData();
         pulsesAfterCurve = get_latMarks->PulsesAfterCurve->getData();
         actualCarState = (CarState) get_Status->robotState->getData();
 
@@ -156,14 +155,41 @@ void StatusService::Run()
 
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
+                        if(lastMarkPassed != mark)
+                        {
+                            transition = false;
+                            lastMarkPassed = mark;
+                            offsetnxt = 0;
+                        }
                         trackLen = (TrackSegment)get_latMarks->marks->getData(mark+1).MapTrackStatus;
                         get_Status->RealTrackStatus->setData(trackLen);
                         load_track_mapped(mark+1);
-                        bool transition = false;
 
-                        int16_t offset = get_latMarks->marks->getData(mark).MapOffset;
-                        int16_t offsetnxt = get_latMarks->marks->getData(mark + 1).MapOffset;
+                        offset = get_latMarks->marks->getData(mark).MapOffset;
+                        if(!transition)
+                            offsetnxt = get_latMarks->marks->getData(mark+1).MapOffset;
+
                         // Verifica se o robô precisa reduzir a velocidade, entrando no modo curva
+                        if (mark + 2 < numMarks)
+                        {
+
+                            if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && !mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && !transition)
+                            {
+                                offsetnxt -= calculate_offset(mark+1);
+                            }
+                            transition = false;
+                            if (offsetnxt < 0)
+                            {
+                                if ((mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt))
+                                {
+                                    transition = true;
+                                    load_track_mapped(mark+2);
+                                }
+                            }
+                        }
+                        else
+                            transition = false;
+
                         if (!mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark).MapTrackStatus) && mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus))
                         {
                             offset += pulsesAfterCurve;
@@ -174,22 +200,6 @@ void StatusService::Run()
                             {
                                 transition = true;
                                 load_track_mapped(mark);
-                            }
-                        }
-                        if (mark + 2 < numMarks)
-                        {
-
-                            if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && !mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && offsetnxt == 0)
-                            {
-                                offsetnxt = -calculate_offset(mark+1) - pulsesBeforeCurve;
-                            }
-                            if (offsetnxt < 0)
-                            {
-                                if ((mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt))
-                                {
-                                    transition = true;
-                                    load_track_mapped(mark+2);
-                                }
                             }
                         }
                         // Atualiza estado do robô
@@ -214,7 +224,7 @@ void StatusService::wait_press_boot_button_to_start()
 
 void StatusService::delete_mapping_if_boot_button_is_pressed()
 {
-    DataStorage::getInstance()->delete_data("sLatMarks.marks");
+    DataStorage::getInstance()->delete_data("Marcacoes_sLatMarks.marks");
     initialRobotState = CAR_MAPPING;
     //ESP_LOGD(GetName().c_str(), "Mapeamento Deletado");
     LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
@@ -385,19 +395,18 @@ int16_t StatusService::calculate_offset(int section){
     TrackSegment actual_track = (TrackSegment)get_latMarks->marks->getData(section).MapTrackStatus;
     TrackSegment next_track = (TrackSegment)get_latMarks->marks->getData(section+1).MapTrackStatus;
     
-    //actual_speed = (float)get_Speed->RPMCar_media->getData();
-    actual_speed = get_Speed->getSpeed(actual_track, CAR_ENC_READING)->getData();
+    actual_speed = (float)get_Speed->RPMCar_media->getData();
+    //actual_speed = get_Speed->getSpeed(actual_track, CAR_ENC_READING)->getData();
     next_speed = get_Speed->getSpeed(next_track, CAR_ENC_READING)->getData();
 
-    actual_speed = (actual_speed*get_Spec->MaxRPM->getData())/100;
-    actual_speed = convert_RPM_to_speed(actual_speed);
-    next_speed = (next_speed*get_Spec->MaxRPM->getData())/100;
-    next_speed = convert_RPM_to_speed(next_speed);
+    actual_speed = (actual_speed*100.0)/get_Spec->MaxRPM->getData(); // conversão para %
+    //actual_speed = convert_RPM_to_speed(actual_speed);
+    //next_speed = (next_speed*get_Spec->MaxRPM->getData())/100;
+    //next_speed = convert_RPM_to_speed(next_speed);
     
-    float offset_mm = (std::pow(actual_speed, 2) - std::pow(next_speed, 2))/(2*get_Spec->Acceleration->getData());
-    offset_mm = std::abs(offset_mm);
-    float offset_enc = (offset_mm * (float)get_Spec->MPR->getData())/((float)get_Spec->WheelDiameter->getData() * M_PI);
-    return (int16_t)offset_enc;
+    float offset = (std::pow(actual_speed, 2) - std::pow(next_speed, 2)) * get_Speed->DecelerationOffsetGain->getData();
+    offset = std::abs(offset);
+    return (int16_t)offset;
 }
 
 float StatusService::convert_RPM_to_speed(float RPM){

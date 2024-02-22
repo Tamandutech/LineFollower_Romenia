@@ -45,6 +45,7 @@ private:
     TrackSegment TrackLen = SHORT_CURVE;
 
     int numMarks = 0; // Número total de marcações laterais na pista
+    int lastMarkPassed = 0;
 
     bool stateChanged; // verifica se o carrinho mudou seu estado quanto ao mapeamento
     bool lastTransition = false;
@@ -58,10 +59,10 @@ private:
     int32_t mediaEncActual = 0;
     int32_t mediaEncFinal = 0; // leitura de encoder final do trecho
     int32_t initialmediaEnc = 0; // leitura feita na linha de partida
-    int32_t pulsesBeforeCurve = 200;
     int32_t pulsesAfterCurve = 200;
+    int16_t offset = 0, offsetnxt = 0;
     bool firstmark = false;
-    bool in_transition = false;
+    bool transition = false;
     int16_t offset_transition = 0;
     int mark_in_transition = 0;
     int64_t lastTime = 0;
