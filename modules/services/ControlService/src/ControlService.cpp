@@ -9,6 +9,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth, UBaseType_
     this->get_PID = robot->getPID();
     this->get_Status = robot->getStatus();
     this->get_Angle = robot->getFrontSensors();
+
     // Atalhos de servicos:
     this->from_sensor = SensorService::getInstance();
     this->motors = MotorService::getInstance();
@@ -59,6 +60,7 @@ void ControlService::ControlePID(){
     //ESP_LOGI(GetName().c_str(), "Início Controle PID.");
     CarState state = (CarState) get_Status->robotState->getData();
     TrackSegment line_state = (TrackSegment) get_Status->TrackStatus->getData();
+    TrackSegment RealLine_state = (TrackSegment) get_Status->RealTrackStatus->getData();
 
     if(get_Status->MappingTuningParam->getData()){
         state = (CarState) CAR_TUNING;
@@ -95,7 +97,7 @@ void ControlService::ControlePID(){
         int16_t PositionError = get_Speed->PositionError->getData();
         double kpAcceleration = get_PID->Kp_Acceleration->getData();
         AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
-        if((AccelerationStep || DesaccelerationStep) && line_state != SPECIAL_TRACK)
+        if((AccelerationStep || DesaccelerationStep) && RealLine_state != SPECIAL_TRACK)
         {   
             if(DesaccelerationStep)
                 kpAcceleration = get_PID->Kp_Deceleration->getData();
@@ -105,7 +107,7 @@ void ControlService::ControlePID(){
         float max_angle = get_Spec->MaxAngle_Center->getData();
         bool OpenLoopControl = get_Status->OpenLoopControl->getData();
         float limite = get_Spec->Malha_Aberta->getData();
-        if(abs(PositionError) >= 6500 && OpenLoopControl && line_state != SPECIAL_TRACK)
+        if(abs(PositionError) >= 6500 && OpenLoopControl && RealLine_state != SPECIAL_TRACK)
         {
             int8_t min = get_Speed->min->getData();
             int8_t max = get_Speed->max->getData();
@@ -115,7 +117,7 @@ void ControlService::ControlePID(){
                 NewSpeed(max, min);
             }
         }else{
-            if(line_state == SPECIAL_TRACK)
+            if(RealLine_state == SPECIAL_TRACK)
             {
                 float kpRot = get_PID->Kp_Rotational->getData();
                 float kiRot = get_PID->Ki_Rotational->getData();
@@ -128,9 +130,24 @@ void ControlService::ControlePID(){
                 PID = kpRot * erroRotation + kiRot * somaIntegradorRotacional + kdRot * (erroRotation - erroAnteriorRotacional);
                 erroAnteriorRotacional = erroRotation;
                 somaIntegradorRotacional += erroRotation;
+                if(!zigzagLed)
+                {
+                    LEDsService::getInstance()->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
+                    LEDsService::getInstance()->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
+                }
+                zigzagLed = true;
+
             }
             else
+            {
                 somaIntegradorRotacional = 0;
+                if(get_Status->robotState->getData() != CAR_MAPPING && get_Status->robotState->getData() != CAR_STOPPED && zigzagLed)
+                {
+                    zigzagLed = false;
+                    LEDsService::getInstance()->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    LEDsService::getInstance()->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                }
+            }
             NewSpeed((vel_base - PID), (vel_base + PID));
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d", get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());

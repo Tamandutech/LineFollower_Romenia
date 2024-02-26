@@ -240,8 +240,11 @@ void SensorService::processSLat()
                     || (get_Marks->latEsqPass->getData() && !get_Marks->latDirPass->getData()))
                 {
                     // Desligando as LEDs esquerda e direita
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                    if(get_Status->robotState->getData() == CAR_MAPPING || get_Status->robotState->getData() == CAR_STOPPED)
+                    {
+                        LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                        LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                    }
                 }
                 latState(true, true);
                 //ESP_LOGI(GetName().c_str(), "Marcação esquerda e direita");
@@ -250,8 +253,11 @@ void SensorService::processSLat()
             {// lendo sLat esq. branco e dir. preto
                 if (!(get_Marks->latEsqPass->getData()))
                 {
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    if(get_Status->robotState->getData() == CAR_MAPPING || get_Status->robotState->getData() == CAR_STOPPED)
+                    {
+                        LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
+                        LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    }
                     
                     if(get_Status->robotState->getData() != CAR_STOPPED)
                     {
@@ -269,8 +275,11 @@ void SensorService::processSLat()
                 if (!(get_Marks->latDirPass->getData()))
                 {
                     // LED esquerda apagada e direita vermelha
-                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
-                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                    if(get_Status->robotState->getData() == CAR_MAPPING || get_Status->robotState->getData() == CAR_STOPPED)
+                    {
+                        LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
+                        LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                    }
 
                     if(get_Status->robotState->getData() != CAR_STOPPED)
                     {
@@ -288,8 +297,11 @@ void SensorService::processSLat()
             if (get_Marks->latDirPass->getData() || get_Marks->latEsqPass->getData())
             {
                 // Desligando as LEDs esquerda e direita
-                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
-                LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                if(get_Status->robotState->getData() == CAR_MAPPING || get_Status->robotState->getData() == CAR_STOPPED)
+                {
+                    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
+                    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                }
             }
             latState(false, false);
         }

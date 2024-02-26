@@ -59,7 +59,7 @@ void app_main()
 {
     esp_log_level_set("*", ESP_LOG_ERROR);
     esp_log_level_set("Main", ESP_LOG_INFO);
-
+    
     //ESP_LOGI("Main", "Instanciando Robô...");
     robot = Robot::getInstance("TT_LF_ROMENIA");
 
@@ -67,7 +67,6 @@ void app_main()
     //ESP_LOGI("Main", "Configurando Serviços...");
     ledsService = LEDsService::getInstance("LEDsService", 4096, 9);
     ledsService->Start();
-
     //ESP_LOGI("Main", "Configurando LOGs...");
     esp_log_level_set("*", ESP_LOG_ERROR);
     //esp_log_level_set("*", ESP_LOG_DEBUG);

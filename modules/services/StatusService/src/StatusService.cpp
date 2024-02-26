@@ -20,7 +20,6 @@ StatusService::StatusService(std::string name, uint32_t stackDepth, UBaseType_t 
     // Atalhos para servicos:
     mappingService = MappingService::getInstance();
     this->LED = LEDsService::getInstance();
-
     esp_log_level_set(name.c_str(), ESP_LOG_INFO); // enable dos prints desse serviço
 
     get_Status->robotState->setData(CAR_STOPPED);
@@ -155,50 +154,43 @@ void StatusService::Run()
 
                     if ((mediaEncActual - initialmediaEnc) >= Manualmedia && (mediaEncActual - initialmediaEnc) <= ManualmediaNxt) // análise do valor das médias dos encoders
                     {
-                        if(lastMarkPassed != mark)
-                        {
-                            transition = false;
-                            lastMarkPassed = mark;
-                            offsetnxt = 0;
-                        }
+
                         trackLen = (TrackSegment)get_latMarks->marks->getData(mark+1).MapTrackStatus;
                         get_Status->RealTrackStatus->setData(trackLen);
                         load_track_mapped(mark+1);
+                        transition = false;
 
                         offset = get_latMarks->marks->getData(mark).MapOffset;
-                        if(!transition)
-                            offsetnxt = get_latMarks->marks->getData(mark+1).MapOffset;
+                        offsetnxt = get_latMarks->marks->getData(mark+1).MapOffset;
 
                         // Verifica se o robô precisa reduzir a velocidade, entrando no modo curva
                         if (mark + 2 < numMarks)
                         {
 
-                            if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && !mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && !transition)
+                            if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && mappingService->track_is_a_curve((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && offsetnxt == 0)
                             {
-                                offsetnxt -= calculate_offset(mark+1);
+                                offsetnxt = -calculate_offset(mark+1);
                             }
-                            transition = false;
                             if (offsetnxt < 0)
                             {
-                                if ((mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt))
+                                if (((mediaEncActual - initialmediaEnc) > (ManualmediaNxt + offsetnxt)))
                                 {
                                     transition = true;
                                     load_track_mapped(mark+2);
                                 }
                             }
                         }
-                        else
-                            transition = false;
 
-                        if (!mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark).MapTrackStatus) && mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus))
+                        if (mappingService->track_is_a_curve((TrackSegment)get_latMarks->marks->getData(mark).MapTrackStatus) && mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus))
                         {
                             offset += pulsesAfterCurve;
                         }
                         if (offset > 0)
                         {
-                            if ((mediaEncActual - initialmediaEnc) < (Manualmedia + offset))
+                            if (((mediaEncActual - initialmediaEnc) < (Manualmedia + offset)))
                             {
                                 transition = true;
+                            
                                 load_track_mapped(mark);
                             }
                         }
@@ -273,10 +265,10 @@ void StatusService::set_LEDs()
 {
     lastTrack =  (TrackSegment)get_Status->TrackStatus->getData();
     lastTransition = get_Status->Transition->getData();
-    gpio_set_level((gpio_num_t)buzzer_pin, 0);
     if (mappingService->track_is_a_line(lastTrack) && !lastTransition)
     {
         //ESP_LOGI(GetName().c_str(), "Alterando os leds para modo inLine.");
+        //gpio_set_level((gpio_num_t)buzzer_pin, 1);
         switch (TrackLen)
         {
             case SHORT_LINE:
@@ -329,7 +321,7 @@ void StatusService::set_LEDs()
     }
     else if(lastTransition)
     {
-        gpio_set_level((gpio_num_t)buzzer_pin,1);
+        //gpio_set_level((gpio_num_t)buzzer_pin,1);
         LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 0.5);
     }
 }
@@ -395,11 +387,11 @@ int16_t StatusService::calculate_offset(int section){
     TrackSegment actual_track = (TrackSegment)get_latMarks->marks->getData(section).MapTrackStatus;
     TrackSegment next_track = (TrackSegment)get_latMarks->marks->getData(section+1).MapTrackStatus;
     
-    actual_speed = (float)get_Speed->RPMCar_media->getData();
-    //actual_speed = get_Speed->getSpeed(actual_track, CAR_ENC_READING)->getData();
+    //actual_speed = (float)get_Speed->RPMCar_media->getData();
+    actual_speed = get_Speed->getSpeed(actual_track, CAR_ENC_READING)->getData();
     next_speed = get_Speed->getSpeed(next_track, CAR_ENC_READING)->getData();
 
-    actual_speed = (actual_speed*100.0)/get_Spec->MaxRPM->getData(); // conversão para %
+    //actual_speed = (actual_speed*100.0)/get_Spec->MaxRPM->getData(); // conversão para %
     //actual_speed = convert_RPM_to_speed(actual_speed);
     //next_speed = (next_speed*get_Spec->MaxRPM->getData())/100;
     //next_speed = convert_RPM_to_speed(next_speed);

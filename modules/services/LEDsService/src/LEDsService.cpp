@@ -9,9 +9,6 @@ LEDsService::LEDsService(std::string name, uint32_t stackDepth, UBaseType_t prio
     //ESP_LOGD(GetName().c_str(), "Constructor Start");
 
     queueLedCommands = xQueueCreate(10, sizeof(ledCommand));
-
-    gpio_set_direction((gpio_num_t)buzzer_pin, GPIO_MODE_OUTPUT);
-
     //ESP_LOGD(GetName().c_str(), "GPIO: %d", RMT_LED_STRIP_GPIO_NUM);
     led_strip_init();
     memset(led_strip_pixels, 0, sizeof(led_strip_pixels));

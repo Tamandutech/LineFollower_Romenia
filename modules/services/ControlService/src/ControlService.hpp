@@ -53,7 +53,7 @@ private:
     int count =0;
     int iloop = 0;
     int64_t lastTime = 0;
-
+    bool zigzagLed = false;
     float erroAnteriorRotacional = 0, somaIntegradorRotacional = 0;
     bool AccelerationStep = false, DesaccelerationStep = false;
     bool brushless_started = false;
