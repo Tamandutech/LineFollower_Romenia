@@ -245,6 +245,8 @@ static std::string pause(int argc, char **argv)
         vTaskDelay(0);
         DataManager::getInstance()->saveAllParamDataChanged();
         LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
+        LEDsService::getInstance()->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+        LEDsService::getInstance()->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
     }
     return ("O robô será pausado");
 }

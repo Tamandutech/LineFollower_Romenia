@@ -125,6 +125,8 @@ void StatusService::Run()
             robot->getStatus()->robotState->setData(CAR_STOPPED);
             DataManager::getInstance()->saveAllParamDataChanged();
             LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+            LED->LedComandSend(LED_POSITION_LEFT, COLOR_PINK, 1);
+            LED->LedComandSend(LED_POSITION_RIGHT, COLOR_PINK, 1);
         }
 
         mediaEncActual = (get_Speed->EncRight->getData() + get_Speed->EncLeft->getData()) / 2; // calcula media dos encoders
@@ -141,6 +143,8 @@ void StatusService::Run()
                 robot->getStatus()->robotState->setData(CAR_STOPPED);
                 DataManager::getInstance()->saveAllParamDataChanged();
                 LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
             }
             if ((mediaEncActual - initialmediaEnc) < mediaEncFinal)
             {
@@ -241,6 +245,8 @@ void StatusService::set_tuning_mode(){
     numMarks = 0;
     mediaEncFinal = 0;
     LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 0.5);
+    LED->LedComandSend(LED_POSITION_LEFT, COLOR_WHITE, 0.5);
+    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_WHITE, 0.5);
 }
 
 bool StatusService::check_if_passed_first_mark()
@@ -272,22 +278,34 @@ void StatusService::set_LEDs()
         switch (TrackLen)
         {
             case SHORT_LINE:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.05);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
                 break;
             case MEDIUM_LINE:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 0.3);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
                 break;
             case LONG_LINE:
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
                 break;
             case XLONG_LINE:
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_GREEN, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
                 break;
             case SPECIAL_TRACK:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_YELLOW, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_YELLOW, 1);
                 break;
             default:
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_WHITE, 1);
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_WHITE, 1);
                 break;
         }
     }
@@ -297,32 +315,48 @@ void StatusService::set_LEDs()
         switch (TrackLen)
         {
             case SHORT_CURVE:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 0.05);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_RED, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
                 break;
             case MEDIUM_CURVE:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 0.3);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 0.7);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_PINK, 0.7);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_PINK, 0.7);
                 break;
             case LONG_CURVE:
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_PINK, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_PINK, 1);
                 break;
             case XLONG_CURVE:
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_PINK, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_PINK, 1);
                 break;
             case ZIGZAG_TRACK:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 1);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_WHITE, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_WHITE, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
                 break;
             case SPECIAL_TRACK:
-                LED->LedComandSend(LED_POSITION_FRONT, COLOR_PURPLE, 0.05);
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_YELLOW, 1);
+                LED->LedComandSend(LED_POSITION_FRONT, COLOR_YELLOW, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_YELLOW, 1);
                 break;
             default:
+                LED->LedComandSend(LED_POSITION_LEFT, COLOR_WHITE, 1);
                 LED->LedComandSend(LED_POSITION_FRONT, COLOR_WHITE, 1);
+                LED->LedComandSend(LED_POSITION_RIGHT, COLOR_WHITE, 1);
                 break;
         }
     }
     else if(lastTransition)
     {
         //gpio_set_level((gpio_num_t)buzzer_pin,1);
-        LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 0.5);
+        LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLUE, 1);
+        LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLUE, 1);
+        LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 1);
     }
 }
 
@@ -330,6 +364,8 @@ void StatusService::stop_tunning_mode(){
     robot->getStatus()->robotState->setData(CAR_STOPPED);
     vTaskDelay(0);
     DataManager::getInstance()->saveAllParamDataChanged();
+    LED->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
+    LED->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
     LEDsService::getInstance()->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
 }
 

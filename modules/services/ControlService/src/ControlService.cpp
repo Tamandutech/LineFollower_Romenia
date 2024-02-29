@@ -130,24 +130,9 @@ void ControlService::ControlePID(){
                 PID = kpRot * erroRotation + kiRot * somaIntegradorRotacional + kdRot * (erroRotation - erroAnteriorRotacional);
                 erroAnteriorRotacional = erroRotation;
                 somaIntegradorRotacional += erroRotation;
-                if(!zigzagLed)
-                {
-                    LEDsService::getInstance()->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
-                    LEDsService::getInstance()->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
-                }
-                zigzagLed = true;
-
             }
             else
-            {
                 somaIntegradorRotacional = 0;
-                if(get_Status->robotState->getData() != CAR_MAPPING && get_Status->robotState->getData() != CAR_STOPPED && zigzagLed)
-                {
-                    zigzagLed = false;
-                    LEDsService::getInstance()->LedComandSend(LED_POSITION_RIGHT, COLOR_BLACK, 1);
-                    LEDsService::getInstance()->LedComandSend(LED_POSITION_LEFT, COLOR_BLACK, 1);
-                }
-            }
             NewSpeed((vel_base - PID), (vel_base + PID));
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d", get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());
