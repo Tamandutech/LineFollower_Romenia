@@ -119,6 +119,7 @@ void ControlService::ControlePID(){
         }else{
             if(RealLine_state == SPECIAL_TRACK)
             {
+                float rotationTarget = get_Speed->RotationTarget->getData();
                 float kpRot = get_PID->Kp_Rotational->getData();
                 float kiRot = get_PID->Ki_Rotational->getData();
                 float kdRot = get_PID->Kd_Rotational->getData();
@@ -126,7 +127,7 @@ void ControlService::ControlePID(){
                 float speedLeft = get_Speed->RPMLeft_inst->getData();
                 float RotationalSpeed = (speedRight - speedLeft)/ 2.0;
                 get_Speed->RotationalSpeed->setData(RotationalSpeed);
-                float erroRotation = -RotationalSpeed;
+                float erroRotation = rotationTarget-RotationalSpeed;
                 PID = kpRot * erroRotation + kiRot * somaIntegradorRotacional + kdRot * (erroRotation - erroAnteriorRotacional);
                 erroAnteriorRotacional = erroRotation;
                 somaIntegradorRotacional += erroRotation;

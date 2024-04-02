@@ -44,6 +44,8 @@ dataMotor::dataMotor(std::string name)
     SafePositionError = new DataAbstract<int16_t>("SafePositionError", name, 3500);
     dataManager->registerParamData(SafePositionError);
 
+    RotationTarget = new DataAbstract<float>("RotationTarget", name, 100);
+    dataManager->registerParamData(RotationTarget);
     // Vel. máximo e mínimo
     max = new DataAbstract<int8_t>("max", name, 100);
     dataManager->registerParamData(max);
