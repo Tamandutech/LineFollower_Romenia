@@ -30,6 +30,10 @@ public:
     // Estado do sensor da lateral direita
     DataAbstract<bool> *latDirPass;
 
+    DataAbstract<bool> *With_Marks;
+
+    DataAbstract<bool> *Without_Marks;
+
     // Quantidade atual de marcas da lateral esquerda
     DataAbstract<uint16_t> *leftMarks;
     // Quantidade atual de marcas da lateral direita

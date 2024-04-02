@@ -8,6 +8,7 @@
 
 #include "thread.hpp"
 #include "singleton.hpp"
+#include "esp_timer.h"
 #include "RobotData.h"
 #include "LEDsService.hpp"
 
@@ -34,6 +35,10 @@ public:
     esp_err_t saveMapping();
 
     esp_err_t createNewMark();
+    
+    int64_t time_last_mark_was_done = 0;
+    bool mark_by_time_out = false;
+    bool last_mark_by_time_out = false;
 
     bool track_is_a_line(uint8_t track);
     bool track_is_a_curve(uint8_t track);
@@ -75,7 +80,8 @@ private:
     uint8_t lastTrack = 0;
 
     void MappingWithMarks();
-    void MappingWithoutMarks(TickType_t *xLastWakeTime);
+    void MappingWithANDWithoutMarks();
+    void MappingWithoutMarks();
     void AtualizarLEDs();
     bool finished_mapping();
 };

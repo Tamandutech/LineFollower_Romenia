@@ -120,6 +120,13 @@ void StatusService::Run()
         if(track_segment_changed()){
             set_LEDs();
         }
+        
+        uint16_t time_since_last_call = (uint16_t)(esp_timer_get_time() - mappingService->time_last_mark_was_done)/1000;
+        if(get_latMarks->Without_Marks->getData() && (time_since_last_call > get_latMarks->deltaT->getData())  && actualCarState != CAR_STOPPED){
+            mappingService->mark_by_time_out = true;
+            mappingService->createNewMark();
+        }
+
         if(get_Status->ControlOff->getData() && actualCarState != CAR_STOPPED){
             mappingService->createNewMark();
             robot->getStatus()->robotState->setData(CAR_STOPPED);
