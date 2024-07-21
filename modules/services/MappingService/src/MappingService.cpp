@@ -288,25 +288,17 @@ void MappingService::MappingWithoutMarks()
         //vTaskDelayUntil(xLastWakeTime, get_latMarks->deltaT->getData() / portTICK_PERIOD_MS);
 }
 
+// Mudando a cor das LEDs:
 void MappingService::AtualizarLEDs(){
-    // Mudando a cor das LEDs:
-    if(track_is_a_curve(tempActualMark.MapTrackStatus)) 
-    {
-        if(get_latMarks->latEsqPass->getData()){ 
-            LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
-        }
-        else if(get_latMarks->latDirPass->getData()){ 
-            LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
-        }
+    led_color_t ledColor;
+    if(track_is_a_curve(tempActualMark.MapTrackStatus)) ledColor = COLOR_RED;
+    else if(track_is_a_line(tempActualMark.MapTrackStatus)) ledColor = COLOR_GREEN;
+
+    if(get_latMarks->latEsqPass->getData()){ 
+        LED->LedComandSend(LED_POSITION_LEFT, ledColor, 1);
     }
-    else if(track_is_a_line(tempActualMark.MapTrackStatus))
-    {
-        if(get_latMarks->latEsqPass->getData()){ 
-            LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
-        }
-        else if(get_latMarks->latDirPass->getData()){ 
-            LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
-        }
+    else if(get_latMarks->latDirPass->getData()){ 
+        LED->LedComandSend(LED_POSITION_RIGHT, ledColor, 1);
     }
 }
 
