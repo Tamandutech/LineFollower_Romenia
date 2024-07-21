@@ -121,7 +121,9 @@ void StatusService::Run()
             set_LEDs();
         }
         
-        uint16_t time_since_last_call = (uint16_t)(esp_timer_get_time() - mappingService->time_last_mark_was_done)/1000;
+        uint16_t time_since_last_call = (uint16_t)
+                                        (esp_timer_get_time() - mappingService->time_last_mark_was_done)/1000;
+        
         if(get_latMarks->Without_Marks->getData() && (time_since_last_call > get_latMarks->deltaT->getData())  && actualCarState != CAR_STOPPED){
             mappingService->mark_by_time_out = true;
             mappingService->createNewMark();

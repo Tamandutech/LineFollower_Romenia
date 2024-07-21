@@ -31,6 +31,8 @@ public:
     DataAbstract<int16_t> *RPMLeft_inst;
     DataAbstract<int16_t> *RPMCar_media;
 
+    DataAbstract<float> *RotationTarget;
+    
     DataAbstract<float> *DecelerationOffsetGain; // variável para calcular a distância para desacelerar
 
     // PWM mandado ao motor

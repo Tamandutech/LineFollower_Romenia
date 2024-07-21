@@ -136,8 +136,8 @@ void MappingService::MappingWithANDWithoutMarks()
         lastEncMedia = tempActualMark.MapEncMedia;
         lastTrack = tempActualMark.MapTrackStatus;
         
-        last_mark_by_time_out = mark_by_time_out;
-        mark_by_time_out = false;
+        last_mark_by_time_out = mark_by_time_out; // salva a flag anterior
+        mark_by_time_out = false; // libera a flag
 
         vTaskDelay(0);
         this->Suspend();
