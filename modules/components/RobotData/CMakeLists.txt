@@ -11,7 +11,7 @@ idf_component_register(
         "src/VectorFloat/dataFloat.cpp"
 
     REQUIRES
-        "DataObjects" "MappingService"
+        "DataObjects" "MappingService" "esp_adc"
 
     INCLUDE_DIRS 
         "src"

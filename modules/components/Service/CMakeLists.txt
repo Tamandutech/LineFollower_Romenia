@@ -14,7 +14,7 @@ idf_component_register(
         "src/cworkqueue.cpp"
         
     REQUIRES 
-        "RobotData"
+        "RobotData" "driver"
 
     INCLUDE_DIRS 
         "src" "src/Injector"

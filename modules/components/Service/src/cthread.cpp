@@ -51,10 +51,12 @@ MutexStandard Thread::StartGuardLock;
 
 Thread::Thread(const std::string pcName,
                uint16_t usStackDepth,
-               UBaseType_t uxPriority)
+               UBaseType_t uxPriority,
+               BaseType_t xCoreID)
     : Name(pcName),
       StackDepth(usStackDepth),
       Priority(uxPriority),
+      CoreId(xCoreID),
       ThreadStarted(false)
 {
 #if (INCLUDE_vTaskDelayUntil == 1)
@@ -148,12 +150,13 @@ bool Thread::Start()
 #ifndef CPP_FREERTOS_NO_CPP_STRINGS
     ESP_LOGD(Name.c_str(), "(%p): Criando Thread", this);
 
-    BaseType_t rc = xTaskCreate(TaskFunctionAdapter,
+    BaseType_t rc = xTaskCreatePinnedToCore(TaskFunctionAdapter,
                                 Name.c_str(),
                                 StackDepth,
                                 this,
                                 Priority,
-                                &handle);
+                                &handle,
+                                CoreId);
 #else
 
     BaseType_t rc = xTaskCreate(TaskFunctionAdapter,

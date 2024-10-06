@@ -3,10 +3,28 @@
 
 enum CarState
 {
-    CAR_IN_CURVE,
-    CAR_IN_LINE,
-    CAR_STOPPED,
+    CAR_MAPPING,
+    CAR_ENC_READING,
+    CAR_ENC_READING_BEFORE_FIRSTMARK,
     CAR_TUNING,
+    CAR_STOPPED,
+};
+
+enum TrackSegment
+{
+    SHORT_LINE = 2,
+    MEDIUM_LINE = 1,
+    LONG_LINE = 0,
+    XLONG_LINE = 11,
+
+    SHORT_CURVE = 5,
+    MEDIUM_CURVE = 4,
+    LONG_CURVE = 3,
+    XLONG_CURVE = 12,
+
+    ZIGZAG_TRACK = 6,
+    SPECIAL_TRACK = 7,
+    DEFAULT_TRACK = 13
 };
 
 enum CarSensor
@@ -35,21 +53,6 @@ enum DataFunction
     RETORNO_ERRO_GENERICO,
     RETORNO_ARGUMENTO_INVALIDO,
     RETORNO_VARIAVEL_OCUPADA
-};
-
-enum TrackState
-{
-    LONG_LINE,
-    MEDIUM_LINE,
-    SHORT_LINE,
-    LONG_CURVE,
-    MEDIUM_CURVE,
-    SHORT_CURVE,
-    ZIGZAG,
-    SPECIAL_TRACK,
-    DEFAULT_TRACK,
-    UNDEFINED, 
-    TUNNING,
 };
 
 enum LineColor

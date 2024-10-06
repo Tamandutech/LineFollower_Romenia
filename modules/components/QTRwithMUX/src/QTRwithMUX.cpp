@@ -27,19 +27,17 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
     bool on_Line = false; // se falso até o final, os sensores estão todos fora da linha
     uint32_t avg = 0; // soma ponderada das leituras
     uint16_t sum = 0; // soma das leituras
-    uint16_t teste_value[sQuant];
+    //uint16_t teste_value[sQuant];
     
     
     for(int i=0; i < quant; i++)
     {
         uint16_t sensor_value;
         selectMuxPin(std::bitset<4>(i)); // Passa o valor i em formato 4 bits para selecionar o sensor
-        //vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
-        //ets_delay_us(1); // função que pausa o código por N microsegundos
-        //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
+        
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         if (white_line == WHITE) { sensor_value = 1000 - sensor_value; } // inverte as leituras
-        teste_value[i] = sensor_value;
+        //teste_value[i] = sensor_value;
         if (sensor_value > 200) { on_Line = true; } // verifica se tem um sensor na linha
         if (sensor_value > 50) // valores menores que 50 são considerados ruídos
         {
@@ -50,12 +48,17 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
         //ets_delay_us(1); // função que pausa o código por N microsegundos
         //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
     }
-     
-    /* ESP_LOGI("SensorService", "Leituras = %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
+    /*if(count >= 100){
+        count = 0;
+        ESP_LOGI("SensorService", "Leituras = %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
                                 teste_value[0], teste_value[1], teste_value[2], teste_value[3], teste_value[4], 
                                 teste_value[5], teste_value[6], teste_value[7], teste_value[8], teste_value[9], 
                                 teste_value[10], teste_value[11], teste_value[12], teste_value[13], teste_value[14], 
-                                teste_value[15]); */
+                                teste_value[15]);
+    }else{
+        count++;
+    }*/
+    
     
     if (!on_Line) // Se o robo esta fora da linha, retorna a direcao da ultima leitura
     {
@@ -99,7 +102,7 @@ void QTRwithMUX::read_from_body(uint16_t *values, QTRSensors *sArray, int pin_in
         
         sArray[i].readCalibrated(&sensor_value); // lê cada sensor como se fosse um array e salva em sensor_value
         values[position] = sensor_value;
-        if (white_line == WHITE) { values[position] = 1000 - values[position]; }
+        if (white_line != WHITE) { values[position] = 1000 - values[position]; }
 
         vTaskSuspendAll();// Pausando as outras tasks para evitar conflitos com o delay usado
         ets_delay_us(1); // função que pausa o código por N microsegundos

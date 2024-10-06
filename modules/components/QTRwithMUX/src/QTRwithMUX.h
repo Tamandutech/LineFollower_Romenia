@@ -1,3 +1,6 @@
+#ifndef QTR_MUX_H
+#define QTR_MUX_H
+
 #include "esp_log.h"
 #include "QTRSensors.h"
 #include "RobotData.h"
@@ -8,7 +11,7 @@
 class QTRwithMUX
 {
 public:
-    
+
     void calibrate_all(QTRSensors *sArray, int quant);
     void calibrate_body(QTRSensors *sArray, int quant);
     int16_t read_all(QTRSensors *sArray, int quant, bool white_line);
@@ -20,5 +23,8 @@ private:
     SemaphoreHandle_t xSemaphore;
     bool start_mux = false;
     uint16_t lastPosition;
+    //int count = 0;
 
 };
+
+#endif

@@ -47,6 +47,12 @@ public:
 
     // Número de leituras dos sensores laterais para determinar a média que será utilizada na contagem de marcações laterais 
     DataAbstract<uint16_t> *MarkstoMean;
+
+    // Leitura do sensor esquerdo
+    DataAbstract<uint16_t> *MeanSensorLeft;
+    // Leitura do sensor direito
+    DataAbstract<uint16_t> *MeanSensorRight;
+
     //Número de marcações direita para a parada 
     DataAbstract<uint16_t> *MarkstoStop;
     //Pulsos antes de inicar uma curva para iniciar a desaceleração
@@ -56,7 +62,10 @@ public:
     DataAbstract<uint32_t> *PulsesAfterCurve;
 
     // Limite de variação em milimetros de distância percorrida entre as rodas para considerar que o carro fez uma curva
-    DataAbstract<uint8_t> *thresholdToCurve;
+    DataAbstract<float> *thresholdToCurve;
+
+    // Tempo entre marcações, parâmmetro utilizado para o mapeamento sem marcações laterais
+    DataAbstract<uint16_t> *deltaT;
 
     // Condições para determinar que tipo de cada trecho da pista em mm
     DataAbstract<uint16_t> *thresholdLongLine;

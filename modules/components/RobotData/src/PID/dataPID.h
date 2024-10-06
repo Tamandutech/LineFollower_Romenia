@@ -11,21 +11,40 @@
 
 #include "esp_log.h"
 
+struct PID_Consts
+{
+    float Kp;
+    float Kd;
+};
+
 class dataPID
 {
 public:
     dataPID(std::string name = "dataPID");// Contrutor do objeto
 
+    DataAbstract<float> *setpoint;
+    DataAbstract<float> *erro;
+    DataAbstract<float> *erroquad;
+    DataAbstract<float> *output;
+
+    DataAbstract<float> *Kp_Acceleration;
+    DataAbstract<float> *Kp_Deceleration;
+
+    DataAbstract<float> *Kp_Rotational;
+    DataAbstract<float> *Ki_Rotational; 
+    DataAbstract<float> *Kd_Rotational; 
+
     // Funções que retornam as constantes do PID definidas para um trecho da pista
-    DataAbstract<float> *Kp(TrackState state);
-    DataAbstract<float> *Kd(TrackState state);
+    DataAbstract<float> *getKP(TrackSegment track);
+    DataAbstract<float> *getKD(TrackSegment track);
+    PID_Consts PD_values(TrackSegment track, CarState state);
 
 private:
     std::string name;
     const char *tag = "RobotData";
 
-    // Parâmetros do PID  
-
+    // Parâmetros do PID
+    
     // Linha
     DataAbstract<float> *Kp_Long_Line;
     DataAbstract<float> *Kd_Long_Line; 

@@ -8,6 +8,28 @@ dataPID::dataPID(std::string name)
 
     dataManager = dataManager->getInstance();
 
+    output = new DataAbstract<float>("output", name, 0);
+    dataManager->registerRuntimeData(output);
+    setpoint = new DataAbstract<float>("Setpoint", name, 0);
+    dataManager->registerRuntimeData(setpoint);
+    erro = new DataAbstract<float>("erro", name, 0);
+    dataManager->registerRuntimeData(erro);
+    erroquad = new DataAbstract<float>("erroquad", name, 0);
+    dataManager->registerRuntimeData(erroquad);
+
+    Kp_Acceleration = new DataAbstract<float>("Kp_Acceleration", name, 4);
+    dataManager->registerParamData(Kp_Acceleration);
+    Kp_Deceleration = new DataAbstract<float>("Kp_Deceleration", name, 4);
+    dataManager->registerParamData(Kp_Deceleration);
+
+    Kp_Rotational = new DataAbstract<float>("Kp_Rotational", name, 4);
+    dataManager->registerParamData(Kp_Rotational);
+    Ki_Rotational = new DataAbstract<float>("Ki_Rotational", name, 4);
+    dataManager->registerParamData(Ki_Rotational);
+    Kd_Rotational = new DataAbstract<float>("Kd_Rotational", name, 4);
+    dataManager->registerParamData(Kd_Rotational);
+
+
     Kp_Long_Line = new DataAbstract<float>("Kp_Long_Line", name, 5.43);
     dataManager->registerParamData(Kp_Long_Line);
     Kd_Long_Line = new DataAbstract<float>("Kd_Long_Line", name, 5.8);
@@ -54,9 +76,9 @@ dataPID::dataPID(std::string name)
     dataManager->registerParamData(Kd_Tunning);
 }
 
-DataAbstract<float> *dataPID::Kp(TrackState state)
+DataAbstract<float> *dataPID::getKP(TrackSegment track)
 {// Retorna o valor de K_P para cada trecho da pista
-    switch(state)
+    switch(track)
     {
         case LONG_LINE:
             return Kp_Long_Line;
@@ -76,11 +98,8 @@ DataAbstract<float> *dataPID::Kp(TrackState state)
         case SHORT_CURVE:
             return Kp_Short_Curve;
             break;
-        case ZIGZAG:
+        case ZIGZAG_TRACK:
             return Kp_Zigzag;
-            break;
-        case TUNNING:
-            return Kp_Tunning;
             break;
         default:
             return Kp_Default;
@@ -91,9 +110,9 @@ DataAbstract<float> *dataPID::Kp(TrackState state)
     return nullptr;
 }
 
-DataAbstract<float> *dataPID::Kd(TrackState state)
+DataAbstract<float> *dataPID::getKD(TrackSegment track)
 {// Retorna o valor de K_D para cada trecho da pista
-    switch(state)
+    switch(track)
     {
         case LONG_LINE:
             return Kd_Long_Line;
@@ -113,11 +132,8 @@ DataAbstract<float> *dataPID::Kd(TrackState state)
         case SHORT_CURVE:
             return Kd_Short_Curve;
             break;
-        case ZIGZAG:
+        case ZIGZAG_TRACK:
             return Kd_Zigzag;
-            break;
-        case TUNNING:
-            return Kd_Tunning;
             break;
         default:
             return Kd_Default;
@@ -126,4 +142,21 @@ DataAbstract<float> *dataPID::Kd(TrackState state)
 
     //ESP_LOGE(tag, "Estado do Robô ou Objeto PID inválido para esse método: %s:%d para obter o Kd do PID, retornando valor null.", name.c_str(),state);
     return nullptr;
+}
+
+PID_Consts dataPID::PD_values(TrackSegment track, CarState state){
+    PID_Consts constants;
+    
+    switch (state)
+    {
+    case CAR_TUNING:
+        constants.Kp = Kp_Tunning->getData();
+        constants.Kd = Kd_Tunning->getData();
+        break;
+    default:
+        constants.Kp = getKP(track)->getData();
+        constants.Kd = getKD(track)->getData();
+        break;
+    }
+    return constants;
 }

@@ -8,7 +8,7 @@
  template<class T> class Singleton
  {
      public:
-        static  T *getInstance(std::string _name = "Thread", uint32_t _stackDepth = 1000, UBaseType_t _priority = 0)
+        static  T *getInstance(std::string _name = "Thread", uint32_t _stackDepth = 1000, UBaseType_t _priority = 0, BaseType_t _CoreID = tskNO_AFFINITY)
                 {
                         T *sin = instance.load(std::memory_order_acquire);
                         if (!sin)
@@ -17,7 +17,7 @@
                                 sin = instance.load(std::memory_order_relaxed);
                                 if (!sin)
                                 {
-                                        sin = new T(_name,_stackDepth,_priority);
+                                        sin = new T(_name,_stackDepth,_priority, _CoreID);
                                         instance.store(sin, std::memory_order_release);
                                 }
                         }

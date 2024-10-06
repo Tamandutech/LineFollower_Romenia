@@ -23,7 +23,7 @@ class MappingService : public Thread, public Singleton<MappingService>
 {
 public:
 
-    MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
     
     void Run() override;
 
@@ -35,14 +35,17 @@ public:
 
     esp_err_t createNewMark();
 
+    bool track_is_a_line(uint8_t track);
+    bool track_is_a_curve(uint8_t track);
+
 private:
     std::string name;
 
     // Atalhos para o RobotData
     Robot *robot;
-    dataMotor *speedMapping;
-    dataSLatMarks *latMarks;
-    dataStatus *status;
+    dataMotor *get_Speed;
+    dataSLatMarks *get_latMarks;
+    dataStatus *get_Status;
     dataSpec *get_Spec;
     // Atalhos para serviços
     LEDsService *LED;
@@ -50,7 +53,6 @@ private:
     // Variáveis
 
     struct MapData tempActualMark;
-    struct MapData tempPreviousMark;
 
     // atributos de filtro
     uint16_t leftMarksToStop;
@@ -68,8 +70,14 @@ private:
     uint32_t tempDeltaPulses = 0;
     uint32_t tempMilimiterInPulses = 0;
     uint32_t tempDeltaDist = 0;
+    int32_t EncLeft = 0, EncRight = 0;
+    int32_t lastEncLeft = 0, lastEncRight = 0, lastEncMedia = 0;
+    uint8_t lastTrack = 0;
 
-    led_position_t LEDposition[NUM_LEDS] = {LED_POSITION_NONE};
+    void MappingWithMarks();
+    void MappingWithoutMarks(TickType_t *xLastWakeTime);
+    void AtualizarLEDs();
+    bool finished_mapping();
 };
 
 #endif

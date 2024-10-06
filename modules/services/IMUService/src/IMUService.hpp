@@ -17,7 +17,7 @@ using namespace cpp_freertos;
 class IMUService : public Thread, public Singleton<IMUService>
 {
 public:
-    IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority);
+    IMUService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
 
@@ -32,7 +32,7 @@ private:
     int32_t acc[3];
 	int32_t gyr[3];
 
-    LSM6DSR imu = LSM6DSR(I2C_ADDR);
+    //LSM6DSR imu = LSM6DSR(I2C_ADDR);
 
     void updateIMU();
     void saveData();

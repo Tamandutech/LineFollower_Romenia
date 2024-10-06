@@ -5,15 +5,13 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
     // Definindo nome do objeto, para uso nas logs do componente.
     this->name = name;
     //ESP_LOGI(tag, "Criando objeto: %s (%p)", name.c_str(), this);
+    dataManager = dataManager->getInstance();
 
-
-    WhiteLine = new DataAbstract<bool>("WhiteLine", name, WHITE);
-    dataManager->registerParamData(WhiteLine);
     /*
      * Variaveis que contempla relacao de Revoluções e redução dos
      * motores, entrada é ((Qtd de pulsos para uma volta) * (Reducao do motor))
      * */
-    GearRatio = new DataAbstract<uint16_t>("GearRatio", name, 5);  // verificar depois se é o motor 5:1
+    GearRatio = new DataAbstract<uint16_t>("GearRatio", name, 10);  // verificar depois se é o motor 10:1
     dataManager->registerParamData(GearRatio);
 
     Revolution = new DataAbstract<uint16_t>("Revolution", name, 12);
@@ -36,4 +34,28 @@ dataSpec::dataSpec(std::string name,bool PID_Select)
     
     MaxAngle = new DataAbstract<float>("MaxAngle", name, 13.8); //graus  // mudar depois
     dataManager->registerParamData(MaxAngle);
+
+    MaxAngle_Center = new DataAbstract<float>("MaxAngle_Center", name, 13.8); //graus  // mudar depois
+    dataManager->registerParamData(MaxAngle_Center);
+
+    Friction_Angle = new DataAbstract<float>("Friction_Angle", name, 20); //graus  // mudar depois
+    dataManager->registerParamData(Friction_Angle);
+
+    Friction_Coef = new DataAbstract<float>("Friction_Coef", name, 0);
+    dataManager->registerParamData(Friction_Coef);
+
+    Acceleration = new DataAbstract<float>("Acceleration", name, 0);
+    dataManager->registerParamData(Acceleration);
+
+    MaxRPM = new DataAbstract<float>("Max_RPM", name, 3000);  // mudar depois
+    dataManager->registerParamData(MaxRPM);
+
+    Mass = new DataAbstract<float>("Mass", name, 0);  // mudar depois
+    dataManager->registerParamData(Mass);
+
+    Mass_BrushON = new DataAbstract<float>("Mass_Brushless_ON", name, 0);  // mudar depois
+    dataManager->registerParamData(Mass_BrushON);
+
+    Malha_Aberta = new DataAbstract<float>("Malha_Aberta", name, 1.0);  // mudar depois
+    dataManager->registerParamData(Malha_Aberta);
 }
