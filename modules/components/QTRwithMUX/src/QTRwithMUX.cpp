@@ -48,7 +48,8 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
         //ets_delay_us(1); // função que pausa o código por N microsegundos
         //xTaskResumeAll(); // Retoma o funcionamento normal das tasks
     }
-    /* if(count >= 100){
+    /*if(count >= 100){
+        count = 0;
         ESP_LOGI("SensorService", "Leituras = %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
                                 teste_value[0], teste_value[1], teste_value[2], teste_value[3], teste_value[4], 
                                 teste_value[5], teste_value[6], teste_value[7], teste_value[8], teste_value[9], 
@@ -56,7 +57,7 @@ int16_t QTRwithMUX::read_all(QTRSensors *sArray, int quant, bool white_line)
                                 teste_value[15]);
     }else{
         count++;
-    } */
+    }*/
     
     
     if (!on_Line) // Se o robo esta fora da linha, retorna a direcao da ultima leitura

@@ -119,7 +119,6 @@ void app_main()
 
     irService = IRService::getInstance("IRService", 4096, 9, PRO_CPU_NUM);
     //ESP_LOGI(RPMService::getInstance()->GetName().c_str(), "IRService");
-
     //mappingService->Start();
     //imuService->Start();
     motorService->Start();
@@ -132,8 +131,6 @@ void app_main()
 
     //ESP_LOGI("Main", "Apagando LEDs");
     ledsService->LedComandSend(LED_POSITION_FRONT, COLOR_BLACK, 1);
-
-    
 
     for (;;)
     {

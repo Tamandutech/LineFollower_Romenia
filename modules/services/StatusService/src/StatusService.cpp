@@ -109,6 +109,7 @@ void StatusService::Run()
         // Carregando status atual
         TrackLen = (TrackSegment)get_Status->TrackStatus->getData();
         pulsesAfterCurve = get_latMarks->PulsesAfterCurve->getData();
+        pulsesBeforeCurve = get_latMarks->PulsesBeforeCurve->getData();
         actualCarState = (CarState) get_Status->robotState->getData();
 
         if (get_Status->robotPaused->getData())
@@ -173,7 +174,7 @@ void StatusService::Run()
 
                             if (mappingService->track_is_a_line((TrackSegment)get_latMarks->marks->getData(mark + 1).MapTrackStatus) && mappingService->track_is_a_curve((TrackSegment)get_latMarks->marks->getData(mark + 2).MapTrackStatus) && offsetnxt == 0)
                             {
-                                offsetnxt = -calculate_offset(mark+1);
+                                offsetnxt = -calculate_offset(mark+1) - pulsesBeforeCurve;
                             }
                             if (offsetnxt < 0)
                             {

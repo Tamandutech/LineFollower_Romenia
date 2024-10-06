@@ -75,7 +75,7 @@ void ControlService::ControlePID(){
         //ESP_LOGI(GetName().c_str(), "Parando motores");
         motors->StopMotors();
     }else{
-        PID_Consts PD = get_PID->PD_values(line_state, state);
+        PID_Consts PD = get_PID->PD_values(RealLine_state, state);
         
         float Kp = PD.Kp;
         float Kd = PD.Kd;
@@ -138,9 +138,15 @@ void ControlService::ControlePID(){
         }
         //ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d", get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());
         //ESP_LOGI(GetName().c_str(), "Erro = %.2f, VelEsq = %.2f, RPMEsq = %.2f, VelDir = %.2f, RPMDir = %.2f", erro, (vel_base - PID), RPM_Left, (vel_base + PID), RPM_Right);
+
         if(iloop > 50)
         {
+            motors->read_both();
+            int32_t enc_right = get_Speed->EncRight->getData();
+            int32_t enc_left = get_Speed->EncLeft->getData();
+
             //ESP_LOGI(GetName().c_str(), "TargetSpeed = %d, RobotSpeed = %.2f, PwmBase = %.2f", get_Speed->TargetSpeed->getData(), RobotLinearSpeed, vel_base);
+            ESP_LOGI(GetName().c_str(), "EncL = %ld, EncR = %ld", enc_left, enc_right);
             iloop = 0;
         }
         iloop++;

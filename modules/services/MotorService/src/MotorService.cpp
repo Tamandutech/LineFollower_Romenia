@@ -12,7 +12,7 @@ MotorService::MotorService(std::string name, uint32_t stackDepth, UBaseType_t pr
     esp_log_level_set(name.c_str(), ESP_LOG_INFO);
 
     ConfigBrushless(); // deve ser chamado antes da configuração dos motores de locomoção, pois ambos usam o LEDC e a configuração dos motores pode interferir na calibração dos brushless
-    control.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN2, DRIVER_BIN1, DRIVER_PWMB);
+    control.attachMotors(DRIVER_AIN1, DRIVER_AIN2, DRIVER_PWMA, DRIVER_BIN1, DRIVER_BIN2, DRIVER_PWMB);
     encs.ConfigEncoders();
 }
 
@@ -34,7 +34,7 @@ void MotorService::Run()
 
 void MotorService::ConfigBrushless(){
     InitBrushlessPWM((gpio_num_t)brushless_dir, PWM_BRUSHLESS_A);
-    InitBrushlessPWM((gpio_num_t)brushless_esq, PWM_BRUSHLESS_B);
+    //InitBrushlessPWM((gpio_num_t)brushless_esq, PWM_BRUSHLESS_B);
 
     //ESP_LOGI(GetName().c_str(), "Calibracao Brushless...");
     calibrateBrushless();
@@ -50,13 +50,13 @@ void MotorService::TestMotors(){
 
 void MotorService::calibrateBrushless(){
     AnalogWrite(PWM_BRUSHLESS_A, MAX_THROTTLE);
-    AnalogWrite(PWM_BRUSHLESS_B, MAX_THROTTLE);
+    //AnalogWrite(PWM_BRUSHLESS_B, MAX_THROTTLE);
     
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_BLUE, 1);
     vTaskDelay(5200 / portTICK_PERIOD_MS);
     
     AnalogWrite(PWM_BRUSHLESS_A, MIN_THROTTLE);
-    AnalogWrite(PWM_BRUSHLESS_B, MIN_THROTTLE);
+    //AnalogWrite(PWM_BRUSHLESS_B, MIN_THROTTLE);
 
     LED->LedComandSend(LED_POSITION_FRONT, COLOR_PINK, 1);
     
@@ -78,8 +78,8 @@ void MotorService::ControlMotors(float velesq, float veldir){
 
 void MotorService::ControlBrushless(int speed){
     // speed = constrain(speed, MIN_THROTTLE, MAX_THROTTLE);
-    if(Brushless_ActualPwm  <= speed)  rampThrottle(Brushless_ActualPwm, speed, THROTTLE_SPEED, 200);
-    else rampThrottle(speed, Brushless_ActualPwm, -THROTTLE_SPEED, 200);
+    if(Brushless_ActualPwm  <= speed)  rampThrottle(Brushless_ActualPwm, speed, THROTTLE_SPEED, 400);
+    else rampThrottle(speed, Brushless_ActualPwm, -THROTTLE_SPEED, 400);
     Brushless_ActualPwm = speed;
 }
 
@@ -127,12 +127,12 @@ void MotorService::rampThrottle(int start, int stop, int step, int time)
     for (int i = start; step > 0 ? i < stop : i > stop; i += step)
     {
         AnalogWrite(PWM_BRUSHLESS_A, (i));
-        AnalogWrite(PWM_BRUSHLESS_B, (i));
+        //AnalogWrite(PWM_BRUSHLESS_B, (i));
         //ESP_LOGI(GetName().c_str(), "Brushless: %d", i);
         vTaskDelay(time / portTICK_PERIOD_MS);
     }
     AnalogWrite(PWM_BRUSHLESS_A, (stop));
-    AnalogWrite(PWM_BRUSHLESS_B, (stop));
+    //AnalogWrite(PWM_BRUSHLESS_B, (stop));
 }
 
 void MotorService::stop_car(){

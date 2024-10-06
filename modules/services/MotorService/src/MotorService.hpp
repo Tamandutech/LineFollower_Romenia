@@ -19,7 +19,7 @@ using namespace cpp_freertos;
 
 #define MIN_THROTTLE            205
 #define MAX_THROTTLE            409
-#define THROTTLE_SPEED          100
+#define THROTTLE_SPEED          20
 #define PWM_BRUSHLESS_A         LEDC_CHANNEL_0
 #define PWM_BRUSHLESS_B         LEDC_CHANNEL_1
 #define BRUSHLESS_PWM_MODE      LEDC_HIGH_SPEED_MODE

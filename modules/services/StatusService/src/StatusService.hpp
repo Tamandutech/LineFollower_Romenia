@@ -60,6 +60,7 @@ private:
     int32_t mediaEncFinal = 0; // leitura de encoder final do trecho
     int32_t initialmediaEnc = 0; // leitura feita na linha de partida
     int32_t pulsesAfterCurve = 200;
+    int32_t pulsesBeforeCurve = 0;
     int16_t offset = 0, offsetnxt = 0;
     bool firstmark = false;
     bool transition = false;
