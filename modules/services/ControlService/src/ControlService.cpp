@@ -104,21 +104,27 @@ void ControlService::ControlePID() {
 
     // TODO: Calcular speed PID na diferença entre a velocidade atual e a
     // vel_base
+    double kpSpeed = get_PID->Kp_Speed->getData();
+    double kiSpeed = get_PID->Ki_Speed->getData();
+    double kdSpeed = get_PID->Kd_Speed->getData();
+    double speedPID =
+        speedControl(RobotLinearSpeed, vel_base, kpSpeed, kiSpeed, kdSpeed);
 
     int16_t PositionError = get_Speed->PositionError->getData();
-    double kpAcceleration = get_PID->Kp_Acceleration->getData();
-    AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
-    if ((AccelerationStep || DesaccelerationStep) &&
-        RealLine_state != SPECIAL_TRACK) {
-      if (DesaccelerationStep)
-        kpAcceleration = get_PID->Kp_Deceleration->getData();
-      vel_base =
-          AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
-    }
+    // double kpAcceleration = get_PID->Kp_Acceleration->getData();
+    // AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
+    // if ((AccelerationStep || DesaccelerationStep) &&
+    //     RealLine_state != SPECIAL_TRACK) {
+    //   if (DesaccelerationStep)
+    //     kpAcceleration = get_PID->Kp_Deceleration->getData();
+    //   speedPID =
+    //       AccelerationControl(RobotLinearSpeed, PositionError,
+    //       kpAcceleration);
+    // }
 
-    float max_angle = get_Spec->MaxAngle_Center->getData();
+    // float max_angle = get_Spec->MaxAngle_Center->getData();
     bool OpenLoopControl = get_Status->OpenLoopControl->getData();
-    float limite = get_Spec->Malha_Aberta->getData();
+    // float limite = get_Spec->Malha_Aberta->getData();
     if (abs(PositionError) >= 6500 && OpenLoopControl &&
         RealLine_state != SPECIAL_TRACK) {
       int8_t min = get_Speed->min->getData();
@@ -147,7 +153,7 @@ void ControlService::ControlePID() {
         somaIntegradorRotacional = 0;
       }
       // TODO: Trocar vel_base pelo PID de velocidade
-      NewSpeed((vel_base - PID), (vel_base + PID));
+      NewSpeed((speedPID - PID), (speedPID + PID));
     }
     // ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d",
     // get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());
@@ -205,13 +211,14 @@ void ControlService::SaveRPM() {
   get_Speed->RPMLeft_inst->setData(RPM_Left);
   get_Speed->RPMCar_media->setData((RPM_Left + RPM_Right) / 2);
 }
-int16_t ControlService::CalculateRobotLinearSpeed() {
-  uint8_t WheelDiameter = get_Spec->WheelDiameter->getData();
+double ControlService::CalculateRobotLinearSpeed() {
+  double WheelDiameter = (double)get_Spec->WheelDiameter->getData();
 
   int16_t RightWheelRotation = get_Speed->RPMRight_inst->getData();
   int16_t LeftWheelRotation = get_Speed->RPMLeft_inst->getData();
 
-  int16_t averageRotation = ((RightWheelRotation + LeftWheelRotation) / 2);
+  double averageRotation =
+      (((double)(RightWheelRotation + LeftWheelRotation)) / 2);
   return (averageRotation * WheelDiameter) / 60;
 }
 
@@ -254,4 +261,18 @@ float ControlService::AccelerationControl(int16_t RobotLinearSpeed,
   DisableAccelerationWhenEnded(SpeedError, PositionError);
 
   return newLinearSpeed;
+}
+
+double ControlService::speedControl(double linearSpeed, double targetSpeed,
+                                    double kpSpeedControl,
+                                    double kiSpeedControl,
+                                    double kdSpeedControl) {
+  static double integral = 0;
+  static double lastError = 0;
+  double error = targetSpeed - linearSpeed;
+  integral += error;
+  double derivative = error - lastError;
+  lastError = error;
+  return kpSpeedControl * error + kiSpeedControl * integral +
+         kdSpeedControl * derivative;
 }

@@ -62,14 +62,19 @@ class ControlService : public Thread, public Singleton<ControlService> {
   void SaveRPM();
   /**
    * @brief Calculate the robot linear speed in m/s
+   * @return Robot linear speed in m/s
    */
-  int16_t CalculateRobotLinearSpeed();
+  double CalculateRobotLinearSpeed();
   void setAccelerationDirection(float SpeedError);
   void EnableAccelerationControlIfNeeded(float linearSpeed, float SpeedError,
                                          int16_t PositionError);
   void DisableAccelerationWhenEnded(float SpeedError, int16_t PositionError);
   float AccelerationControl(int16_t RobotLinearSpeed, int16_t PositionError,
                             double kpAccelerationControl);
+
+  double speedControl(double linearSpeed, double targetSpeed,
+                      double kpSpeedControl, double kiSpeedControl,
+                      double kdSpeedControl);
 };
 
 #endif
