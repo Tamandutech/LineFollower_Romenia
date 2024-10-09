@@ -50,24 +50,27 @@ void ESP32MotorControl::attachMotors(uint8_t _gpioAIN1, uint8_t _gpioAIN2,
   gpioBIN2 = _gpioBIN2;
   gpioPWMB = _gpioPWMB;
 
-  gpio_config_t io_conf;
+  /*gpio_config_t io_conf;
   io_conf.intr_type = (gpio_int_type_t)GPIO_INTR_DISABLE;
   io_conf.mode = GPIO_MODE_OUTPUT;
   io_conf.pin_bit_mask = ((1ULL << gpioAIN1) | (1ULL << gpioAIN2) | (1ULL << gpioBIN1) | (1ULL << gpioBIN2));
   io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
   io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-  gpio_config(&io_conf);
+  gpio_config(&io_conf);*/
 
   ESP_LOGD(TAG, "init PWM Motor 0");
 
   // Set MCPWM unit 0
-  InitMotorPWM((gpio_num_t)_gpioPWMA, PWM_A_PIN);
+  InitMotorPWM((gpio_num_t)_gpioAIN1, PWM_A1_PIN);
+  InitMotorPWM((gpio_num_t)_gpioAIN2, PWM_A2_PIN);
 
   this->mMotorAttached[0] = true;
   ESP_LOGD(TAG, "init PWM Motor 1");
 
   // Set MCPWM unit 1
-  InitMotorPWM((gpio_num_t)_gpioPWMB, PWM_B_PIN);
+  InitMotorPWM((gpio_num_t)_gpioBIN1, PWM_B1_PIN);
+  InitMotorPWM((gpio_num_t)_gpioBIN2, PWM_B2_PIN);
+  
 
   this->mMotorAttached[1] = true;
 
@@ -77,38 +80,43 @@ void ESP32MotorControl::attachMotors(uint8_t _gpioAIN1, uint8_t _gpioAIN2,
 void ESP32MotorControl::motorSpeed(uint8_t motor, float speed)
 {
   uint16_t DutyPwm = 0;
+  DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
   switch (motor)
   {
   case 0:
     if(speed >= 0){
-      if(mMotorState[0] != MotorState::MOTOR_FORWARD)
-        this->motorForward(0);
+      if(mMotorState[0] != MotorState::MOTOR_FORWARD){
+        DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
+        this->motorForward(0, DutyPwm);
+      }
     }
     else{
       if(mMotorState[0] != MotorState::MOTOR_REVERSE){
-        this->motorReverse(0);
         speed = -speed;
+        DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
+        this->motorReverse(0, DutyPwm);
       }
-    }
-    
-    DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
-    PwmWrite(PWM_A_PIN, DutyPwm);
+    }   
+    //PwmWrite(PWM_A_PIN, DutyPwm);
     break;
 
   case 1:
     if(speed >= 0){
-      if(mMotorState[1] != MotorState::MOTOR_FORWARD)
-        this->motorForward(1);
+      if(mMotorState[1] != MotorState::MOTOR_FORWARD){
+        DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
+        this->motorForward(1, DutyPwm);
+      }
     }
     else{
       if(mMotorState[1] != MotorState::MOTOR_REVERSE){
-        this->motorReverse(1);
         speed = -speed;
+        DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
+        this->motorReverse(1, DutyPwm);
       }
     }
 
-    DutyPwm = (pow((float)2, (float)LEDC_DUTY_RES) - 1) * (speed/100.0);
-    PwmWrite(PWM_B_PIN, DutyPwm);
+    
+    //PwmWrite(PWM_B_PIN, DutyPwm);
     break;
 
   default:
@@ -118,18 +126,22 @@ void ESP32MotorControl::motorSpeed(uint8_t motor, float speed)
   ESP_LOGD(TAG, "Motor %u speed %f", motor, speed);
 }
 
-void ESP32MotorControl::motorForward(uint8_t motor)
+void ESP32MotorControl::motorForward(uint8_t motor,uint16_t duty)
 {
   switch (motor)
   {
   case 0:
-    gpio_set_level((gpio_num_t)gpioAIN1, 1);
-    gpio_set_level((gpio_num_t)gpioAIN2, 0);
+    PwmWrite(PWM_A1_PIN, duty);
+    PwmWrite(PWM_A2_PIN, 0);
+    //gpio_set_level((gpio_num_t)gpioAIN1, 1);
+    //gpio_set_level((gpio_num_t)gpioAIN2, 0);
     break;
 
   case 1:
-    gpio_set_level((gpio_num_t)gpioBIN1, 1);
-    gpio_set_level((gpio_num_t)gpioBIN2, 0);
+    PwmWrite(PWM_B1_PIN, duty);
+    PwmWrite(PWM_B2_PIN, 0);
+    //gpio_set_level((gpio_num_t)gpioBIN1, 1);
+    //gpio_set_level((gpio_num_t)gpioBIN2, 0);
     break;
 
   default:
@@ -139,18 +151,22 @@ void ESP32MotorControl::motorForward(uint8_t motor)
   ESP_LOGD(TAG, "Motor %u set to forward", motor);
 }
 
-void ESP32MotorControl::motorReverse(uint8_t motor)
+void ESP32MotorControl::motorReverse(uint8_t motor, uint16_t duty)
 {
   switch (motor)
   {
   case 0:
-    gpio_set_level((gpio_num_t)gpioAIN1, 0);
-    gpio_set_level((gpio_num_t)gpioAIN2, 1);
+    PwmWrite(PWM_A1_PIN, 0);
+    PwmWrite(PWM_A2_PIN, duty);
+    //gpio_set_level((gpio_num_t)gpioAIN1, 0);
+    //gpio_set_level((gpio_num_t)gpioAIN2, 1);
     break;
 
   case 1:
-    gpio_set_level((gpio_num_t)gpioBIN1, 0);
-    gpio_set_level((gpio_num_t)gpioBIN2, 1);
+    PwmWrite(PWM_B1_PIN, 0);
+    PwmWrite(PWM_B2_PIN, duty);
+    //gpio_set_level((gpio_num_t)gpioBIN1, 0);
+    //gpio_set_level((gpio_num_t)gpioBIN2, 1);
     break;
 
   default:
@@ -165,13 +181,17 @@ void ESP32MotorControl::motorStop(uint8_t motor)
   switch (motor)
   {
   case 0:
-    gpio_set_level((gpio_num_t)gpioAIN1, 1);
-    gpio_set_level((gpio_num_t)gpioAIN2, 1);
+    PwmWrite(PWM_A1_PIN, 0);
+    PwmWrite(PWM_A2_PIN, 0);
+    //gpio_set_level((gpio_num_t)gpioAIN1, 1);
+    //gpio_set_level((gpio_num_t)gpioAIN2, 1);
     break;
 
   case 1:
-    gpio_set_level((gpio_num_t)gpioBIN1, 1);
-    gpio_set_level((gpio_num_t)gpioBIN2, 1);
+    PwmWrite(PWM_B1_PIN, 0);
+    PwmWrite(PWM_B2_PIN, 0);
+    //gpio_set_level((gpio_num_t)gpioBIN1, 1);
+    //gpio_set_level((gpio_num_t)gpioBIN2, 1);
     break;
 
   default:

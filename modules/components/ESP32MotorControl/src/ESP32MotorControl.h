@@ -39,8 +39,10 @@
 //////// Defines
 #define LEDC_TIMER              LEDC_TIMER_1 // Timer do LEDC utilizado
 #define LEDC_MODE               LEDC_HIGH_SPEED_MODE // Modo de velocidade do LEDC
-#define PWM_A_PIN               LEDC_CHANNEL_2 // Canal do LEDC utilizado
-#define PWM_B_PIN               LEDC_CHANNEL_3 // Canal do LEDC utilizado
+#define PWM_A1_PIN               LEDC_CHANNEL_2 // Canal do LEDC utilizado
+#define PWM_A2_PIN               LEDC_CHANNEL_3 // Canal do LEDC utilizado
+#define PWM_B1_PIN               LEDC_CHANNEL_4 // Canal do LEDC utilizado
+#define PWM_B2_PIN               LEDC_CHANNEL_5 // Canal do LEDC utilizado
 #define LEDC_DUTY_RES           LEDC_TIMER_13_BIT // Resolução do PWM
 #define LEDC_FREQUENCY          2000 // Frequência em Hertz do sinal PWM
 
@@ -60,9 +62,9 @@ public:
 
   void motorSpeed(uint8_t motor, float speed);
   void motorFullForward(uint8_t motor);
-  void motorForward(uint8_t motor);
+  void motorForward(uint8_t motor, uint16_t duty);
   void motorFullReverse(uint8_t motor);
-  void motorReverse(uint8_t motor);
+  void motorReverse(uint8_t motor, uint16_t duty);
   void motorStop(uint8_t motor);
 
   void motorsStop();

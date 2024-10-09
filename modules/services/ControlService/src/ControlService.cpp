@@ -147,6 +147,8 @@ void ControlService::ControlePID(){
 
             //ESP_LOGI(GetName().c_str(), "TargetSpeed = %d, RobotSpeed = %.2f, PwmBase = %.2f", get_Speed->TargetSpeed->getData(), RobotLinearSpeed, vel_base);
             ESP_LOGI(GetName().c_str(), "EncL = %ld, EncR = %ld", enc_left, enc_right);
+            ESP_LOGI(GetName().c_str(), "SensorArray = %.2f", erro);
+
             iloop = 0;
         }
         iloop++;

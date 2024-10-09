@@ -27,7 +27,7 @@ const int sPins[4] = {18, 19, 22, 23}; // array dos pinos digitais ligados ao MU
 
 // Brushless ~~ verificar a direção
 
-#define brushless_dir 12 //4
+#define brushless_dir 4 //4 ou 12
 #define brushless_esq 16
 
 //encoder
