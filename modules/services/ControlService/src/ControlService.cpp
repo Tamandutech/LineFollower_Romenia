@@ -107,8 +107,14 @@ void ControlService::ControlePID() {
     double kpSpeed = get_PID->Kp_Speed->getData();
     double kiSpeed = get_PID->Ki_Speed->getData();
     double kdSpeed = get_PID->Kd_Speed->getData();
-    double speedPID =
-        speedControl(RobotLinearSpeed, vel_base, kpSpeed, kiSpeed, kdSpeed);
+    double speedController = vel_base;
+
+    if (get_Status->Transition->getData()) {
+      speedController =
+          speedControl(RobotLinearSpeed, vel_base, kpSpeed, kiSpeed, kdSpeed);
+      ESP_LOGI(GetName().c_str(), "vel_base = %.4lf,  = %.4lf", vel_base,
+               speedController);
+    }
 
     int16_t PositionError = get_Speed->PositionError->getData();
     // double kpAcceleration = get_PID->Kp_Acceleration->getData();
@@ -153,7 +159,7 @@ void ControlService::ControlePID() {
         somaIntegradorRotacional = 0;
       }
       // TODO: Trocar vel_base pelo PID de velocidade
-      NewSpeed((speedPID - PID), (speedPID + PID));
+      NewSpeed((speedController - PID), (speedController + PID));
     }
     // ESP_LOGI(GetName().c_str(), "RPM_Right = %d, RPM_Left = %d",
     // get_Speed->RPMRight_inst->getData(), get_Speed->RPMLeft_inst->getData());
@@ -212,14 +218,20 @@ void ControlService::SaveRPM() {
   get_Speed->RPMCar_media->setData((RPM_Left + RPM_Right) / 2);
 }
 double ControlService::CalculateRobotLinearSpeed() {
-  double WheelDiameter = (double)get_Spec->WheelDiameter->getData();
+  // double WheelDiameter = (double)get_Spec->WheelDiameter->getData();
 
-  int16_t RightWheelRotation = get_Speed->RPMRight_inst->getData();
-  int16_t LeftWheelRotation = get_Speed->RPMLeft_inst->getData();
+  // int16_t RightWheelRotation = get_Speed->RPMRight_inst->getData();
+  // int16_t LeftWheelRotation = get_Speed->RPMLeft_inst->getData();
 
-  double averageRotation =
-      (((double)(RightWheelRotation + LeftWheelRotation)) / 2);
-  return (averageRotation * WheelDiameter) / 60;
+  // double averageRotation =
+  //     (((double)(RightWheelRotation + LeftWheelRotation)) / 2);
+  // return (averageRotation * WheelDiameter) / 60;
+
+  double MaxMotorSpeed = (double)get_Speed->MotorMaxSpeed->getData();
+  int16_t RightWheelSpeed = get_Speed->RPMRight_inst->getData();
+  int16_t LeftWheelSpeed = get_Speed->RPMLeft_inst->getData();
+  return 100.0 *
+         (((double)(RightWheelSpeed + LeftWheelSpeed)) / (2.0 * MaxMotorSpeed));
 }
 
 void ControlService::setAccelerationDirection(float SpeedError) {
