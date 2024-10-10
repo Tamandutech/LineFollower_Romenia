@@ -107,26 +107,19 @@ void ControlService::ControlePID() {
     double kpSpeed = get_PID->Kp_Speed->getData();
     double kiSpeed = get_PID->Ki_Speed->getData();
     double kdSpeed = get_PID->Kd_Speed->getData();
-    double speedController = vel_base;
-
-    if (get_Status->Transition->getData()) {
-      speedController =
-          speedControl(RobotLinearSpeed, vel_base, kpSpeed, kiSpeed, kdSpeed);
-      ESP_LOGI(GetName().c_str(), "vel_base = %.4lf,  = %.4lf", vel_base,
-               speedController);
-    }
+    double speedController =
+        speedControl(RobotLinearSpeed, vel_base, kpSpeed, kiSpeed, kdSpeed);
 
     int16_t PositionError = get_Speed->PositionError->getData();
-    // double kpAcceleration = get_PID->Kp_Acceleration->getData();
-    // AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
-    // if ((AccelerationStep || DesaccelerationStep) &&
-    //     RealLine_state != SPECIAL_TRACK) {
-    //   if (DesaccelerationStep)
-    //     kpAcceleration = get_PID->Kp_Deceleration->getData();
-    //   speedPID =
-    //       AccelerationControl(RobotLinearSpeed, PositionError,
-    //       kpAcceleration);
-    // }
+    double kpAcceleration = get_PID->Kp_Acceleration->getData();
+    AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
+    if ((AccelerationStep || DesaccelerationStep) &&
+        RealLine_state != SPECIAL_TRACK) {
+      if (DesaccelerationStep)
+        kpAcceleration = get_PID->Kp_Deceleration->getData();
+      speedController =
+          AccelerationControl(RobotLinearSpeed, PositionError, kpAcceleration);
+    }
 
     // float max_angle = get_Spec->MaxAngle_Center->getData();
     bool OpenLoopControl = get_Status->OpenLoopControl->getData();
@@ -177,6 +170,15 @@ void ControlService::ControlePID() {
       // vel_base);
       ESP_LOGI(GetName().c_str(), "EncL = %ld, EncR = %ld", enc_left,
                enc_right);
+      // ESP_LOGI(GetName().c_str(), "SensorArray = %.2f", erro);
+      ESP_LOGI(GetName().c_str(), "RPM Left = %d, RPM Right = %d",
+               get_Speed->RPMLeft_inst->getData(),
+               get_Speed->RPMRight_inst->getData());
+      ESP_LOGI(GetName().c_str(), "LinearSpeed = %.2f", RobotLinearSpeed);
+      ESP_LOGI(GetName().c_str(), "vel_base = %.4lf, speedController = %.4lf",
+               vel_base, speedController);
+      ESP_LOGI(GetName().c_str(), "left_motor = %.4lf, right_motor = %.4f",
+               (speedController - PID), (speedController + PID));
       iloop = 0;
     }
     iloop++;
@@ -197,8 +199,11 @@ void ControlService::NewSpeed(int16_t left_wheel, int16_t right_wheel) {
   motors->ControlMotors(left_wheel, right_wheel);
 }
 void ControlService::SaveRPM() {
-  int64_t deltaTimeUs = (esp_timer_get_time() - lastTimeWheelsSpeedMeasured);
-  lastTimeWheelsSpeedMeasured = esp_timer_get_time();
+  int64_t deltaTimeUs =
+      10000;  //(esp_timer_get_time() - lastTimeWheelsSpeedMeasured);
+  // lastTimeWheelsSpeedMeasured = esp_timer_get_time();
+
+  // ESP_LOGI(GetName().c_str(), "\ndeltaTimeUs = %lld\n", deltaTimeUs);
 
   uint16_t MPR_Mot = get_Spec->MPR->getData();
 
@@ -218,20 +223,14 @@ void ControlService::SaveRPM() {
   get_Speed->RPMCar_media->setData((RPM_Left + RPM_Right) / 2);
 }
 double ControlService::CalculateRobotLinearSpeed() {
-  // double WheelDiameter = (double)get_Spec->WheelDiameter->getData();
+  double WheelDiameter = (double)get_Spec->WheelDiameter->getData();
 
-  // int16_t RightWheelRotation = get_Speed->RPMRight_inst->getData();
-  // int16_t LeftWheelRotation = get_Speed->RPMLeft_inst->getData();
+  int16_t RightWheelRotation = get_Speed->RPMRight_inst->getData();
+  int16_t LeftWheelRotation = get_Speed->RPMLeft_inst->getData();
 
-  // double averageRotation =
-  //     (((double)(RightWheelRotation + LeftWheelRotation)) / 2);
-  // return (averageRotation * WheelDiameter) / 60;
-
-  double MaxMotorSpeed = (double)get_Speed->MotorMaxSpeed->getData();
-  int16_t RightWheelSpeed = get_Speed->RPMRight_inst->getData();
-  int16_t LeftWheelSpeed = get_Speed->RPMLeft_inst->getData();
-  return 100.0 *
-         (((double)(RightWheelSpeed + LeftWheelSpeed)) / (2.0 * MaxMotorSpeed));
+  double averageRotation =
+      (((double)(RightWheelRotation + LeftWheelRotation)) / 2);
+  return (averageRotation * WheelDiameter) / 60000;
 }
 
 void ControlService::setAccelerationDirection(float SpeedError) {
@@ -279,12 +278,23 @@ double ControlService::speedControl(double linearSpeed, double targetSpeed,
                                     double kpSpeedControl,
                                     double kiSpeedControl,
                                     double kdSpeedControl) {
-  static double integral = 0;
-  static double lastError = 0;
+  static double speedControlTimeseries[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+  static int speedControlTimeseriesIndex = 0;
+  static double speedControlIntegral = 0;
+  static double speedControlLastError = 0;
+
   double error = targetSpeed - linearSpeed;
-  integral += error;
-  double derivative = error - lastError;
-  lastError = error;
-  return kpSpeedControl * error + kiSpeedControl * integral +
-         kdSpeedControl * derivative;
+  speedControlIntegral -= speedControlTimeseries[speedControlTimeseriesIndex];
+  speedControlIntegral += error;
+  speedControlTimeseries[speedControlTimeseriesIndex] = error;
+
+  double derivative = error - speedControlLastError;
+  speedControlLastError = error;
+
+  speedControlTimeseriesIndex = (speedControlTimeseriesIndex + 1) % 9;
+  double result = kpSpeedControl * error +
+                  kiSpeedControl * speedControlIntegral +
+                  kdSpeedControl * derivative;
+
+  return result;
 }

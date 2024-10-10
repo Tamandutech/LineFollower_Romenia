@@ -22,33 +22,32 @@
 #ifndef ESP32MotorControl_H
 #define ESP32MotorControl_H
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <math.h>
 
-#include "esp_attr.h"
-#include "esp_system.h"
-
-#include "driver/ledc.h"
 #include "driver/gpio.h"
+#include "driver/ledc.h"
+#include "esp_attr.h"
+#include "esp_log.h"
+#include "esp_system.h"
 #include "soc/mcpwm_reg.h"
 #include "soc/mcpwm_struct.h"
 
-#include "esp_log.h"
-
 //////// Defines
-#define LEDC_TIMER              LEDC_TIMER_1 // Timer do LEDC utilizado
-#define LEDC_MODE               LEDC_HIGH_SPEED_MODE // Modo de velocidade do LEDC
-#define PWM_A_PIN               LEDC_CHANNEL_2 // Canal do LEDC utilizado
-#define PWM_B_PIN               LEDC_CHANNEL_3 // Canal do LEDC utilizado
-#define LEDC_DUTY_RES           LEDC_TIMER_13_BIT // Resolução do PWM
-#define LEDC_FREQUENCY          2000 // Frequência em Hertz do sinal PWM
-
+#define LEDC_TIMER LEDC_TIMER_1          // Timer do LEDC utilizado
+#define LEDC_MODE LEDC_HIGH_SPEED_MODE   // Modo de velocidade do LEDC
+#define PWM_A1_PIN LEDC_CHANNEL_2        // Canal do LEDC utilizado
+#define PWM_A2_PIN LEDC_CHANNEL_3        // Canal do LEDC utilizado
+#define PWM_B1_PIN LEDC_CHANNEL_4        // Canal do LEDC utilizado
+#define PWM_B2_PIN LEDC_CHANNEL_5        // Canal do LEDC utilizado
+#define LEDC_DUTY_RES LEDC_TIMER_13_BIT  // Resolução do PWM
+#define LEDC_FREQUENCY 2000              // Frequência em Hertz do sinal PWM
 
 //////// Class
 
 class ESP32MotorControl {
-public:
+ public:
   // Fields
   bool mMotorForward[2] = {true, true};
 
@@ -60,9 +59,9 @@ public:
 
   void motorSpeed(uint8_t motor, float speed);
   void motorFullForward(uint8_t motor);
-  void motorForward(uint8_t motor);
+  void motorForward(uint8_t motor, uint16_t duty);
   void motorFullReverse(uint8_t motor);
-  void motorReverse(uint8_t motor);
+  void motorReverse(uint8_t motor, uint16_t duty);
   void motorStop(uint8_t motor);
 
   void motorsStop();
@@ -73,7 +72,7 @@ public:
   bool isMotorForward(uint8_t motor);
   bool isMotorStopped(uint8_t motor);
 
-private:
+ private:
   uint8_t gpioSTBY = 0, gpioAIN1 = 0, gpioAIN2 = 0, gpioPWMA = 0, gpioBIN1 = 0,
           gpioBIN2 = 0, gpioPWMB = 0;
 
@@ -96,4 +95,4 @@ private:
   void PwmWrite(ledc_channel_t channel, int pwm);
 };
 
-#endif // ESP32MotorControl_H
+#endif  // ESP32MotorControl_H
