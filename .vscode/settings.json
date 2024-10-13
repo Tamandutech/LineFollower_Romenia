@@ -70,5 +70,9 @@
         "numbers": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp"
-    }
+    },
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "C_Cpp.clang_format_sortIncludes": true
 }
