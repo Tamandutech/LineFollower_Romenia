@@ -24,16 +24,27 @@ class MappingService : public Thread, public Singleton<MappingService>
 public:
 
     MappingService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
-    
+
     void Run() override;
 
     esp_err_t startNewMapping(uint16_t leftMarksToStop = INT16_MAX, int32_t mediaPulsesToStop = LONG_MAX, uint32_t timeToStop = (portMAX_DELAY / portTICK_PERIOD_MS));
     esp_err_t stopNewMapping();
-
     esp_err_t loadMapping();
     esp_err_t saveMapping();
-
     esp_err_t createNewMark();
+
+    /**
+     * @brief Calcula as distâncias de aceleração e desaceleração para os trechos da pista com base no mapeamento atual.
+     */
+    void computeAccelerationParameters();
+
+    /**
+     * @brief Calcula a velocidade para o trecho da pista com base no status do trecho.
+     *
+     * @param trackStatus Status do trecho da pista.
+     * @return Velocidade em m/s.
+     */
+    float getSpeedForTrackStatusInMs(uint8_t trackStatus);
 
     bool track_is_a_line(uint8_t track);
     bool track_is_a_curve(uint8_t track);
@@ -77,7 +88,7 @@ private:
     void MappingWithMarks();
     void MappingWithoutMarks(TickType_t *xLastWakeTime);
     void AtualizarLEDs();
-    bool finished_mapping();
+    bool finishedMapping();
 };
 
 #endif

@@ -1,67 +1,74 @@
 #ifndef DATA_SPEC_H
 #define DATA_SPEC_H
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
+
 #include <string>
 
+#include "DataAbstract.hpp"
+#include "DataManager.hpp"
+#include "DataStorage.hpp"
 #include "dataEnums.h"
-
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
-#include "freertos/semphr.h"
 
-#include "DataAbstract.hpp"
-#include "DataStorage.hpp"
-#include "DataManager.hpp"
+class dataSpec {
+ public:
+  dataSpec(std::string name = "dataSpec", bool PID_Select = false);
 
-#include "esp_log.h"
+  DataAbstract<uint16_t> *GearRatio;  // Reducao dos motores
 
-class dataSpec
-{
-public:
-    dataSpec(std::string name = "dataSpec",bool PID_Select = false);
+  DataAbstract<uint16_t> *Revolution;  // Numero de Revolucoes dos motores
 
-    
-    DataAbstract<uint16_t> *GearRatio; // Reducao dos motores
-    
-    DataAbstract<uint16_t> *Revolution; // Numero de Revolucoes dos motores
+  DataAbstract<uint16_t> *MPR;  // Variavel que contempla relacao de Revloucoes
+                                // e reducao dos motores , entrada eh ((Qtd de
+                                // pulsos para uma volta) * (Reducao do motor))
 
-    DataAbstract<uint16_t> *MPR;  // Variavel que contempla relacao de Revloucoes e reducao dos motores
-                                  // , entrada eh ((Qtd de pulsos para uma volta) * (Reducao do motor))
-    
-    DataAbstract<uint8_t> *WheelDiameter; // (mm) Diâmetro das rodas
-    
-    DataAbstract<uint8_t> *RobotDiameter; // (mm) Distancia entre as rodas
-    
-    DataAbstract<uint16_t> *SensorToCenter; // Distancia do centro do robô até a ponta dos sensores
-    
-    DataAbstract<uint16_t> *RadiusSensor; // (mm) Raio da angulacao dos sensores frontais
-    
-    DataAbstract<float> *MaxAngle; // (graus) Angulo maximo de leitura = (1/2) * (tamanho do arco)/(raio do arco)
+  DataAbstract<uint8_t> *WheelDiameter;  // (mm) Diâmetro das rodas
 
-    DataAbstract<float> *MaxAngle_Center; // (graus) Angulo maximo com relação ao centro de movimento
+  DataAbstract<uint8_t> *RobotDiameter;  // (mm) Distancia entre as rodas
 
-    DataAbstract<float> *Friction_Angle; // (graus) Coeficiente de fricção em graus
+  DataAbstract<uint16_t>
+      *SensorToCenter;  // Distancia do centro do robô até a ponta dos sensores
 
-    DataAbstract<float> *Friction_Coef; // Coeficiente de fricção calculado a partir do Friction_Angle
+  DataAbstract<uint16_t>
+      *RadiusSensor;  // (mm) Raio da angulacao dos sensores frontais
 
-    DataAbstract<float> *Acceleration; // (mm/s^2) Aceleração do robô
+  DataAbstract<float> *MaxAngle;  // (graus) Angulo maximo de leitura = (1/2) *
+                                  // (tamanho do arco)/(raio do arco)
 
-    DataAbstract<float> *MaxRPM; // RPM máximo estimado
+  DataAbstract<float> *MaxAngle_Center;  // (graus) Angulo maximo com relação ao
+                                         // centro de movimento
 
-    DataAbstract<float> *Mass; // Massa com brushless desligado
+  DataAbstract<float>
+      *Friction_Angle;  // (graus) Coeficiente de fricção em graus
 
-    DataAbstract<float> *Mass_BrushON; // Massa quando o brushless está ligado
+  DataAbstract<float> *Friction_Coef;  // Coeficiente de fricção calculado a
+                                       // partir do Friction_Angle
 
-    DataAbstract<float> *Malha_Aberta; // Angulo para ligar a malha aberta
+  DataAbstract<float> *Acceleration;  // (mm/s^2) Aceleração do robô
 
-private:
-    std::string name;
-    const char *tag = "RobotData";
+  DataAbstract<float> *MaxRPM;  // RPM máximo estimado
 
-    DataManager *dataManager;
+  DataAbstract<float> *Mass;  // Massa com brushless desligado
+
+  DataAbstract<float> *Mass_BrushON;  // Massa quando o brushless está ligado
+
+  DataAbstract<float> *Malha_Aberta;  // Angulo para ligar a malha aberta
+
+  DataAbstract<float> *MaxSpeed;  // Velocidade máxima do robô em m/s
+
+  DataAbstract<float> *MetersPerPulse;  // Metros percorridos por pulso
+
+ private:
+  std::string name;
+  const char *tag = "RobotData";
+
+  DataManager *dataManager;
 };
 
 #endif

@@ -32,7 +32,9 @@ esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t medi
     tempActualMark.MapTrackStatus = MEDIUM_LINE;
     tempActualMark.MapTime = 0;
     tempActualMark.MapOffset = 0;
-
+    tempActualMark.MapCurveSpeed = 0;
+    tempActualMark.MapAccelerationSpace = 0;
+    tempActualMark.MapDecelerationSpace = 0;
 
     get_latMarks->rightMarks->setData(0);
     get_latMarks->leftMarks->setData(0);
@@ -59,7 +61,7 @@ esp_err_t MappingService::stopNewMapping()
 
 esp_err_t MappingService::loadMapping()
 {
-    //ESP_LOGI(GetName().c_str(), "Carregando mapeamento da memória.");
+    //ESP_LOGI(GetName().c_str(), "Carregando mapeamento da memÃ³ria.");
 
     get_latMarks->marks->loadData();
 
@@ -68,7 +70,7 @@ esp_err_t MappingService::loadMapping()
 
 esp_err_t MappingService::saveMapping()
 {
-    //ESP_LOGI(GetName().c_str(), "Salvando mapeamento na memória.");
+    //ESP_LOGI(GetName().c_str(), "Salvando mapeamento na memÃ³ria.");
 
     get_latMarks->marks->saveData();
 
@@ -79,7 +81,7 @@ esp_err_t MappingService::createNewMark()
 {
     if (get_Status->robotState->getData() == CAR_MAPPING)
     {
-        //ESP_LOGI(GetName().c_str(), "Criando nova marcação.");
+        //ESP_LOGI(GetName().c_str(), "Criando nova marcaÃ§Ã£o.");
 
         this->Resume();
         return ESP_OK;
@@ -89,8 +91,8 @@ esp_err_t MappingService::createNewMark()
 
 void MappingService::Run()
 {
-    
-    this->Suspend(); // Suspend necessário para mapeamento com marcações laterais
+
+    this->Suspend(); // Suspend necessÃ¡rio para mapeamento com marcaÃ§Ãµes laterais
 
     initialLeftPulses = get_Speed->EncLeft->getData();
     initialRightPulses = get_Speed->EncRight->getData();
@@ -103,23 +105,23 @@ void MappingService::Run()
 
     for (;;)
     {
-        if ((leftMarksToStop <= get_latMarks->leftMarks->getData()) || (get_latMarks->MarkstoStop->getData() <= get_latMarks->rightMarks->getData()) || (mediaPulsesToStop <= tempActualMark.MapEncMedia) || (ticksToStop <= (tempActualMark.MapTime * portTICK_PERIOD_MS)) || get_Status->ControlOff->getData())
-        {// Finalizando o mapeamento
+        if (finishedMapping())
+        {
             //ESP_LOGI(GetName().c_str(), "Mapeamento finalizado.");
-
             this->stopNewMapping();
+            this->computeAccelerationParameters();
             break;
         }
         MappingWithMarks();
     }
 }
 
-bool MappingService::finished_mapping(){
+bool MappingService::finishedMapping(){
     return (
-           (leftMarksToStop <= get_latMarks->leftMarks->getData()) 
-        || (get_latMarks->MarkstoStop->getData() <= get_latMarks->rightMarks->getData()) 
-        || (mediaPulsesToStop <= tempActualMark.MapEncMedia) 
-        || (ticksToStop <= (tempActualMark.MapTime * portTICK_PERIOD_MS)) 
+           (leftMarksToStop <= get_latMarks->leftMarks->getData())
+        || (get_latMarks->MarkstoStop->getData() <= get_latMarks->rightMarks->getData())
+        || (mediaPulsesToStop <= tempActualMark.MapEncMedia)
+        || (ticksToStop <= (tempActualMark.MapTime * portTICK_PERIOD_MS))
         || (get_Status->ControlOff->getData() == true)
         );
 }
@@ -133,20 +135,20 @@ void MappingService::MappingWithMarks()
 
         vTaskDelay(0);
         this->Suspend();
-        
+
         tempActualMark.MapOffset = 0;
         EncLeft = get_Speed->EncLeft->getData() - initialLeftPulses;
         EncRight = get_Speed->EncRight->getData() - initialRightPulses;
         tempActualMark.MapEncMedia = ((EncLeft + EncRight) / 2);
         tempActualMark.MapTime = ((xTaskGetTickCount() - initialTicks) * portTICK_PERIOD_MS);
 
-        // variação de encoder em pulsos
+        // variaÃ§Ã£o de encoder em pulsos
         tempDeltaPulses = std::abs((EncRight - lastEncRight) - (EncLeft - lastEncLeft));
-        // Quantidade de pulsos que o encoder precisa dar para avançar "x" milimetros
+        // Quantidade de pulsos que o encoder precisa dar para avanÃ§ar "x" milimetros
         tempMilimiterInPulses = (get_Spec->MPR->getData() * get_latMarks->thresholdToCurve->getData()) / (M_PI * get_Spec->WheelDiameter->getData());
 
-        tempDeltaDist = ((tempActualMark.MapEncMedia - lastEncMedia) * (M_PI * get_Spec->WheelDiameter->getData())) / (get_Spec->MPR->getData()); // distância entre marcacões em mm
-        
+        tempDeltaDist = ((tempActualMark.MapEncMedia - lastEncMedia) * (M_PI * get_Spec->WheelDiameter->getData())) / (get_Spec->MPR->getData()); // distÃ¢ncia entre marcacÃµes em mm
+
         if(tempDeltaPulses <= tempMilimiterInPulses)
         {
             if(tempDeltaDist < get_latMarks->thresholdMediumLine->getData()) tempActualMark.MapTrackStatus = SHORT_LINE;
@@ -161,11 +163,11 @@ void MappingService::MappingWithMarks()
         }
 
         get_latMarks->marks->newData(tempActualMark);
-        //ESP_LOGI(GetName().c_str(), "Salvou uma marcação");
+        //ESP_LOGI(GetName().c_str(), "Salvou uma marcaÃ§Ã£o");
 
         AtualizarLEDs();
 
-        //ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
+        //ESP_LOGI(GetName().c_str(), "MarcaÃ§Ã£o: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
 
 }
 
@@ -175,7 +177,7 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
         lastEncRight = EncRight;
         lastEncMedia = tempActualMark.MapEncMedia;
         lastTrack = tempActualMark.MapTrackStatus;
-        
+
         tempActualMark.MapOffset = 0;
         EncLeft = get_Speed->EncLeft->getData() - initialLeftPulses;
         EncRight = get_Speed->EncRight->getData() - initialRightPulses;
@@ -184,13 +186,13 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
 
         int32_t delta_right = (EncRight - lastEncRight);
         int32_t delta_left = (EncLeft - lastEncLeft);
-        
-        // variação de encoder em pulsos
+
+        // variaÃ§Ã£o de encoder em pulsos
         tempDeltaPulses = std::abs(delta_right - delta_left);
-        // Quantidade de pulsos que o encoder precisa dar para avançar "x" milimetros
+        // Quantidade de pulsos que o encoder precisa dar para avanÃ§ar "x" milimetros
         tempMilimiterInPulses = (get_Spec->MPR->getData() * get_latMarks->thresholdToCurve->getData()) / (M_PI * get_Spec->WheelDiameter->getData());
 
-        tempDeltaDist = ((tempActualMark.MapEncMedia - lastEncMedia) * (M_PI * get_Spec->WheelDiameter->getData())) / (get_Spec->MPR->getData()); // distância entre marcacões em mm
+        tempDeltaDist = ((tempActualMark.MapEncMedia - lastEncMedia) * (M_PI * get_Spec->WheelDiameter->getData())) / (get_Spec->MPR->getData()); // distÃ¢ncia entre marcacÃµes em mm
         if(tempDeltaPulses <= tempMilimiterInPulses)
         {
             if(tempDeltaDist < get_latMarks->thresholdLongLine->getData()) tempActualMark.MapTrackStatus = MEDIUM_LINE;
@@ -200,8 +202,8 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
         {
             tempActualMark.MapTrackStatus = MEDIUM_CURVE;
         }
-        
-        if(track_is_a_line(lastTrack) && track_is_a_line(tempActualMark.MapTrackStatus)){ 
+
+        if(track_is_a_line(lastTrack) && track_is_a_line(tempActualMark.MapTrackStatus)){
             get_latMarks->marks->clearData(get_latMarks->marks->getSize() - 1);
             tempActualMark.MapTrackStatus = LONG_LINE;
         }
@@ -210,30 +212,91 @@ void MappingService::MappingWithoutMarks(TickType_t *xLastWakeTime)
 
         AtualizarLEDs();
 
-        //ESP_LOGI(GetName().c_str(), "Marcação: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
+        //ESP_LOGI(GetName().c_str(), "MarcaÃ§Ã£o: MapEncLeft: %d, MapEncRight: %d, MapEncMedia: %d, MapTime: %d, MapStatus: %d", tempActualMark.MapEncLeft, tempActualMark.MapEncRight, tempActualMark.MapEncMedia, tempActualMark.MapTime, tempActualMark.MapStatus);
         vTaskDelayUntil(xLastWakeTime, get_latMarks->deltaT->getData() / portTICK_PERIOD_MS);
 }
 
 void MappingService::AtualizarLEDs(){
     // Mudando a cor das LEDs:
-    if(track_is_a_curve(tempActualMark.MapTrackStatus)) 
+    if(track_is_a_curve(tempActualMark.MapTrackStatus))
     {
-        if(get_latMarks->latEsqPass->getData()){ 
+        if(get_latMarks->latEsqPass->getData()){
             LED->LedComandSend(LED_POSITION_LEFT, COLOR_RED, 1);
         }
-        else if(get_latMarks->latDirPass->getData()){ 
+        else if(get_latMarks->latDirPass->getData()){
             LED->LedComandSend(LED_POSITION_RIGHT, COLOR_RED, 1);
         }
     }
     else if(track_is_a_line(tempActualMark.MapTrackStatus))
     {
-        if(get_latMarks->latEsqPass->getData()){ 
+        if(get_latMarks->latEsqPass->getData()){
             LED->LedComandSend(LED_POSITION_LEFT, COLOR_GREEN, 1);
         }
-        else if(get_latMarks->latDirPass->getData()){ 
+        else if(get_latMarks->latDirPass->getData()){
             LED->LedComandSend(LED_POSITION_RIGHT, COLOR_GREEN, 1);
         }
     }
+}
+
+void MappingService::computeAccelerationParameters(){
+    loadMapping();
+
+    float accelerationSpaceMeter;
+    float desaccelerationSpaceMeter;
+    for (uint8_t i = 0; i < get_latMarks->marks->getSize(); i++)
+    {
+        MapData currentMapData = get_latMarks->marks->getData(i);
+        if (!track_is_a_line(currentMapData.MapTrackStatus))
+        {
+            continue;
+        }
+
+        MapData updatedMapData = {0, 0, 0, 0, 0, 0, 0};
+        if (i < get_latMarks->marks->getSize() - 1)
+        {
+            if (i > 0)
+            {
+                accelerationSpaceMeter = (
+                    pow(get_Spec->MaxSpeed->getData(), 2) -
+                    pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2)
+                ) / (2 * get_Spec->MaxAcc->getData());
+                desaccelerationSpaceMeter = (
+                    pow(
+                        getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i+1).MapTrackStatus.MapTrackStatus),
+                        2
+                    ) - pow(getSpeedForTrackStatusInMs(latMarks->marks->getData(i + 1).MapTrackStatus), 2)
+                ) / (2 * get_Spec->Acceleration->getData());
+            }
+            else
+            {
+                accelerationSpaceMeter = pow(get_Spec->MaxSpeed->getData(), 2) /
+                    (2 * get_Spec->Acceleration->getData());
+                desaccelerationSpaceMeter = -(
+                    (
+                        pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2) -
+                        pow(get_Spec->MaxSpeed->getData(), 2)
+                    ) / (2 * get_Spec->Acceleration->getData())
+                );
+            }
+        }
+        else
+        {
+            accelerationSpaceMeter = (
+                pow(get_Spec->MaxSpeed->getData(), 2) -
+                pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2)
+            ) / (2 * get_Spec->Acceleration->getData());
+            desaccelerationSpaceMeter = -(
+                (pow(2, 2) - pow(get_Spec->MaxSpeed->getData(), 2)) / (2 * get_Spec->Acceleration->getData())
+            );
+        }
+        currentMapData.MapAccelerationSpace = accelerationSpaceMeter/get_Spec->MetersPerPulse->getData();
+        currentMapData.MapDecelerationSpace = desaccelerationSpaceMeter/get_Spec->MetersPerPulse->getData();
+    }
+}
+
+float MappingService::getSpeedForTrackStatusInMs(uint8_t trackStatus){
+    // TODO: Implementar
+    return 0.0;
 }
 
 bool MappingService::track_is_a_line(uint8_t track){

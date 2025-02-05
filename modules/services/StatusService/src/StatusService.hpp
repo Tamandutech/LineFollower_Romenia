@@ -21,11 +21,14 @@ using namespace cpp_freertos;
 class StatusService : public Thread, public Singleton<StatusService>
 {
 public:
-    
+
     StatusService(std::string name, uint32_t stackDepth, UBaseType_t priority, BaseType_t coreid);
 
     void Run() override;
     static SemaphoreHandle_t SemaphoreButton;
+
+    float getAccelerationSpace();
+    float getDecelerationSpace();
 
 private:
 
@@ -40,7 +43,7 @@ private:
     MappingService *mappingService;
 
     // Variáveis
-    
+
     CarState actualCarState, initialRobotState;
     TrackSegment TrackLen = SHORT_CURVE;
 
@@ -67,6 +70,16 @@ private:
     int16_t offset_transition = 0;
     int mark_in_transition = 0;
     int64_t lastTime = 0;
+
+    /**
+     * @brief Dist�ncia que ser� percorrida acelerando no trecho atual at� o rob� atingir a velocidade m�xima poss�vel no trecho.
+     */
+    float accelerationSpace;
+
+    /**
+     * @brief Dist�ncia que ser� percorrida desacelerando at� o rob� atingir a velocidade do pr�ximo trecho.
+     */
+    float decelerationSpace;
 
     CarState trackType;
     TrackSegment trackLen;
