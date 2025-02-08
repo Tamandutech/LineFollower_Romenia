@@ -208,38 +208,58 @@ void StatusService::Run()
                         {
                             if (i > 0)
                             {
-                                accelerationSpaceMeter = (
-                                    pow(get_Spec->MaxSpeed->getData(), 2) -
-                                    pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2)
-                                ) / (2 * get_Spec->MaxAcc->getData());
-                                desaccelerationSpaceMeter = (
-                                    pow(
-                                        getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i+1).MapTrackStatus.MapTrackStatus),
-                                        2
-                                    ) - pow(getSpeedForTrackStatusInMs(latMarks->marks->getData(i + 1).MapTrackStatus), 2)
-                                ) / (2 * get_Spec->Acceleration->getData());
+                              accelerationSpaceMeter =
+                                  (pow(get_Spec->MaxSpeed->getData(), 2) -
+                                   pow(mappingService
+                                           ->getSpeedForTrackStatusInMs(
+                                               get_latMarks->marks
+                                                   ->getData(i - 1)
+                                                   .MapTrackStatus),
+                                       2)) /
+                                  (2 * get_Spec->Acceleration->getData());
+                              desaccelerationSpaceMeter =
+                                  (pow(mappingService
+                                           ->getSpeedForTrackStatusInMs(
+                                               get_latMarks->marks
+                                                   ->getData(i + 1)
+                                                   .MapTrackStatus),
+                                       2) -
+                                   pow(mappingService
+                                           ->getSpeedForTrackStatusInMs(
+                                               get_latMarks->marks
+                                                   ->getData(i + 1)
+                                                   .MapTrackStatus),
+                                       2)) /
+                                  (2 * get_Spec->Acceleration->getData());
                             }
                             else
                             {
                                 accelerationSpaceMeter = pow(get_Spec->MaxSpeed->getData(), 2) /
                                     (2 * get_Spec->Acceleration->getData());
-                                desaccelerationSpaceMeter = -(
-                                    (
-                                        pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2) -
-                                        pow(get_Spec->MaxSpeed->getData(), 2)
-                                    ) / (2 * get_Spec->Acceleration->getData())
-                                );
+                                desaccelerationSpaceMeter =
+                                    -((pow(mappingService
+                                               ->getSpeedForTrackStatusInMs(
+                                                   get_latMarks->marks
+                                                       ->getData(i - 1)
+                                                       .MapTrackStatus),
+                                           2) -
+                                       pow(get_Spec->MaxSpeed->getData(), 2)) /
+                                      (2 * get_Spec->Acceleration->getData()));
                             }
                         }
                         else
                         {
-                            accelerationSpaceMeter = (
-                                pow(get_Spec->MaxSpeed->getData(), 2) -
-                                pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2)
-                            ) / (2 * get_Spec->Acceleration->getData());
-                            desaccelerationSpaceMeter = -(
-                                (pow(2, 2) - pow(get_Spec->MaxSpeed->getData(), 2)) / (2 * get_Spec->Acceleration->getData())
-                            );
+                          accelerationSpaceMeter =
+                              (pow(get_Spec->MaxSpeed->getData(), 2) -
+                               pow(mappingService->getSpeedForTrackStatusInMs(
+                                       get_latMarks->marks->getData(i - 1)
+                                           .MapTrackStatus),
+                                   2)) /
+                              (2 * get_Spec->Acceleration->getData());
+                          desaccelerationSpaceMeter =
+                              -((pow(2, 2) -
+                                 pow(get_Spec->MaxSpeed->getData(), 2)) /
+                                (2 * get_Spec->Acceleration->getData()));
                         }
 
                         accelerationSpace = accelerationSpaceMeter/get_Spec->MetersPerPulse->getData();
@@ -503,12 +523,6 @@ void StatusService::actualize_friction(){
     }
 }
 
-float getAccelerationSpace()
-{
-    return accelerationSpace;
-}
+float StatusService::getAccelerationSpace() { return accelerationSpace; }
 
-float getDecelerationSpace()
-{
-    return decelerationSpace;
-}
+float StatusService::getDecelerationSpace() { return decelerationSpace; }

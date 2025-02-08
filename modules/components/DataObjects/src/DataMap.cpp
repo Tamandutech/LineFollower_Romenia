@@ -74,7 +74,7 @@ void DataMap::newData(std::string mapData)
     //mapDataTemp.MapEncLeft = std::stoi(mapDataVector[3]);
     //mapDataTemp.MapEncRight = std::stoi(mapDataVector[4]);
     //mapDataTemp.MapStatus = std::stoi(mapDataVector[5]);
-    mapDataTemp.MapTrackStatus = std::stoi(mapDataVector[3]);
+    mapDataTemp.MapTrackStatus = static_cast<TrackSegment>(std::stoi(mapDataVector[3]));
     mapDataTemp.MapOffset = std::stoi(mapDataVector[4]);
 
     this->newData(mapDataTemp);
@@ -165,7 +165,7 @@ void DataMap::setData(std::string data)
     //tempMapData.MapEncLeft = stoi(dataList[3]);
     //tempMapData.MapEncRight = stoi(dataList[4]);
     //tempMapData.MapStatus = stoi(dataList[5]);
-    tempMapData.MapTrackStatus = stoi(dataList[3]);
+    tempMapData.MapTrackStatus = static_cast<TrackSegment>(stoi(dataList[3]));
     tempMapData.MapOffset = stoi(dataList[4]);
 
     setData(stoi(dataList[0]), tempMapData);

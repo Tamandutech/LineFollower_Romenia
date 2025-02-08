@@ -32,7 +32,6 @@ esp_err_t MappingService::startNewMapping(uint16_t leftMarksToStop, int32_t medi
     tempActualMark.MapTrackStatus = MEDIUM_LINE;
     tempActualMark.MapTime = 0;
     tempActualMark.MapOffset = 0;
-    tempActualMark.MapCurveSpeed = 0;
     tempActualMark.MapAccelerationSpace = 0;
     tempActualMark.MapDecelerationSpace = 0;
 
@@ -251,21 +250,24 @@ void MappingService::computeAccelerationParameters(){
             continue;
         }
 
-        MapData updatedMapData = {0, 0, 0, 0, 0, 0, 0};
         if (i < get_latMarks->marks->getSize() - 1)
         {
             if (i > 0)
             {
-                accelerationSpaceMeter = (
-                    pow(get_Spec->MaxSpeed->getData(), 2) -
-                    pow(getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i-1).MapTrackStatus), 2)
-                ) / (2 * get_Spec->MaxAcc->getData());
-                desaccelerationSpaceMeter = (
-                    pow(
-                        getSpeedForTrackStatusInMs(get_latMarks->marks->getData(i+1).MapTrackStatus.MapTrackStatus),
-                        2
-                    ) - pow(getSpeedForTrackStatusInMs(latMarks->marks->getData(i + 1).MapTrackStatus), 2)
-                ) / (2 * get_Spec->Acceleration->getData());
+              accelerationSpaceMeter =
+                  (pow(get_Spec->MaxSpeed->getData(), 2) -
+                   pow(getSpeedForTrackStatusInMs(
+                           get_latMarks->marks->getData(i - 1).MapTrackStatus),
+                       2)) /
+                  (2 * get_Spec->Acceleration->getData());
+              desaccelerationSpaceMeter =
+                  (pow(getSpeedForTrackStatusInMs(
+                           get_latMarks->marks->getData(i + 1).MapTrackStatus),
+                       2) -
+                   pow(getSpeedForTrackStatusInMs(
+                           get_latMarks->marks->getData(i + 1).MapTrackStatus),
+                       2)) /
+                  (2 * get_Spec->Acceleration->getData());
             }
             else
             {
