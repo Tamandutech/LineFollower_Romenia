@@ -107,7 +107,7 @@ void MotorService::WalkStraight(float vel, bool frente){
 
 bool MotorService::StartBrushless(int speed)
 {
-    rampThrottle(MIN_THROTTLE, speed, THROTTLE_SPEED, 200);
+    rampThrottle(MIN_THROTTLE, speed, THROTTLE_SPEED, 25);
     Brushless_ActualPwm = speed;
     vTaskDelay(200 / portTICK_PERIOD_MS);
     return true;
@@ -115,7 +115,7 @@ bool MotorService::StartBrushless(int speed)
 
 void MotorService::StopBrushless()
 {
-    if(Brushless_ActualPwm  > MIN_THROTTLE) rampThrottle(Brushless_ActualPwm, MIN_THROTTLE, -THROTTLE_SPEED, 200);
+    if(Brushless_ActualPwm  > MIN_THROTTLE) rampThrottle(Brushless_ActualPwm, MIN_THROTTLE, -THROTTLE_SPEED, 25);
     Brushless_ActualPwm = MIN_THROTTLE;
 }
 
