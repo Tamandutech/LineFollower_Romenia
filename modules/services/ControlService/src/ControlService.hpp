@@ -33,6 +33,7 @@ class ControlService : public Thread, public Singleton<ControlService> {
   dataPID *get_PID;
   dataStatus *get_Status;
   dataFloat *get_Angle;
+  dataSLatMarks *get_latMarks;
 
   SensorService *from_sensor;
   MotorService *motors;

@@ -291,6 +291,7 @@ void MappingService::computeAccelerationParameters(){
         }
         currentMapData.MapAccelerationSpace = accelerationSpaceMeter/get_Spec->MetersPerPulse->getData();
         currentMapData.MapDecelerationSpace = desaccelerationSpaceMeter/get_Spec->MetersPerPulse->getData();
+        get_latMarks->marks->setData(i, currentMapData);
     }
 }
 

@@ -10,6 +10,7 @@ ControlService::ControlService(std::string name, uint32_t stackDepth,
   this->get_PID = robot->getPID();
   this->get_Status = robot->getStatus();
   this->get_Angle = robot->getFrontSensors();
+  this->get_latMarks = robot->getSLatMarks();
 
   // Atalhos de servicos:
   this->from_sensor = SensorService::getInstance();
@@ -91,6 +92,33 @@ void ControlService::ControlePID() {
       vel_base = get_Speed->vel_mapped->getData();
     } else {
       vel_base = get_Speed->getSpeed(line_state, state)->getData();
+    }
+    
+    motors->read_both();
+    int32_t enc_media =
+        (get_Speed->EncRight->getData() + get_Speed->EncLeft->getData()) / 2;
+
+    double accelerationPoint = get_latMarks->marks->getData(get_latMarks->leftMarks->getData())
+            .MapEncMedia +
+        get_latMarks->marks->getData(get_latMarks->leftMarks->getData())
+            .MapAccelerationSpace;
+    double decelerationPoint =
+        get_latMarks->marks->getData(get_latMarks->leftMarks->getData())
+            .MapEncMedia +
+        get_latMarks->marks->getData(get_latMarks->leftMarks->getData())
+            .MapDecelerationSpace;
+
+    if (enc_media < accelerationPoint) {
+      vel_base = get_Spec->MaxSpeed->getData();
+    } else if (enc_media >= decelerationPoint &&
+               get_latMarks->leftMarks->getData() + 1 <
+                   get_latMarks->marks->getSize()) {
+        vel_base =
+            get_latMarks->marks->getData(get_latMarks->leftMarks->getData() + 1)
+                .MapEncMedia;
+    }
+    else {
+      vel_base = get_Spec->MaxSpeed->getData();
     }
 
     get_PID->setpoint->setData(vel_base);
@@ -182,7 +210,7 @@ void ControlService::ControlePID() {
       iloop = 0;
     }
     iloop++;
-  }
+    }
 }
 
 float ControlService::CalculatePD(float K_p, float K_d, float errof) {
